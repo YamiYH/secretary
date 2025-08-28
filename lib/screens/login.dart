@@ -170,7 +170,12 @@ class _LoginState extends State<Login> {
                               ),
                               const SizedBox(height: 30),
 
-                              Button(text: 'Iniciar sesión', onPressed: () {}),
+                              Button(
+                                text: 'Iniciar sesión',
+                                onPressed: () {
+                                  Navigator.pushNamed(context, 'dashboard');
+                                },
+                              ),
                               const SizedBox(height: 20),
 
                               TextButton(
