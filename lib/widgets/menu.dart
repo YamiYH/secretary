@@ -27,7 +27,7 @@ class _MenuState extends State<Menu> {
       width: isDesktop ? screenWidth * 0.2 : screenWidth * 0.75,
       color: Colors.white,
       child: ListView(
-        padding: EdgeInsets.zero,
+        padding: EdgeInsets.symmetric(horizontal: 10),
         children: <Widget>[
           DrawerHeader(
             child: Column(
@@ -66,21 +66,6 @@ class _MenuState extends State<Menu> {
             },
           ),
           ListTile(
-            leading: const Icon(Icons.people_alt_outlined, color: primaryColor),
-            title: const Text('Miembros'),
-            selected: _selectedIndex == 0,
-            onTap: () {
-              Navigator.push(context, createFadeRoute(Members()));
-              setState(() {
-                _selectedIndex = 0;
-              });
-              if (!isDesktop) {
-                Navigator.pop(context); // Cierra el drawer en móvil
-              }
-              // Aquí podrías navegar a la pantalla de Miembros
-            },
-          ),
-          ListTile(
             leading: const Icon(
               Icons.calendar_month_outlined,
               color: Colors.deepOrange,
@@ -101,6 +86,21 @@ class _MenuState extends State<Menu> {
             },
           ),
           ListTile(
+            leading: const Icon(Icons.people_alt_outlined, color: primaryColor),
+            title: const Text('Miembros'),
+            selected: _selectedIndex == 0,
+            onTap: () {
+              Navigator.push(context, createFadeRoute(Members()));
+              setState(() {
+                _selectedIndex = 0;
+              });
+              if (!isDesktop) {
+                Navigator.pop(context); // Cierra el drawer en móvil
+              }
+              // Aquí podrías navegar a la pantalla de Miembros
+            },
+          ),
+          ListTile(
             leading: const Icon(Icons.how_to_reg_outlined, color: Colors.cyan),
             title: const Text('Asistencia'),
             selected: _selectedIndex == 2,
@@ -116,6 +116,20 @@ class _MenuState extends State<Menu> {
             },
           ),
 
+          ListTile(
+            leading: const Icon(Icons.group, color: Colors.redAccent),
+            title: const Text('Redes'),
+            selected: _selectedIndex == 4,
+            onTap: () {
+              setState(() {
+                _selectedIndex = 4;
+              });
+              if (!isDesktop) {
+                Navigator.pop(context); // Cierra el drawer en móvil
+              }
+              // Aquí podrías navegar a la pantalla de Ministerios
+            },
+          ),
           ListTile(
             leading: const Icon(
               Icons.description_outlined,

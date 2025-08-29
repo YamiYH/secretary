@@ -72,7 +72,6 @@ class _MembersState extends State<Members> {
       body: Row(
         children: [
           Menu(),
-          // Contenido principal de Servicios
           Expanded(
             child: Column(
               children: [
@@ -92,52 +91,72 @@ class _MembersState extends State<Members> {
                     SizedBox(width: 20),
                   ],
                 ),
+                SizedBox(height: 30),
                 // Lista de miembros
                 Expanded(
-                  child: ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    itemCount: _filteredMembers.length,
-                    itemBuilder: (context, index) {
-                      final member = _filteredMembers[index];
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0),
-                        child: ListTile(
-                          leading: CircleAvatar(
-                            backgroundColor: Colors.red.withOpacity(0.1),
-                            child: Text(
-                              member.name.substring(0, 1).toUpperCase(),
-                              style: TextStyle(
-                                color: Colors.redAccent[200],
-                                fontWeight: FontWeight.bold,
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 25.0),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(
+                          12,
+                        ), // Esquinas redondeadas
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.1),
+                            spreadRadius: 2.5,
+                            blurRadius: 5,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: ListView.builder(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        itemCount: _filteredMembers.length,
+                        itemBuilder: (context, index) {
+                          final member = _filteredMembers[index];
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8.0),
+                            child: ListTile(
+                              leading: CircleAvatar(
+                                backgroundColor: Colors.red.withOpacity(0.1),
+                                child: Text(
+                                  member.name.substring(0, 1).toUpperCase(),
+                                  style: TextStyle(
+                                    color: Colors.redAccent[200],
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                               ),
+                              title: Text(
+                                member.name,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                              subtitle: Text(
+                                member.groups,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                              trailing: Icon(
+                                Icons.arrow_forward_ios,
+                                color: Colors.grey[400],
+                                size: 18,
+                              ),
+                              onTap: () {
+                                // Acción al tocar un miembro (ej. ir a su perfil)
+                              },
                             ),
-                          ),
-                          title: Text(
-                            member.name,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.black87,
-                            ),
-                          ),
-                          subtitle: Text(
-                            member.groups,
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                          trailing: Icon(
-                            Icons.arrow_forward_ios,
-                            color: Colors.grey[400],
-                            size: 18,
-                          ),
-                          onTap: () {
-                            // Acción al tocar un miembro (ej. ir a su perfil)
-                          },
-                        ),
-                      );
-                    },
+                          );
+                        },
+                      ),
+                    ),
                   ),
                 ),
               ],
