@@ -1,3 +1,4 @@
+import 'package:app/screens/attendance.dart';
 import 'package:app/screens/dashboard.dart';
 import 'package:app/screens/members.dart';
 import 'package:app/screens/profile.dart';
@@ -14,6 +15,7 @@ class AppRoutes {
   static const String dashboard = 'dashboard';
   static const String services = 'services';
   static const String members = 'members';
+  static const String attendance = 'attendance';
 
   static Map<String, WidgetBuilder> getRoutes() {
     return <String, WidgetBuilder>{
@@ -23,6 +25,7 @@ class AppRoutes {
       dashboard: (context) => Dashboard(),
       services: (context) => Services(),
       members: (context) => Members(),
+      attendance: (context) => Attendance(),
     };
   }
 }

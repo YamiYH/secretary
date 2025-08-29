@@ -5,9 +5,8 @@ class Button extends StatelessWidget {
   final VoidCallback onPressed;
   final Color? backgroundColor;
   final Color? textColor;
-  final double borderRadius;
-  final double height;
-  final double? width;
+
+  final Size? size;
 
   const Button({
     super.key,
@@ -15,19 +14,17 @@ class Button extends StatelessWidget {
     required this.onPressed,
     this.backgroundColor,
     this.textColor,
-    this.borderRadius = 5.0,
-    this.height = 50.0,
-    this.width,
+
+    this.size,
   });
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       // Si se proporciona un ancho, úsalo; de lo contrario, ocupa el ancho máximo.
-      width: width ?? double.infinity,
-      height: height,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
+          fixedSize: size,
           foregroundColor:
               textColor ?? Colors.white, // Color del texto (por defecto blanco)
           backgroundColor:
@@ -35,7 +32,7 @@ class Button extends StatelessWidget {
               Colors.blueAccent.shade700, // Color de fondo (por defecto azul)
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(
-              borderRadius,
+              10,
             ), // Usa el radio de borde personalizado
           ),
           elevation: 5, // Sombra para el botón

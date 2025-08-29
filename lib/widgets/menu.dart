@@ -1,4 +1,5 @@
 import 'package:app/routes/page_route_builder.dart';
+import 'package:app/screens/attendance.dart';
 import 'package:app/screens/dashboard.dart';
 import 'package:app/screens/members.dart';
 import 'package:app/screens/services.dart';
@@ -32,9 +33,10 @@ class _MenuState extends State<Menu> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
+                SizedBox(height: 10),
                 CircleAvatar(
                   radius: 30,
-                  backgroundColor: Colors.grey,
+                  backgroundColor: Colors.red.shade200,
                   child: Icon(Icons.person, size: 40, color: Colors.white),
                 ),
                 SizedBox(height: 10),
@@ -103,6 +105,7 @@ class _MenuState extends State<Menu> {
             title: const Text('Asistencia'),
             selected: _selectedIndex == 2,
             onTap: () {
+              Navigator.push(context, createFadeRoute(Attendance()));
               setState(() {
                 _selectedIndex = 2;
               });
@@ -112,20 +115,7 @@ class _MenuState extends State<Menu> {
               // Aquí podrías navegar a la pantalla de Asistencia
             },
           ),
-          ListTile(
-            leading: const Icon(Icons.location_on_outlined, color: Colors.red),
-            title: const Text('Visitas'),
-            selected: _selectedIndex == 3,
-            onTap: () {
-              setState(() {
-                _selectedIndex = 3;
-              });
-              if (!isDesktop) {
-                Navigator.pop(context); // Cierra el drawer en móvil
-              }
-              // Aquí podrías navegar a la pantalla de Visitas
-            },
-          ),
+
           ListTile(
             leading: const Icon(
               Icons.description_outlined,

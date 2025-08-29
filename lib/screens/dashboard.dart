@@ -26,7 +26,7 @@ class MetricCard extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
       color: cardColor,
       child: Padding(
-        padding: const EdgeInsets.all(30.0),
+        padding: const EdgeInsets.all(40.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -34,25 +34,25 @@ class MetricCard extends StatelessWidget {
             Text(
               title,
               style: const TextStyle(
-                fontSize: 16,
+                fontSize: 20,
                 fontWeight: FontWeight.w600,
                 color: secondaryColor,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 15),
             Text(
               value,
               style: const TextStyle(
-                fontSize: 28,
+                fontSize: 30,
                 fontWeight: FontWeight.bold,
                 color: Colors.black87,
               ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 10),
             Text(
               percentage,
               style: TextStyle(
-                fontSize: 14,
+                fontSize: 16,
                 fontWeight: FontWeight.w500,
                 color: percentageColor,
               ),
@@ -146,22 +146,13 @@ class _DashboardState extends State<Dashboard> {
                       ? 2
                       : 1;
 
-                  final itemHeight =
-                      (constraints.maxWidth / crossAxisCount) /
-                      1.5; // Altura base de un item
-                  final numRows = (3 / crossAxisCount)
-                      .ceil(); // Número de filas (3 es el total de tarjetas)
-                  final totalGridViewHeight =
-                      (itemHeight * numRows) +
-                      ((numRows - 1) * 16); // Altura de items + espaciado
-
                   return SizedBox(
-                    height: totalGridViewHeight,
+                    height: 350,
                     child: GridView.count(
                       crossAxisCount: crossAxisCount,
                       crossAxisSpacing: 16,
                       mainAxisSpacing: 16,
-                      childAspectRatio: 2,
+                      childAspectRatio: 1.7,
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       children: [
@@ -219,7 +210,7 @@ class _DashboardState extends State<Dashboard> {
 
     return Scaffold(
       backgroundColor: backgroundColor,
-      appBar: CustomAppBar(title: ''),
+      appBar: CustomAppBar(title: 'Inicio'),
       body: isMobile
           ? mainContent
           : Row(

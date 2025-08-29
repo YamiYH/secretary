@@ -175,6 +175,7 @@ class _LoginState extends State<Login> {
                                 onPressed: () {
                                   Navigator.pushNamed(context, 'dashboard');
                                 },
+                                size: Size(400, 45),
                               ),
                               const SizedBox(height: 20),
 

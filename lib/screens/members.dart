@@ -3,13 +3,14 @@ import 'package:app/widgets/custom_appbar.dart';
 import 'package:flutter/material.dart';
 
 import '../widgets/menu.dart';
+import '../widgets/search_text_field.dart';
 
 // Definimos la clase Member para representar a cada miembro
 class Member {
   final String name;
-  final String territory;
+  final String groups;
 
-  Member({required this.name, required this.territory});
+  Member({required this.name, required this.groups});
 }
 
 class Members extends StatefulWidget {
@@ -22,16 +23,16 @@ class Members extends StatefulWidget {
 class _MembersState extends State<Members> {
   // Lista de miembros de ejemplo
   final List<Member> _allMembers = [
-    Member(name: 'Ethan Carter', territory: 'Territorio A'),
-    Member(name: 'Olivia Bennett', territory: 'Territorio B'),
-    Member(name: 'Noah Thompson', territory: 'Territorio A'),
-    Member(name: 'Sophia Ramirez', territory: 'Territorio C'),
-    Member(name: 'Liam Walker', territory: 'Territorio B'),
-    Member(name: 'Ava Rodriguez', territory: 'Territorio C'),
-    Member(name: 'Jackson Davis', territory: 'Territorio A'),
-    Member(name: 'Isabella Lewis', territory: 'Territorio B'),
-    Member(name: 'Carlos Garcia', territory: 'Territorio A'),
-    Member(name: 'Maria Fernandez', territory: 'Territorio B'),
+    Member(name: 'Ethan Carter', groups: 'Jóvenes'),
+    Member(name: 'Olivia Bennett', groups: 'Mujeres'),
+    Member(name: 'Noah Thompson', groups: 'Hombres'),
+    Member(name: 'Sophia Ramirez', groups: 'Jóvenes'),
+    Member(name: 'Liam Walker', groups: 'Hombres'),
+    Member(name: 'Ava Rodriguez', groups: 'Jóvenes'),
+    Member(name: 'Jackson Davis', groups: 'Hombres'),
+    Member(name: 'Isabella Lewis', groups: '3ra Edad'),
+    Member(name: 'Carlos Garcia', groups: 'Jóvenes'),
+    Member(name: 'Maria Fernandez', groups: '3ra Edad'),
   ];
 
   List<Member> _filteredMembers = [];
@@ -56,7 +57,7 @@ class _MembersState extends State<Members> {
     setState(() {
       _filteredMembers = _allMembers.where((member) {
         return member.name.toLowerCase().contains(query) ||
-            member.territory.toLowerCase().contains(query);
+            member.groups.toLowerCase().contains(query);
       }).toList();
     });
   }
@@ -69,55 +70,19 @@ class _MembersState extends State<Members> {
       appBar: CustomAppBar(title: 'Miembros'),
       drawer: isMobile ? Drawer(child: Menu()) : null,
       body: Row(
-        //mainAxisAlignment: MainAxisAlignment.start,
-        // crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Menu(),
           // Contenido principal de Servicios
           Expanded(
             child: Column(
               children: [
+                SizedBox(height: 20),
                 // Barra de búsqueda
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     SizedBox(width: 20),
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.1),
-                                spreadRadius: 1,
-                                blurRadius: 3,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: TextField(
-                            controller: _searchController,
-                            decoration: InputDecoration(
-                              hintText:
-                                  'Buscar', // Texto de sugerencia en español
-                              hintStyle: TextStyle(color: Colors.grey[400]),
-                              prefixIcon: Icon(
-                                Icons.search,
-                                color: Colors.grey[400],
-                              ),
-                              border: InputBorder
-                                  .none, // Elimina el borde del TextField
-                              contentPadding: const EdgeInsets.symmetric(
-                                vertical: 14.0,
-                              ),
-                            ),
-                            style: const TextStyle(color: Colors.black87),
-                          ),
-                        ),
-                      ),
-                    ),
+                    SearchTextField(controller: _searchController),
                     SizedBox(width: 10),
                     AddButton(
                       onPressed: () {},
@@ -138,15 +103,11 @@ class _MembersState extends State<Members> {
                         padding: const EdgeInsets.symmetric(vertical: 8.0),
                         child: ListTile(
                           leading: CircleAvatar(
-                            backgroundColor: Colors.blue.withOpacity(
-                              0.1,
-                            ), // Fondo azul suave
+                            backgroundColor: Colors.red.withOpacity(0.1),
                             child: Text(
-                              member.name
-                                  .substring(0, 1)
-                                  .toUpperCase(), // Inicial del nombre
+                              member.name.substring(0, 1).toUpperCase(),
                               style: TextStyle(
-                                color: Colors.blue[800],
+                                color: Colors.redAccent[200],
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -160,7 +121,7 @@ class _MembersState extends State<Members> {
                             ),
                           ),
                           subtitle: Text(
-                            member.territory,
+                            member.groups,
                             style: TextStyle(
                               fontSize: 14,
                               color: Colors.grey[600],
