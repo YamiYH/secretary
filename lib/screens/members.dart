@@ -2,6 +2,7 @@ import 'package:app/widgets/add_button.dart';
 import 'package:app/widgets/custom_appbar.dart';
 import 'package:flutter/material.dart';
 
+import '../colors.dart';
 import '../widgets/menu.dart';
 import '../widgets/search_text_field.dart';
 
@@ -66,7 +67,7 @@ class _MembersState extends State<Members> {
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 800;
     return Scaffold(
-      backgroundColor: Colors.grey[100], // Fondo gris claro
+      backgroundColor: backgroundColor,
       appBar: CustomAppBar(title: 'Miembros'),
       drawer: isMobile ? Drawer(child: Menu()) : null,
       body: Row(
@@ -82,7 +83,7 @@ class _MembersState extends State<Members> {
                   children: [
                     SizedBox(width: 20),
                     SearchTextField(controller: _searchController),
-                    SizedBox(width: 10),
+                    SizedBox(width: 20),
                     AddButton(
                       onPressed: () {},
                       text: 'Miembro',
@@ -99,9 +100,7 @@ class _MembersState extends State<Members> {
                     child: Container(
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(
-                          12,
-                        ), // Esquinas redondeadas
+                        borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.grey.withOpacity(0.1),
@@ -112,7 +111,7 @@ class _MembersState extends State<Members> {
                         ],
                       ),
                       child: ListView.builder(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        padding: const EdgeInsets.all(16.0),
                         itemCount: _filteredMembers.length,
                         itemBuilder: (context, index) {
                           final member = _filteredMembers[index];

@@ -22,7 +22,7 @@ class MetricCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      elevation: 4,
+      elevation: 5,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
       color: cardColor,
       child: Padding(
@@ -123,7 +123,6 @@ class Dashboard extends StatefulWidget {
 class _DashboardState extends State<Dashboard> {
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = MediaQuery.of(context).size.width < 800;
 
     // Contenido principal del dashboard (tarjetas y listas)
@@ -188,14 +187,15 @@ class _DashboardState extends State<Dashboard> {
                   color: Colors.black87,
                 ),
               ),
+              Divider(),
               const SizedBox(height: 16),
               const DashboardListItem(
-                icon: Icons.calendar_today_outlined,
+                icon: Icons.calendar_month_outlined,
                 title: 'Celebración',
                 subtitle: 'Domingo, 9:00 AM',
               ),
               const DashboardListItem(
-                icon: Icons.calendar_today_outlined,
+                icon: Icons.calendar_month_outlined,
                 title: 'Adoración',
                 subtitle: 'Martes, 7:00 PM',
               ),

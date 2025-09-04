@@ -6,6 +6,7 @@ import 'package:app/screens/services.dart';
 import 'package:flutter/material.dart';
 
 import '../colors.dart';
+import '../screens/networks.dart';
 
 class Menu extends StatefulWidget {
   const Menu({super.key});
@@ -80,9 +81,6 @@ class _MenuState extends State<Menu> {
               if (!isDesktop) {
                 Navigator.pop(context); // Cierra el drawer en móvil
               }
-              // Si ServicesScreen es la pantalla actual, no necesitas navegar.
-              // Si es otra pantalla de servicios, descomenta y usa tu ruta:
-              // Navigator.push(context, createFadeRoute(Services()));
             },
           ),
           ListTile(
@@ -97,7 +95,6 @@ class _MenuState extends State<Menu> {
               if (!isDesktop) {
                 Navigator.pop(context); // Cierra el drawer en móvil
               }
-              // Aquí podrías navegar a la pantalla de Miembros
             },
           ),
           ListTile(
@@ -110,9 +107,8 @@ class _MenuState extends State<Menu> {
                 _selectedIndex = 2;
               });
               if (!isDesktop) {
-                Navigator.pop(context); // Cierra el drawer en móvil
+                Navigator.pop(context);
               }
-              // Aquí podrías navegar a la pantalla de Asistencia
             },
           ),
 
@@ -121,13 +117,13 @@ class _MenuState extends State<Menu> {
             title: const Text('Redes'),
             selected: _selectedIndex == 4,
             onTap: () {
+              Navigator.push(context, createFadeRoute(Networks()));
               setState(() {
                 _selectedIndex = 4;
               });
               if (!isDesktop) {
                 Navigator.pop(context); // Cierra el drawer en móvil
               }
-              // Aquí podrías navegar a la pantalla de Ministerios
             },
           ),
           ListTile(

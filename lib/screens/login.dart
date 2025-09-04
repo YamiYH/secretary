@@ -1,3 +1,5 @@
+import 'package:app/routes/page_route_builder.dart';
+import 'package:app/screens/dashboard.dart';
 import 'package:flutter/material.dart';
 
 import '../widgets/button.dart';
@@ -173,7 +175,10 @@ class _LoginState extends State<Login> {
                               Button(
                                 text: 'Iniciar sesión',
                                 onPressed: () {
-                                  Navigator.pushNamed(context, 'dashboard');
+                                  Navigator.push(
+                                    context,
+                                    createFadeRoute(Dashboard()),
+                                  );
                                 },
                                 size: Size(400, 45),
                               ),

@@ -5,6 +5,7 @@ import 'package:app/widgets/custom_appbar.dart';
 import 'package:app/widgets/date.dart';
 import 'package:flutter/material.dart';
 
+import '../colors.dart';
 import '../widgets/menu.dart';
 
 class Attendance extends StatefulWidget {
@@ -62,7 +63,7 @@ class _AttendanceState extends State<Attendance> {
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 800;
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: backgroundColor,
       appBar: CustomAppBar(title: 'Miembros'),
       drawer: isMobile ? Drawer(child: Menu()) : null,
       body: Row(
