@@ -1,7 +1,11 @@
+import 'package:app/routes/page_route_builder.dart';
+import 'package:app/screens/create/create_service.dart';
 import 'package:app/widgets/add_button.dart';
 import 'package:app/widgets/custom_appbar.dart';
 import 'package:app/widgets/menu.dart';
 import 'package:flutter/material.dart';
+
+import '../colors.dart';
 
 class Services extends StatefulWidget {
   const Services({super.key});
@@ -27,16 +31,13 @@ class _ServicesState extends State<Services> {
     setState(() {
       _selectedIndex = index;
     });
-    // Aquí podrías manejar la navegación a diferentes pantallas
-    // Por ahora, solo actualiza el índice seleccionado.
   }
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
     final isMobile = MediaQuery.of(context).size.width < 800;
     return Scaffold(
-      backgroundColor: Colors.grey[100], // Fondo gris claro
+      backgroundColor: backgroundColor,
       appBar: CustomAppBar(title: 'Servicios'),
       drawer: isMobile ? Drawer(child: Menu()) : null,
       body: isMobile
@@ -101,7 +102,9 @@ class _ServicesState extends State<Services> {
                     ),
                   ),
                   AddButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(context, createFadeRoute(CreateService()));
+                    },
                     text: 'Servicio',
                     size: Size(150, 45),
                   ),
@@ -157,7 +160,7 @@ class _ServicesState extends State<Services> {
                                 color: Colors.blue.shade700,
                                 size: 22,
                               ),
-                              tooltip: 'Editar Receta',
+                              tooltip: 'Editar servicio',
                               onPressed: () {},
                             ),
                             IconButton(
@@ -166,7 +169,7 @@ class _ServicesState extends State<Services> {
                                 color: Colors.red.shade700,
                                 size: 22,
                               ),
-                              tooltip: 'Eliminar Receta',
+                              tooltip: 'Eliminar servicio',
                               onPressed: () {},
                             ),
                           ],

@@ -2,10 +2,13 @@ import 'package:app/routes/page_route_builder.dart';
 import 'package:app/screens/attendance.dart';
 import 'package:app/screens/dashboard.dart';
 import 'package:app/screens/members.dart';
+import 'package:app/screens/ministries.dart';
 import 'package:app/screens/services.dart';
 import 'package:flutter/material.dart';
 
 import '../colors.dart';
+import '../screens/networks.dart';
+import '../screens/reports.dart';
 
 class Menu extends StatefulWidget {
   const Menu({super.key});
@@ -20,11 +23,11 @@ class _MenuState extends State<Menu> {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final isDesktop = MediaQuery.of(context).size.width > 800;
+    final isMobile = MediaQuery.of(context).size.width < 800;
 
     return Container(
       // Se ajusta el ancho del Drawer para que no ocupe toda la pantalla en desktop
-      width: isDesktop ? screenWidth * 0.2 : screenWidth * 0.75,
+      width: isMobile ? screenWidth * 0.75 : screenWidth * 0.2,
       color: Colors.white,
       child: ListView(
         padding: EdgeInsets.symmetric(horizontal: 10),
@@ -60,7 +63,7 @@ class _MenuState extends State<Menu> {
               setState(() {
                 _selectedIndex = 0;
               });
-              if (!isDesktop) {
+              if (isMobile) {
                 Navigator.pop(context);
               }
             },
@@ -77,16 +80,13 @@ class _MenuState extends State<Menu> {
               setState(() {
                 _selectedIndex = 1;
               });
-              if (!isDesktop) {
+              if (isMobile) {
                 Navigator.pop(context); // Cierra el drawer en móvil
               }
-              // Si ServicesScreen es la pantalla actual, no necesitas navegar.
-              // Si es otra pantalla de servicios, descomenta y usa tu ruta:
-              // Navigator.push(context, createFadeRoute(Services()));
             },
           ),
           ListTile(
-            leading: const Icon(Icons.people_alt_outlined, color: primaryColor),
+            leading: Icon(Icons.people_alt_outlined, color: primaryColor),
             title: const Text('Miembros'),
             selected: _selectedIndex == 0,
             onTap: () {
@@ -94,10 +94,9 @@ class _MenuState extends State<Menu> {
               setState(() {
                 _selectedIndex = 0;
               });
-              if (!isDesktop) {
+              if (isMobile) {
                 Navigator.pop(context); // Cierra el drawer en móvil
               }
-              // Aquí podrías navegar a la pantalla de Miembros
             },
           ),
           ListTile(
@@ -109,10 +108,9 @@ class _MenuState extends State<Menu> {
               setState(() {
                 _selectedIndex = 2;
               });
-              if (!isDesktop) {
-                Navigator.pop(context); // Cierra el drawer en móvil
+              if (isMobile) {
+                Navigator.pop(context);
               }
-              // Aquí podrías navegar a la pantalla de Asistencia
             },
           ),
 
@@ -121,13 +119,13 @@ class _MenuState extends State<Menu> {
             title: const Text('Redes'),
             selected: _selectedIndex == 4,
             onTap: () {
+              Navigator.push(context, createFadeRoute(Networks()));
               setState(() {
                 _selectedIndex = 4;
               });
-              if (!isDesktop) {
+              if (isMobile) {
                 Navigator.pop(context); // Cierra el drawer en móvil
               }
-              // Aquí podrías navegar a la pantalla de Ministerios
             },
           ),
           ListTile(
@@ -138,13 +136,13 @@ class _MenuState extends State<Menu> {
             title: const Text('Ministerios'),
             selected: _selectedIndex == 4,
             onTap: () {
+              Navigator.push(context, createFadeRoute(Ministries()));
               setState(() {
                 _selectedIndex = 4;
               });
-              if (!isDesktop) {
+              if (isMobile) {
                 Navigator.pop(context); // Cierra el drawer en móvil
               }
-              // Aquí podrías navegar a la pantalla de Ministerios
             },
           ),
           ListTile(
@@ -156,10 +154,11 @@ class _MenuState extends State<Menu> {
             selected:
                 _selectedIndex == 5, // Cambiado a 5 para evitar duplicidad
             onTap: () {
+              Navigator.push(context, createFadeRoute(Reports()));
               setState(() {
                 _selectedIndex = 5; // Cambiado a 5
               });
-              if (!isDesktop) {
+              if (isMobile) {
                 Navigator.pop(context); // Cierra el drawer en móvil
               }
               // Aquí podrías navegar a la pantalla de Reportes

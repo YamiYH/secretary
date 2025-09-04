@@ -1,3 +1,5 @@
+import 'package:app/routes/page_route_builder.dart';
+import 'package:app/screens/login.dart';
 import 'package:flutter/material.dart';
 
 class Home extends StatefulWidget {
@@ -53,7 +55,7 @@ class _HomeState extends State<Home> {
                   ),
                 ),
                 onPressed: () {
-                  Navigator.pushNamed(context, 'login');
+                  Navigator.push(context, createFadeRoute(Login()));
                 },
                 child: Row(
                   mainAxisSize: MainAxisSize.min,

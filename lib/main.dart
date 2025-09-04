@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'routes/routes.dart';
 
@@ -16,6 +17,19 @@ class MyApp extends StatelessWidget {
       initialRoute: AppRoutes.home,
       routes: AppRoutes.getRoutes(),
       debugShowCheckedModeBanner: false,
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('en', ''), // Inglés
+        Locale('es', ''), // Español
+      ],
+      locale: const Locale(
+        'es',
+        '',
+      ), // Establece el idioma por defecto a español
     );
   }
 }
