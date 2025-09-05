@@ -1,0 +1,65 @@
+import 'package:app/widgets/button.dart';
+import 'package:app/widgets/custom_appbar.dart';
+import 'package:flutter/material.dart';
+
+class CreateNetwork extends StatelessWidget {
+  const CreateNetwork({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: CustomAppBar(title: 'Crear nueva red'),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(70.0),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(
+              maxWidth: 700,
+            ), // Limita el ancho en pantallas grandes
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Detalles de la Red',
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 40),
+                TextFormField(
+                  decoration: InputDecoration(
+                    labelText: 'Nombre de la Red',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 15),
+                TextFormField(
+                  decoration: InputDecoration(
+                    labelText: 'Rango de edades',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 40),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Button(
+                      size: Size(130, 45),
+                      text: 'Guardar',
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
