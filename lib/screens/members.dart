@@ -1,3 +1,5 @@
+import 'package:app/routes/page_route_builder.dart';
+import 'package:app/screens/create/create_member.dart';
 import 'package:app/widgets/add_button.dart';
 import 'package:app/widgets/custom_appbar.dart';
 import 'package:flutter/material.dart';
@@ -85,7 +87,12 @@ class _MembersState extends State<Members> {
                     SearchTextField(controller: _searchController),
                     SizedBox(width: 20),
                     AddButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          createFadeRoute(CreateMember()),
+                        );
+                      },
                       text: 'Miembro',
                       size: Size(170, 45),
                     ),

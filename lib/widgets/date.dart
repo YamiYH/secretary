@@ -31,7 +31,7 @@ class _DateWidgetState extends State<DateWidget> {
                 borderRadius: BorderRadius.circular(10),
               ),
               backgroundColor: Colors.white,
-              side: BorderSide(color: Colors.red[900]!, width: 1),
+              side: BorderSide(color: Colors.green, width: 2),
               padding: EdgeInsets.symmetric(
                 horizontal: isMobile ? 10 : 20,
                 vertical: isMobile ? 8 : 12,
@@ -46,8 +46,8 @@ class _DateWidgetState extends State<DateWidget> {
                 builder: (BuildContext context, Widget? child) {
                   return Theme(
                     data: ThemeData(
-                      primaryColor: Colors.red[900],
-                      colorScheme: ColorScheme.light(primary: Colors.red[400]!),
+                      primaryColor: Colors.green,
+                      colorScheme: ColorScheme.light(primary: Colors.blue),
                       textTheme: TextTheme(
                         headlineMedium: TextStyle(fontSize: 16),
                         bodyLarge: TextStyle(fontSize: 14),
@@ -65,14 +65,14 @@ class _DateWidgetState extends State<DateWidget> {
                 widget.onDateSelected(pickedDate);
               }
             },
-            icon: Icon(Icons.calendar_today, color: Colors.red[900]),
+            icon: Icon(Icons.calendar_today, color: Colors.green),
             label: Text(
               widget.selectedDate == null
                   ? 'Seleccionar Fecha'
                   : '${widget.selectedDate!.day}/${widget.selectedDate!.month}/${widget.selectedDate!.year}',
               style: TextStyle(
                 fontSize: 16,
-                color: Colors.red[900],
+                color: Colors.green,
                 fontWeight: FontWeight.bold,
               ),
             ),

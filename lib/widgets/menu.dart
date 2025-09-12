@@ -1,4 +1,5 @@
 import 'package:app/routes/page_route_builder.dart';
+import 'package:app/screens/admin.dart';
 import 'package:app/screens/attendance.dart';
 import 'package:app/screens/dashboard.dart';
 import 'package:app/screens/members.dart';
@@ -56,7 +57,7 @@ class _MenuState extends State<Menu> {
           ),
           ListTile(
             leading: const Icon(Icons.home, color: Colors.teal),
-            title: const Text('Inicio'),
+            title: const Text('Inicio', style: TextStyle(color: Colors.black)),
             selected: _selectedIndex == 0,
             onTap: () {
               Navigator.push(context, createFadeRoute(Dashboard()));
@@ -87,12 +88,15 @@ class _MenuState extends State<Menu> {
           ),
           ListTile(
             leading: Icon(Icons.people_alt_outlined, color: primaryColor),
-            title: const Text('Miembros'),
-            selected: _selectedIndex == 0,
+            title: const Text(
+              'Miembros',
+              style: TextStyle(color: Colors.black),
+            ),
+            selected: _selectedIndex == 2,
             onTap: () {
               Navigator.push(context, createFadeRoute(Members()));
               setState(() {
-                _selectedIndex = 0;
+                _selectedIndex = 2;
               });
               if (isMobile) {
                 Navigator.pop(context); // Cierra el drawer en móvil
@@ -102,11 +106,11 @@ class _MenuState extends State<Menu> {
           ListTile(
             leading: const Icon(Icons.how_to_reg_outlined, color: Colors.cyan),
             title: const Text('Asistencia'),
-            selected: _selectedIndex == 2,
+            selected: _selectedIndex == 3,
             onTap: () {
               Navigator.push(context, createFadeRoute(Attendance()));
               setState(() {
-                _selectedIndex = 2;
+                _selectedIndex = 3;
               });
               if (isMobile) {
                 Navigator.pop(context);
@@ -134,11 +138,11 @@ class _MenuState extends State<Menu> {
               color: Colors.indigo,
             ),
             title: const Text('Ministerios'),
-            selected: _selectedIndex == 4,
+            selected: _selectedIndex == 5,
             onTap: () {
               Navigator.push(context, createFadeRoute(Ministries()));
               setState(() {
-                _selectedIndex = 4;
+                _selectedIndex = 5;
               });
               if (isMobile) {
                 Navigator.pop(context); // Cierra el drawer en móvil
@@ -152,16 +156,30 @@ class _MenuState extends State<Menu> {
             ),
             title: const Text('Reportes'),
             selected:
-                _selectedIndex == 5, // Cambiado a 5 para evitar duplicidad
+                _selectedIndex == 6, // Cambiado a 5 para evitar duplicidad
             onTap: () {
               Navigator.push(context, createFadeRoute(Reports()));
               setState(() {
-                _selectedIndex = 5; // Cambiado a 5
+                _selectedIndex = 6; // Cambiado a 5
               });
               if (isMobile) {
                 Navigator.pop(context); // Cierra el drawer en móvil
               }
               // Aquí podrías navegar a la pantalla de Reportes
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.settings),
+            title: const Text('Administración'),
+            selected: _selectedIndex == 7,
+            onTap: () {
+              Navigator.push(context, createFadeRoute(Admin()));
+              setState(() {
+                _selectedIndex = 7;
+              });
+              if (isMobile) {
+                Navigator.pop(context); // Cierra el drawer en móvil
+              }
             },
           ),
         ],

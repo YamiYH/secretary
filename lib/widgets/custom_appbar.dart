@@ -1,3 +1,4 @@
+import 'package:app/screens/dashboard.dart';
 import 'package:app/screens/home.dart';
 import 'package:flutter/material.dart';
 
@@ -42,7 +43,9 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
           SizedBox(width: isMobile ? 5 : 20),
           IconButton(
             tooltip: 'Página principal',
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(context, createFadeRoute(Dashboard()));
+            },
             icon: Icon(Icons.home),
           ),
           IconButton(

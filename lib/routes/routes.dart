@@ -1,4 +1,6 @@
+import 'package:app/screens/admin.dart';
 import 'package:app/screens/attendance.dart';
+import 'package:app/screens/create/create_member.dart';
 import 'package:app/screens/create/create_network.dart';
 import 'package:app/screens/create/create_service.dart';
 import 'package:app/screens/dashboard.dart';
@@ -13,6 +15,7 @@ import '../screens/create/create_ministry.dart';
 import '../screens/home.dart';
 import '../screens/login.dart';
 import '../screens/networks.dart';
+import '../screens/users.dart';
 
 class AppRoutes {
   static const String home = '/';
@@ -28,6 +31,9 @@ class AppRoutes {
   static const String create_ministry = 'create_ministry';
   static const String reports = 'reports';
   static const String create_service = 'create_service';
+  static const String create_member = 'create_member';
+  static const String admin = 'admin';
+  static const String users = 'users';
 
   static Map<String, WidgetBuilder> getRoutes() {
     return <String, WidgetBuilder>{
@@ -44,6 +50,9 @@ class AppRoutes {
       create_ministry: (context) => CreateMinistry(),
       reports: (context) => Reports(),
       create_service: (context) => CreateService(),
+      create_member: (context) => CreateMember(),
+      admin: (context) => Admin(),
+      users: (context) => Users(),
     };
   }
 }
