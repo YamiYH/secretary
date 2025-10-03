@@ -2,17 +2,11 @@ import 'package:flutter/material.dart';
 
 class AddButton extends StatefulWidget {
   final VoidCallback onPressed;
-  final String text;
-  final Icon? icon;
-  final Size size;
 
-  const AddButton({
-    Key? key,
-    required this.onPressed,
-    required this.text,
-    this.icon,
-    required this.size,
-  }) : super(key: key);
+  final Icon? icon;
+
+  const AddButton({Key? key, required this.onPressed, this.icon})
+    : super(key: key);
 
   @override
   State<AddButton> createState() => _ButtonState();
@@ -21,13 +15,13 @@ class AddButton extends StatefulWidget {
 class _ButtonState extends State<AddButton> {
   @override
   Widget build(BuildContext context) {
-    bool isMobile = MediaQuery.of(context).size.width < 600;
+    bool isMobile = MediaQuery.of(context).size.width < 700;
     return ElevatedButton(
       onPressed: widget.onPressed,
       style: ElevatedButton.styleFrom(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         backgroundColor: Colors.green,
-        fixedSize: widget.size,
+        fixedSize: Size(120, isMobile ? 50 : 45),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -35,7 +29,7 @@ class _ButtonState extends State<AddButton> {
           Icon(size: isMobile ? 18 : 20, Icons.add, color: Colors.white),
           SizedBox(width: 2),
           Text(
-            widget.text,
+            'Añadir',
             style: TextStyle(
               color: Colors.white,
               fontSize: isMobile ? 15 : 18,

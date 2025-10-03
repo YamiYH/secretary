@@ -19,16 +19,16 @@ class Menu extends StatefulWidget {
 }
 
 class _MenuState extends State<Menu> {
-  int _selectedIndex = 0; // Índice para el elemento seleccionado del menú
+  int _selectedIndex = 0;
 
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final isMobile = MediaQuery.of(context).size.width < 800;
+    final isMobile = screenWidth < 700;
+    final isInsideDrawer = Scaffold.of(context).hasDrawer && isMobile;
 
     return Container(
-      // Se ajusta el ancho del Drawer para que no ocupe toda la pantalla en desktop
-      width: isMobile ? screenWidth * 0.75 : screenWidth * 0.2,
+      width: isMobile ? screenWidth * 0.5 : screenWidth * 0.2,
       color: Colors.white,
       child: ListView(
         padding: EdgeInsets.symmetric(horizontal: 10),
@@ -60,13 +60,11 @@ class _MenuState extends State<Menu> {
             title: const Text('Inicio', style: TextStyle(color: Colors.black)),
             selected: _selectedIndex == 0,
             onTap: () {
+              Navigator.pop(context);
               Navigator.push(context, createFadeRoute(Dashboard()));
               setState(() {
                 _selectedIndex = 0;
               });
-              if (isMobile) {
-                Navigator.pop(context);
-              }
             },
           ),
           ListTile(
@@ -77,13 +75,11 @@ class _MenuState extends State<Menu> {
             title: const Text('Servicios'),
             selected: _selectedIndex == 1,
             onTap: () {
+              Navigator.pop(context);
               Navigator.push(context, createFadeRoute(Services()));
               setState(() {
                 _selectedIndex = 1;
               });
-              if (isMobile) {
-                Navigator.pop(context); // Cierra el drawer en móvil
-              }
             },
           ),
           ListTile(
@@ -94,13 +90,11 @@ class _MenuState extends State<Menu> {
             ),
             selected: _selectedIndex == 2,
             onTap: () {
+              Navigator.pop(context);
               Navigator.push(context, createFadeRoute(Members()));
               setState(() {
                 _selectedIndex = 2;
               });
-              if (isMobile) {
-                Navigator.pop(context); // Cierra el drawer en móvil
-              }
             },
           ),
           ListTile(
@@ -108,13 +102,11 @@ class _MenuState extends State<Menu> {
             title: const Text('Asistencia'),
             selected: _selectedIndex == 3,
             onTap: () {
+              Navigator.pop(context);
               Navigator.push(context, createFadeRoute(Attendance()));
               setState(() {
                 _selectedIndex = 3;
               });
-              if (isMobile) {
-                Navigator.pop(context);
-              }
             },
           ),
 
@@ -123,13 +115,11 @@ class _MenuState extends State<Menu> {
             title: const Text('Redes'),
             selected: _selectedIndex == 4,
             onTap: () {
+              Navigator.pop(context);
               Navigator.push(context, createFadeRoute(Networks()));
               setState(() {
                 _selectedIndex = 4;
               });
-              if (isMobile) {
-                Navigator.pop(context); // Cierra el drawer en móvil
-              }
             },
           ),
           ListTile(
@@ -140,13 +130,11 @@ class _MenuState extends State<Menu> {
             title: const Text('Ministerios'),
             selected: _selectedIndex == 5,
             onTap: () {
+              Navigator.pop(context);
               Navigator.push(context, createFadeRoute(Ministries()));
               setState(() {
                 _selectedIndex = 5;
               });
-              if (isMobile) {
-                Navigator.pop(context); // Cierra el drawer en móvil
-              }
             },
           ),
           ListTile(
@@ -158,14 +146,11 @@ class _MenuState extends State<Menu> {
             selected:
                 _selectedIndex == 6, // Cambiado a 5 para evitar duplicidad
             onTap: () {
+              Navigator.pop(context);
               Navigator.push(context, createFadeRoute(Reports()));
               setState(() {
                 _selectedIndex = 6; // Cambiado a 5
               });
-              if (isMobile) {
-                Navigator.pop(context); // Cierra el drawer en móvil
-              }
-              // Aquí podrías navegar a la pantalla de Reportes
             },
           ),
           ListTile(
@@ -173,13 +158,11 @@ class _MenuState extends State<Menu> {
             title: const Text('Administración'),
             selected: _selectedIndex == 7,
             onTap: () {
+              Navigator.pop(context);
               Navigator.push(context, createFadeRoute(Admin()));
               setState(() {
                 _selectedIndex = 7;
               });
-              if (isMobile) {
-                Navigator.pop(context); // Cierra el drawer en móvil
-              }
             },
           ),
         ],

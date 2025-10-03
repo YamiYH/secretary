@@ -45,7 +45,9 @@ class _ServicesState extends State<Services> {
               // Contenido principal de Servicios para móvil
               child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16.0),
-                child: _buildServicesContent(), // Contenido de servicios
+                child: _buildServicesContent(
+                  isMobile,
+                ), // Contenido de servicios
               ),
             )
           : Row(
@@ -58,7 +60,7 @@ class _ServicesState extends State<Services> {
                   child: SingleChildScrollView(
                     child: Padding(
                       padding: const EdgeInsets.all(25.0),
-                      child: _buildServicesContent(),
+                      child: _buildServicesContent(isMobile),
                     ),
                   ),
                 ),
@@ -67,12 +69,12 @@ class _ServicesState extends State<Services> {
     );
   }
 
-  Column _buildServicesContent() {
+  Column _buildServicesContent(isMobile) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Sección de Próximos Servicios
+        SizedBox(height: 20),
         Container(
           decoration: BoxDecoration(
             color: Colors.white,
@@ -93,9 +95,9 @@ class _ServicesState extends State<Services> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    'Próximos Servicios',
-                    style: TextStyle(
+                  Text(
+                    isMobile ? 'Servicios' : 'Próximos Servicios',
+                    style: const TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
                       color: Colors.black87,
@@ -105,8 +107,6 @@ class _ServicesState extends State<Services> {
                     onPressed: () {
                       Navigator.push(context, createFadeRoute(CreateService()));
                     },
-                    text: 'Servicio',
-                    size: Size(150, 45),
                   ),
                 ],
               ),
@@ -131,26 +131,29 @@ class _ServicesState extends State<Services> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              service.title,
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.black87,
+                        SizedBox(
+                          width: isMobile ? 200 : 400,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                service.title,
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.black87,
+                                ),
                               ),
-                            ),
-                            Text(
-                              service.date,
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey[600],
+                              Text(
+                                service.date,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey[600],
+                                ),
                               ),
-                            ),
-                            SizedBox(height: 20),
-                          ],
+                              SizedBox(height: 20),
+                            ],
+                          ),
                         ),
                         Row(
                           children: [

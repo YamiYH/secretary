@@ -34,102 +34,99 @@ class _CreateServiceState extends State<CreateService> {
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(32.0),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+              child: isMobile
+                  ? Column(
                       children: [
-                        Center(
-                          child: const Text(
-                            'Calendario',
-                            style: TextStyle(
-                              fontSize: 28,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        Card(
-                          color: Colors.white,
-                          elevation: 5,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(15.0),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(20.0),
-                            child: TableCalendar(
-                              locale: 'es_ES',
-                              firstDay: DateTime.now(),
-                              lastDay: DateTime.utc(2030, 12, 31),
-                              focusedDay: _focusedDay,
-                              selectedDayPredicate: (day) {
-                                return isSameDay(_selectedDay, day);
-                              },
-                              onDaySelected: (selectedDay, focusedDay) {
-                                setState(() {
-                                  _selectedDay = selectedDay;
-                                  _focusedDay = focusedDay;
-                                });
-                                _showServiceForm(context, selectedDay);
-                              },
-                              calendarFormat: CalendarFormat.month,
-                              headerStyle: const HeaderStyle(
-                                formatButtonVisible: false,
-                                titleCentered: true,
-                              ),
-                              calendarStyle: CalendarStyle(
-                                selectedDecoration: BoxDecoration(
-                                  color: primaryColor,
-                                  shape: BoxShape.circle,
-                                ),
-                                todayDecoration: BoxDecoration(
-                                  color: primaryColor.withOpacity(0.5),
-                                  shape: BoxShape.circle,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
+                        _buildCalendar(isMobile, context),
+                        const SizedBox(width: 50, height: 32),
+                        _buildServices(),
+                      ],
+                    )
+                  : Row(
+                      children: [
+                        Expanded(child: _buildCalendar(isMobile, context)),
+                        const SizedBox(width: 50, height: 32),
+                        Expanded(child: _buildServices()),
                       ],
                     ),
-                  ),
-                  const SizedBox(width: 50, height: 32),
-                  Expanded(
-                    child: Column(
-                      children: [
-                        const Text(
-                          'Hoy',
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        _buildServiceListItem(
-                          Icons.church,
-                          'Celebración',
-                          '9:00 AM',
-                        ),
-                        _buildServiceListItem(
-                          Icons.people,
-                          'Adoración',
-                          '6:00 PM',
-                        ),
-                        _buildServiceListItem(
-                          Icons.menu_book,
-                          'Células',
-                          '7:00 PM',
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Column _buildServices() {
+    return Column(
+      children: [
+        const Text(
+          'Hoy',
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 16),
+        _buildServiceListItem(Icons.church, 'Celebración', '9:00 AM'),
+        _buildServiceListItem(Icons.people, 'Adoración', '6:00 PM'),
+        _buildServiceListItem(Icons.menu_book, 'Células', '7:00 PM'),
+      ],
+    );
+  }
+
+  Column _buildCalendar(bool isMobile, BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Center(
+          child: Text(
+            'Calendario',
+            style: TextStyle(
+              fontSize: isMobile ? 24 : 28,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        const SizedBox(height: 24),
+        Card(
+          color: Colors.white,
+          elevation: 5,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15.0),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: TableCalendar(
+              locale: 'es_ES',
+              firstDay: DateTime.now(),
+              lastDay: DateTime.utc(2030, 12, 31),
+              focusedDay: _focusedDay,
+              selectedDayPredicate: (day) {
+                return isSameDay(_selectedDay, day);
+              },
+              onDaySelected: (selectedDay, focusedDay) {
+                setState(() {
+                  _selectedDay = selectedDay;
+                  _focusedDay = focusedDay;
+                });
+                _showServiceForm(context, selectedDay);
+              },
+              calendarFormat: CalendarFormat.month,
+              headerStyle: const HeaderStyle(
+                formatButtonVisible: false,
+                titleCentered: true,
+              ),
+              calendarStyle: CalendarStyle(
+                selectedDecoration: BoxDecoration(
+                  color: primaryColor,
+                  shape: BoxShape.circle,
+                ),
+                todayDecoration: BoxDecoration(
+                  color: primaryColor.withOpacity(0.5),
+                  shape: BoxShape.circle,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 

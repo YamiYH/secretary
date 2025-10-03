@@ -7,22 +7,29 @@ class CreateMinistry extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    bool isMobile = MediaQuery.of(context).size.width < 700;
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: CustomAppBar(title: 'Crear nuevo ministerio'),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(70.0),
+        padding: EdgeInsets.all(isMobile ? 50 : 70),
         child: Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(
-              maxWidth: 700,
+            constraints: BoxConstraints(
+              maxWidth:
+                  MediaQuery.of(context).size.width * (isMobile ? 0.9 : 0.5),
             ), // Limita el ancho en pantallas grandes
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Detalles del Ministerio',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                Center(
+                  child: Text(
+                    'Detalles del Ministerio',
+                    style: TextStyle(
+                      fontSize: isMobile ? 22 : 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 40),
                 TextFormField(

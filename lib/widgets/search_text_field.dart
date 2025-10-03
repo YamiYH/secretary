@@ -19,8 +19,12 @@ class SearchTextField extends StatefulWidget {
 class _SearchTextFieldState extends State<SearchTextField> {
   @override
   Widget build(BuildContext context) {
+    bool isMobile = MediaQuery.of(context).size.width < 700;
     return SizedBox(
-      width: MediaQuery.of(context).size.width * 0.2,
+      height: isMobile ? 50 : 45,
+      width: isMobile
+          ? MediaQuery.of(context).size.width * 0.5
+          : MediaQuery.of(context).size.width * 0.2,
       child: Padding(
         padding: const EdgeInsets.all(0),
         child: Container(

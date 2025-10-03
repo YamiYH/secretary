@@ -15,7 +15,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     //final profileProvider = Provider.of<ProfileProvider>(context);
     // final user = profileProvider.userProfile;
-    bool isMobile = MediaQuery.of(context).size.width < 600;
+    bool isMobile = MediaQuery.of(context).size.width < 700;
     final bool canGoBack = Navigator.canPop(context);
 
     return AppBar(

@@ -63,7 +63,7 @@ class _AttendanceState extends State<Attendance> {
     final isMobile = MediaQuery.of(context).size.width < 800;
     return Scaffold(
       backgroundColor: backgroundColor,
-      appBar: CustomAppBar(title: 'Miembros'),
+      appBar: CustomAppBar(title: 'Asistencia'),
       drawer: isMobile ? Drawer(child: Menu()) : null,
       body: Row(
         children: [
@@ -73,50 +73,45 @@ class _AttendanceState extends State<Attendance> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 SizedBox(height: 20),
-                // Barra de búsqueda
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Wrap(
-                    crossAxisAlignment: WrapCrossAlignment.end,
-                    children: [
-                      //SizedBox(width: 20),
-                      DateWidget(
-                        selectedDate: DateTime.now(),
-                        onDateSelected: (date) {
-                          setState(() {});
-                        },
-                      ),
-
-                      SizedBox(width: 40),
-                      Flexible(
-                        child: Counter(
-                          label: 'Visitas',
-                          onCountChanged: (count) {
-                            setState(() {
-                              _guestCount = count;
-                            });
-                          },
+                  child: isMobile
+                      ? Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                _buildDateWidget(),
+                                SizedBox(width: 20),
+                                _buildButton(),
+                              ],
+                            ),
+                            SizedBox(height: 20),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                _buildVisitas(),
+                                SizedBox(width: 50),
+                                _buildPastorales(),
+                              ],
+                            ),
+                          ],
+                        )
+                      : Wrap(
+                          crossAxisAlignment: WrapCrossAlignment.end,
+                          children: [
+                            //SizedBox(width: 20),
+                            _buildDateWidget(),
+                            SizedBox(width: 40),
+                            _buildVisitas(),
+                            SizedBox(width: 40),
+                            _buildPastorales(),
+                            SizedBox(width: 40),
+                            _buildButton(),
+                          ],
                         ),
-                      ),
-                      SizedBox(width: 40),
-                      Flexible(
-                        child: Counter(
-                          label: 'Visitas Pastorales',
-                          onCountChanged: (count) {
-                            setState(() {
-                              _pastoralVisitCount = count;
-                            });
-                          },
-                        ),
-                      ),
-                      SizedBox(width: 40),
-                      Button(
-                        text: 'Guardar',
-                        onPressed: () {},
-                        size: Size(160, 45),
-                      ),
-                    ],
-                  ),
                 ),
                 SizedBox(height: 30),
                 // Lista de miembros
@@ -185,6 +180,45 @@ class _AttendanceState extends State<Attendance> {
           ),
         ],
       ),
+    );
+  }
+
+  Flexible _buildPastorales() {
+    return Flexible(
+      child: Counter(
+        label: 'Visitas Pastorales',
+        onCountChanged: (count) {
+          setState(() {
+            _pastoralVisitCount = count;
+          });
+        },
+      ),
+    );
+  }
+
+  Button _buildButton() {
+    return Button(text: 'Guardar', onPressed: () {}, size: Size(160, 45));
+  }
+
+  Flexible _buildVisitas() {
+    return Flexible(
+      child: Counter(
+        label: 'Visitas',
+        onCountChanged: (count) {
+          setState(() {
+            _guestCount = count;
+          });
+        },
+      ),
+    );
+  }
+
+  DateWidget _buildDateWidget() {
+    return DateWidget(
+      selectedDate: DateTime.now(),
+      onDateSelected: (date) {
+        setState(() {});
+      },
     );
   }
 }

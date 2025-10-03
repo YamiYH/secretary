@@ -7,11 +7,12 @@ class CreateNetwork extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    bool isMobile = MediaQuery.of(context).size.width < 700;
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: CustomAppBar(title: 'Crear nueva red'),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(70.0),
+        padding: EdgeInsets.all(isMobile ? 50 : 70),
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(
@@ -20,9 +21,11 @@ class CreateNetwork extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Detalles de la Red',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                Center(
+                  child: const Text(
+                    'Detalles de la Red',
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  ),
                 ),
                 const SizedBox(height: 40),
                 TextFormField(

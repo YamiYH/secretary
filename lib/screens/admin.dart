@@ -3,7 +3,6 @@
 import 'package:app/colors.dart';
 import 'package:app/routes/page_route_builder.dart';
 import 'package:app/screens/roles.dart';
-import 'package:app/screens/settings.dart';
 import 'package:app/screens/users.dart';
 import 'package:app/widgets/custom_appbar.dart';
 import 'package:app/widgets/menu.dart';
@@ -20,42 +19,25 @@ class Admin extends StatelessWidget {
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: CustomAppBar(title: 'Administración'),
-      body: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Menu(),
-          Expanded(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                return isMobile
-                    ? _buildMobileLayout(context)
-                    : _buildWebLayout(context, isMobile);
-              },
+      body: isMobile
+          ? _buildLayout(context, isMobile)
+          : Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Menu(),
+                Expanded(
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      return _buildLayout(context, isMobile);
+                    },
+                  ),
+                ),
+              ],
             ),
-          ),
-        ],
-      ),
     );
   }
 
-  // --- Layout para Móvil (una columna) ---
-  Widget _buildMobileLayout(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _buildCard(context, Icons.people, 'Usuarios'),
-          _buildCard(context, Icons.shield, 'Roles'),
-          _buildCard(context, Icons.history, 'Logs'),
-          _buildCard(context, Icons.settings, 'Configuración'),
-        ],
-      ),
-    );
-  }
-
-  // --- Layout para Web (tres columnas) ---
-  Widget _buildWebLayout(BuildContext context, bool isMobile) {
+  Widget _buildLayout(BuildContext context, bool isMobile) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(32.0),
       child: GridView.count(
@@ -69,7 +51,6 @@ class Admin extends StatelessWidget {
           _buildCard(context, Icons.people, 'Usuarios'),
           _buildCard(context, Icons.shield, 'Roles'),
           _buildCard(context, Icons.history, 'Logs'),
-          _buildCard(context, Icons.settings, 'Configuración'),
         ],
       ),
     );
@@ -94,9 +75,6 @@ class Admin extends StatelessWidget {
             case 'Logs':
               Navigator.push(context, createFadeRoute(const Logs()));
               break;
-            case 'Configuración':
-              Navigator.push(context, createFadeRoute(const Settings()));
-              break;
           }
         },
         borderRadius: BorderRadius.circular(15.0),
@@ -105,7 +83,7 @@ class Admin extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 50.0, color: Colors.blue),
+              Icon(icon, size: 50.0, color: Colors.deepOrangeAccent),
               const SizedBox(height: 16.0),
               Text(
                 title,

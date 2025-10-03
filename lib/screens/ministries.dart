@@ -34,7 +34,7 @@ class Ministries extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: backgroundColor,
-      appBar: CustomAppBar(title: 'Redes'),
+      appBar: CustomAppBar(title: 'Ministerios'),
       drawer: isMobile ? Drawer(child: Menu()) : null,
       body: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -49,10 +49,10 @@ class Ministries extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
+                      Text(
                         'Ministerios',
                         style: TextStyle(
-                          fontSize: 28,
+                          fontSize: isMobile ? 24 : 28,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -63,8 +63,6 @@ class Ministries extends StatelessWidget {
                             createFadeRoute(CreateMinistry()),
                           );
                         },
-                        text: 'Ministerio',
-                        size: Size(160, 45),
                       ),
                     ],
                   ),

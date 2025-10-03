@@ -17,7 +17,7 @@ class DateWidget extends StatefulWidget {
 class _DateWidgetState extends State<DateWidget> {
   @override
   Widget build(BuildContext context) {
-    bool isMobile = MediaQuery.of(context).size.width < 600;
+    bool isMobile = MediaQuery.of(context).size.width < 700;
     return Container(
       width: isMobile ? MediaQuery.of(context).size.width * 0.40 : null,
       child: Column(

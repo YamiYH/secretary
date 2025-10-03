@@ -30,7 +30,7 @@ class CreateMember extends StatelessWidget {
   Widget _buildMobileLayout(BuildContext context) {
     return SingleChildScrollView(
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(30.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [

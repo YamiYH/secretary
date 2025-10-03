@@ -114,13 +114,6 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
 
   @override
   Widget build(BuildContext context) {
-    // --- Lógica de tamaño ELIMINADA de aquí ---
-    // bool isMobile = MediaQuery.of(context).size.width < 600;
-    // double defaultwidth = isMobile ? 180 : 180;
-    // double defaultheigth = isMobile ? 49 : 50;
-    // double width1 = widget.w ?? defaultwidth;
-    // double heigth1 = widget.h ?? defaultheigth;
-
     Widget? finalSuffixIcon = widget.suffixIcon;
     if (widget.obscureText) {
       finalSuffixIcon = IconButton(

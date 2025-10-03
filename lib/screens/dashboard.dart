@@ -123,12 +123,12 @@ class Dashboard extends StatefulWidget {
 class _DashboardState extends State<Dashboard> {
   @override
   Widget build(BuildContext context) {
-    final isMobile = MediaQuery.of(context).size.width < 800;
+    final isMobile = MediaQuery.of(context).size.width < 700;
 
     // Contenido principal del dashboard (tarjetas y listas)
     final Widget mainContent = MediaQuery.removePadding(
       context: context,
-      removeTop: true, // Esto elimina el padding superior de la SafeArea
+      removeTop: isMobile ? false : true,
       child: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(30, 0, 30, 0),
@@ -139,67 +139,73 @@ class _DashboardState extends State<Dashboard> {
               // Sección de Métricas (tarjetas en un GridView para responsividad)
               LayoutBuilder(
                 builder: (context, constraints) {
-                  final crossAxisCount = constraints.maxWidth > 800
+                  final crossAxisCount = constraints.maxWidth > 900
                       ? 3
-                      : constraints.maxWidth > 600
+                      : constraints.maxWidth > 700
                       ? 2
                       : 1;
 
-                  return SizedBox(
-                    height: 350,
-                    child: GridView.count(
-                      crossAxisCount: crossAxisCount,
-                      crossAxisSpacing: 16,
-                      mainAxisSpacing: 16,
-                      childAspectRatio: 1.7,
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      children: [
-                        const MetricCard(
-                          title: 'Total de miembros',
-                          value: '1,250',
-                          percentage: '+10%',
-                          percentageColor: accentColor,
-                        ),
-                        const MetricCard(
-                          title: 'Miembros nuevos',
-                          value: '125',
-                          percentage: '+25%',
-                          percentageColor: accentColor,
-                        ),
-                        const MetricCard(
-                          title: 'Miembros activos',
-                          value: '1,100',
-                          percentage: '+5%',
-                          percentageColor: accentColor,
-                        ),
-                      ],
-                    ),
+                  return GridView.count(
+                    crossAxisCount: crossAxisCount,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                    childAspectRatio: isMobile ? 1.5 : 1.7,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    children: [
+                      const MetricCard(
+                        title: 'Total de miembros',
+                        value: '1,250',
+                        percentage: '+10%',
+                        percentageColor: accentColor,
+                      ),
+                      const MetricCard(
+                        title: 'Miembros nuevos',
+                        value: '125',
+                        percentage: '+25%',
+                        percentageColor: accentColor,
+                      ),
+                      const MetricCard(
+                        title: 'Miembros activos',
+                        value: '1,100',
+                        percentage: '+5%',
+                        percentageColor: accentColor,
+                      ),
+                    ],
                   );
                 },
               ),
 
               // const SizedBox(height: 30),
-              Text(
-                'Servicios',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-              ),
-              Divider(),
-              const SizedBox(height: 16),
-              const DashboardListItem(
-                icon: Icons.calendar_month_outlined,
-                title: 'Celebración',
-                subtitle: 'Domingo, 9:00 AM',
-              ),
-              const DashboardListItem(
-                icon: Icons.calendar_month_outlined,
-                title: 'Adoración',
-                subtitle: 'Martes, 7:00 PM',
-              ),
-              const SizedBox(height: 32),
+              isMobile
+                  ? SizedBox(height: 0, width: 0)
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Servicios',
+                          style: Theme.of(context).textTheme.headlineSmall
+                              ?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black87,
+                              ),
+                        ),
+                        Divider(),
+                        const SizedBox(height: 16),
+                        const DashboardListItem(
+                          icon: Icons.calendar_month_outlined,
+                          title: 'Celebración',
+                          subtitle: 'Domingo, 9:00 AM',
+                        ),
+                        const DashboardListItem(
+                          icon: Icons.calendar_month_outlined,
+                          title: 'Adoración',
+                          subtitle: 'Martes, 7:00 PM',
+                        ),
+                        const SizedBox(height: 32),
+                      ],
+                    ),
             ],
           ),
         ),
@@ -222,44 +228,6 @@ class _DashboardState extends State<Dashboard> {
       drawer: isMobile
           ? Drawer(child: Menu())
           : null, // El Drawer solo en móvil
-      bottomNavigationBar: isMobile
-          ? BottomNavigationBar(
-              // La barra de navegación inferior solo en móvil
-              type: BottomNavigationBarType.fixed,
-              backgroundColor: Colors.white,
-              selectedItemColor: primaryColor,
-              unselectedItemColor: secondaryColor,
-              selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
-              items: const [
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.dashboard),
-                  label: 'Dashboard',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.people_alt_outlined),
-                  label: 'Miembros',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.calendar_month_outlined),
-                  label: 'Servicios',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(
-                    Icons.how_to_reg_outlined,
-                  ), // Icono para Asistencia
-                  label: 'Asistencia',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.location_on_outlined), // Icono para Visitas
-                  label: 'Visitas',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.description_outlined), // Icono para Reportes
-                  label: 'Reportes',
-                ),
-              ],
-            )
-          : null,
     );
   }
 }

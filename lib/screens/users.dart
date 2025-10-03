@@ -2,26 +2,22 @@
 import 'package:app/widgets/custom_appbar.dart';
 import 'package:flutter/material.dart';
 
+import '../widgets/add_button.dart';
+
 class Users extends StatelessWidget {
   const Users({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: CustomAppBar(title: 'Usuarios'),
       body: LayoutBuilder(
         builder: (context, constraints) {
           return constraints.maxWidth < 600
               ? _buildMobileLayout()
-              : _buildWebLayout();
+              : _buildWebLayout(context);
         },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Lógica para ir a la pantalla de agregar nuevo usuario
-          print('Añadir nuevo usuario');
-        },
-        child: const Icon(Icons.add),
       ),
     );
   }
@@ -47,46 +43,74 @@ class Users extends StatelessWidget {
     );
   }
 
-  Widget _buildWebLayout() {
+  Widget _buildWebLayout(context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(32.0),
-      child: Center(
-        child: SizedBox(
-          width: 800,
-          child: DataTable(
-            columns: const [
-              DataColumn(label: Text('Nombre')),
-              DataColumn(label: Text('Correo')),
-              DataColumn(label: Text('Rol')),
-              DataColumn(label: Text('Acciones')),
+      padding: const EdgeInsets.all(20.0),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              AddButton(onPressed: () {}),
+              SizedBox(width: 35),
             ],
-            rows: List.generate(
-              10, // Ejemplo, usar tu lista de usuarios
-              (index) => DataRow(
-                cells: [
-                  DataCell(Text('Usuario $index')),
-                  DataCell(Text('usuario$index@ejemplo.com')),
-                  DataCell(Text(index.isEven ? 'Administrador' : 'Miembro')),
-                  DataCell(
-                    Row(
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.edit, size: 20),
-                          onPressed: () {},
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.delete, size: 20),
-                          onPressed: () {},
-                        ),
-                      ],
-                    ),
-                  ),
+          ),
+          Center(
+            child: Container(
+              width: MediaQuery.of(context).size.width * 0.95,
+              child: DataTable(
+                columnSpacing: MediaQuery.of(context).size.width * 0.15,
+                columns: [
+                  DataColumn(label: Text('Nombre', style: _headerStyle())),
+                  DataColumn(label: Text('Apellidos', style: _headerStyle())),
+                  DataColumn(label: Text('Teléfono', style: _headerStyle())),
+                  DataColumn(label: Text('Rol', style: _headerStyle())),
+                  DataColumn(label: Text('Acciones', style: _headerStyle())),
                 ],
+                rows: List.generate(
+                  10, // Ejemplo, usar tu lista de usuarios
+                  (index) => DataRow(
+                    cells: [
+                      DataCell(Text('Nombre $index')),
+                      DataCell(Text('Apellidos')),
+                      DataCell(Text('Teléfono')),
+                      DataCell(
+                        Text(index.isEven ? 'Administrador' : 'Miembro'),
+                      ),
+                      DataCell(
+                        Row(
+                          children: [
+                            IconButton(
+                              icon: const Icon(
+                                Icons.edit,
+                                size: 20,
+                                color: Colors.blue,
+                              ),
+                              onPressed: () {},
+                            ),
+                            IconButton(
+                              icon: const Icon(
+                                Icons.delete,
+                                size: 20,
+                                color: Colors.red,
+                              ),
+                              onPressed: () {},
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
           ),
-        ),
+        ],
       ),
     );
+  }
+
+  TextStyle _headerStyle() {
+    return TextStyle(fontWeight: FontWeight.bold, fontSize: 18);
   }
 }

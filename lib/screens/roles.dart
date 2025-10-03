@@ -2,25 +2,22 @@
 import 'package:app/widgets/custom_appbar.dart';
 import 'package:flutter/material.dart';
 
+import '../widgets/add_button.dart';
+
 class Roles extends StatelessWidget {
   const Roles({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: CustomAppBar(title: 'Roles'),
       body: LayoutBuilder(
         builder: (context, constraints) {
           return constraints.maxWidth < 600
               ? _buildMobileLayout()
-              : _buildWebLayout();
+              : _buildWebLayout(context);
         },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          print('Añadir nuevo rol');
-        },
-        child: const Icon(Icons.add),
       ),
     );
   }
@@ -44,44 +41,68 @@ class Roles extends StatelessWidget {
     );
   }
 
-  Widget _buildWebLayout() {
+  Widget _buildWebLayout(context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(32.0),
-      child: Center(
-        child: SizedBox(
-          width: 800,
-          child: DataTable(
-            columns: const [
-              DataColumn(label: Text('Rol')),
-              DataColumn(label: Text('Descripción')),
-              DataColumn(label: Text('Acciones')),
+      padding: const EdgeInsets.all(20.0),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              AddButton(onPressed: () {}),
+              SizedBox(width: 35),
             ],
-            rows: List.generate(
-              5,
-              (index) => DataRow(
-                cells: [
-                  DataCell(Text('Rol $index')),
-                  DataCell(Text('Descripción del Rol $index')),
-                  DataCell(
-                    Row(
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.edit, size: 20),
-                          onPressed: () {},
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.delete, size: 20),
-                          onPressed: () {},
-                        ),
-                      ],
-                    ),
-                  ),
+          ),
+          Center(
+            child: Container(
+              width: MediaQuery.of(context).size.width * 0.7,
+              child: DataTable(
+                columnSpacing: MediaQuery.of(context).size.width * 0.15,
+                columns: [
+                  DataColumn(label: Text('Rol', style: _headerStyle())),
+                  DataColumn(label: Text('Descripción', style: _headerStyle())),
+                  DataColumn(label: Text('Acciones', style: _headerStyle())),
                 ],
+                rows: List.generate(
+                  5,
+                  (index) => DataRow(
+                    cells: [
+                      DataCell(Text('Rol $index')),
+                      DataCell(Text('Descripción del Rol $index')),
+                      DataCell(
+                        Row(
+                          children: [
+                            IconButton(
+                              icon: const Icon(
+                                Icons.edit,
+                                size: 20,
+                                color: Colors.blue,
+                              ),
+                              onPressed: () {},
+                            ),
+                            IconButton(
+                              icon: const Icon(
+                                Icons.delete,
+                                size: 20,
+                                color: Colors.red,
+                              ),
+                              onPressed: () {},
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
           ),
-        ),
+        ],
       ),
     );
+  }
+
+  TextStyle _headerStyle() {
+    return TextStyle(fontWeight: FontWeight.bold, fontSize: 18);
   }
 }

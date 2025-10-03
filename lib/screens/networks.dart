@@ -53,8 +53,6 @@ class Networks extends StatelessWidget {
                             createFadeRoute(CreateNetwork()),
                           );
                         },
-                        text: 'Red',
-                        size: Size(110, 45),
                       ),
                     ],
                   ),

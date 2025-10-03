@@ -8,12 +8,13 @@ class Logs extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: CustomAppBar(title: 'Registros de Actividad'),
       body: LayoutBuilder(
         builder: (context, constraints) {
           return constraints.maxWidth < 600
               ? _buildMobileLayout()
-              : _buildWebLayout();
+              : _buildWebLayout(context);
         },
       ),
     );
@@ -36,18 +37,19 @@ class Logs extends StatelessWidget {
     );
   }
 
-  Widget _buildWebLayout() {
+  Widget _buildWebLayout(context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(32.0),
+      padding: const EdgeInsets.all(20.0),
       child: Center(
-        child: SizedBox(
-          width: 900,
+        child: Container(
+          width: MediaQuery.of(context).size.width * 0.95,
           child: DataTable(
-            columns: const [
-              DataColumn(label: Text('Fecha')),
-              DataColumn(label: Text('Usuario')),
-              DataColumn(label: Text('Acción')),
-              DataColumn(label: Text('Detalles')),
+            columnSpacing: MediaQuery.of(context).size.width * 0.1,
+            columns: [
+              DataColumn(label: Text('Fecha', style: _headerStyle())),
+              DataColumn(label: Text('Usuario', style: _headerStyle())),
+              DataColumn(label: Text('Acción', style: _headerStyle())),
+              DataColumn(label: Text('Detalles', style: _headerStyle())),
             ],
             rows: List.generate(
               20,
@@ -64,5 +66,9 @@ class Logs extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  TextStyle _headerStyle() {
+    return TextStyle(fontWeight: FontWeight.bold, fontSize: 18);
   }
 }
