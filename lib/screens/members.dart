@@ -68,9 +68,32 @@ class _MembersState extends State<Members> {
   @override
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 700;
+    final Widget membersContent = _buildMembers(context, isMobile);
+
+    // 🚀 CLAVE: Definir el widget leading (el botón de la izquierda)
+    Widget? leadingWidget;
+    if (isMobile) {
+      // Usamos Builder para obtener un contexto capaz de encontrar el Scaffold
+      leadingWidget = Builder(
+        builder: (context) {
+          return IconButton(
+            icon: const Icon(
+              Icons.menu,
+              color: Colors.white,
+            ), // Usamos el color de tu AppBar
+            onPressed: () {
+              // Abrir el Drawer usando el contexto del Builder
+              Scaffold.of(context).openDrawer();
+            },
+          );
+        },
+      );
+    }
+    // Si no es móvil, Flutter mostrará automáticamente la flecha de atrás si es necesario,
+    // o nada si es la pantalla raíz.
     return Scaffold(
       backgroundColor: backgroundColor,
-      appBar: CustomAppBar(title: 'Miembros'),
+      appBar: CustomAppBar(title: 'Miembros', isDrawerEnabled: isMobile),
       drawer: isMobile ? Drawer(child: Menu()) : null,
       body: isMobile
           ? SingleChildScrollView(child: _buildMembers(context, isMobile))
@@ -88,23 +111,26 @@ class _MembersState extends State<Members> {
       children: [
         SizedBox(height: 20),
         // Barra de búsqueda
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (!isMobile) SizedBox(width: 20),
-            SearchTextField(controller: _searchController),
-            SizedBox(width: 20),
-            AddButton(
-              onPressed: () {
-                Navigator.push(context, createFadeRoute(CreateMember()));
-              },
-            ),
-            //SizedBox(width: 20),
-          ],
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: isMobile ? 16.0 : 24.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              //if (!isMobile) SizedBox(width: 20),
+              Expanded(child: SearchTextField(controller: _searchController)),
+              SizedBox(width: 20),
+              AddButton(
+                onPressed: () {
+                  Navigator.push(context, createFadeRoute(CreateMember()));
+                },
+              ),
+              //SizedBox(width: 20),
+            ],
+          ),
         ),
         SizedBox(height: 30),
         // Lista de miembros
-        _buildMemberList(isMobile),
+        Expanded(child: _buildMemberList(isMobile)),
       ],
     );
   }

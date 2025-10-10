@@ -21,7 +21,7 @@ class _ButtonState extends State<AddButton> {
       style: ElevatedButton.styleFrom(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         backgroundColor: Colors.green,
-        fixedSize: Size(120, isMobile ? 50 : 45),
+        fixedSize: Size(isMobile ? 120 : 140, isMobile ? 50 : 45),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,

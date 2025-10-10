@@ -32,7 +32,7 @@ class _ReportsState extends State<Reports> with TickerProviderStateMixin {
 
     return Scaffold(
       backgroundColor: backgroundColor,
-      appBar: CustomAppBar(title: 'Reportes'),
+      appBar: CustomAppBar(title: 'Reportes', isDrawerEnabled: isMobile),
       drawer: isMobile ? Drawer(child: Menu()) : null,
       body: Row(
         crossAxisAlignment: CrossAxisAlignment.start,

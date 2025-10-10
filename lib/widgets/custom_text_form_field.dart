@@ -149,7 +149,6 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
       readOnly: widget.readOnly,
       onTap: widget.onTap,
       inputFormatters: widget.inputFormatters,
-      // style: TextStyle(), // Eliminado estilo vacío
     );
   }
 }

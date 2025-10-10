@@ -63,7 +63,7 @@ class _AttendanceState extends State<Attendance> {
     final isMobile = MediaQuery.of(context).size.width < 800;
     return Scaffold(
       backgroundColor: backgroundColor,
-      appBar: CustomAppBar(title: 'Asistencia'),
+      appBar: CustomAppBar(title: 'Asistencia', isDrawerEnabled: isMobile),
       drawer: isMobile ? Drawer(child: Menu()) : null,
       body: Row(
         children: [

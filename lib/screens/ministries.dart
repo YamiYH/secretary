@@ -34,7 +34,7 @@ class Ministries extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: backgroundColor,
-      appBar: CustomAppBar(title: 'Ministerios'),
+      appBar: CustomAppBar(title: 'Ministerios', isDrawerEnabled: isMobile),
       drawer: isMobile ? Drawer(child: Menu()) : null,
       body: Row(
         crossAxisAlignment: CrossAxisAlignment.start,

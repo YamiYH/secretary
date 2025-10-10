@@ -24,7 +24,7 @@ class Networks extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: backgroundColor,
-      appBar: CustomAppBar(title: 'Redes'),
+      appBar: CustomAppBar(title: 'Redes', isDrawerEnabled: isMobile),
       drawer: isMobile ? Drawer(child: Menu()) : null,
       body: Row(
         crossAxisAlignment: CrossAxisAlignment.start,

@@ -4,8 +4,11 @@ import 'package:app/widgets/add_button.dart';
 import 'package:app/widgets/custom_appbar.dart';
 import 'package:app/widgets/menu.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 import '../colors.dart';
+import '../providers/service_provider.dart';
 
 class Services extends StatefulWidget {
   const Services({super.key});
@@ -15,17 +18,7 @@ class Services extends StatefulWidget {
 }
 
 class _ServicesState extends State<Services> {
-  int _selectedIndex =
-      0; // Índice seleccionado para la barra de navegación inferior
-
-  final List<Service> _upcomingServices = [
-    Service(title: 'Culto Matutino', date: 'Domingo, 21 de Julio de 2024'),
-    Service(
-      title: 'Servicio de Mitad de Semana',
-      date: 'Miércoles, 24 de Julio de 2024',
-    ),
-    Service(title: 'Convivencia Juvenil', date: 'Viernes, 26 de Julio de 2024'),
-  ];
+  int _selectedIndex = 0;
 
   void _onItemTapped(int index) {
     setState(() {
@@ -38,7 +31,7 @@ class _ServicesState extends State<Services> {
     final isMobile = MediaQuery.of(context).size.width < 800;
     return Scaffold(
       backgroundColor: backgroundColor,
-      appBar: CustomAppBar(title: 'Servicios'),
+      appBar: CustomAppBar(title: 'Servicios', isDrawerEnabled: isMobile),
       drawer: isMobile ? Drawer(child: Menu()) : null,
       body: isMobile
           ? SingleChildScrollView(
@@ -70,6 +63,9 @@ class _ServicesState extends State<Services> {
   }
 
   Column _buildServicesContent(isMobile) {
+    final servicesProvider = Provider.of<ServiceProvider>(context);
+    final upcomingServices = servicesProvider.services;
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -116,7 +112,7 @@ class _ServicesState extends State<Services> {
                 shrinkWrap: true, // Importante para ListView dentro de Column
                 physics:
                     const NeverScrollableScrollPhysics(), // Deshabilita el scroll del ListView interno
-                itemCount: _upcomingServices.length,
+                itemCount: upcomingServices.length,
                 separatorBuilder: (context, index) => const Divider(
                   color: Colors.grey,
                   height: 1,
@@ -125,7 +121,17 @@ class _ServicesState extends State<Services> {
                   endIndent: 0,
                 ),
                 itemBuilder: (context, index) {
-                  final service = _upcomingServices[index];
+                  final service = upcomingServices[index];
+                  final DateFormat dateFormatter = DateFormat(
+                    'EEEE, dd \'de\' MMMM \'de\' yyyy',
+                    'es',
+                  );
+                  final String formattedDate = dateFormatter.format(
+                    service.date,
+                  );
+
+                  final String formattedTime =
+                      '${service.time.hourOfPeriod}:${service.time.minute.toString().padLeft(2, '0')} ${service.time.period == DayPeriod.am ? 'A.M.' : 'P.M.'}';
                   return Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8.0),
                     child: Row(
@@ -145,7 +151,7 @@ class _ServicesState extends State<Services> {
                                 ),
                               ),
                               Text(
-                                service.date,
+                                '$formattedDate a las $formattedTime',
                                 style: TextStyle(
                                   fontSize: 14,
                                   color: Colors.grey[600],
@@ -188,11 +194,4 @@ class _ServicesState extends State<Services> {
       ],
     );
   }
-}
-
-class Service {
-  final String title;
-  final String date;
-
-  Service({required this.title, required this.date});
 }

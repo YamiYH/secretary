@@ -18,7 +18,7 @@ class Admin extends StatelessWidget {
     bool isMobile = MediaQuery.of(context).size.width < 700;
     return Scaffold(
       backgroundColor: backgroundColor,
-      appBar: CustomAppBar(title: 'Administración'),
+      appBar: CustomAppBar(title: 'Administración', isDrawerEnabled: isMobile),
       body: isMobile
           ? _buildLayout(context, isMobile)
           : Row(
@@ -34,6 +34,7 @@ class Admin extends StatelessWidget {
                 ),
               ],
             ),
+      drawer: isMobile ? Drawer(child: Menu()) : null,
     );
   }
 

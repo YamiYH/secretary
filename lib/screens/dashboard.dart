@@ -216,7 +216,7 @@ class _DashboardState extends State<Dashboard> {
 
     return Scaffold(
       backgroundColor: backgroundColor,
-      appBar: CustomAppBar(title: 'Inicio'),
+      appBar: CustomAppBar(title: 'Inicio', isDrawerEnabled: isMobile),
       body: isMobile
           ? mainContent
           : Row(

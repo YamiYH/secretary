@@ -177,9 +177,13 @@ class _LoginState extends State<Login> {
                               Button(
                                 text: 'Iniciar sesión',
                                 onPressed: () {
-                                  Navigator.push(
+                                  Navigator.pushAndRemoveUntil(
                                     context,
-                                    createFadeRoute(Dashboard()),
+                                    createFadeRoute(
+                                      const Dashboard(),
+                                    ), // Tu ruta a la pantalla principal
+                                    (Route<dynamic> route) =>
+                                        false, // Esta condición elimina todas las rutas anteriores
                                   );
                                 },
                                 size: Size(400, 45),

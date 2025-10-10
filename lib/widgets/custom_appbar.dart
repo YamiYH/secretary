@@ -8,15 +8,41 @@ import '../screens/profile.dart';
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   final PreferredSizeWidget? bottom;
+  final bool isDrawerEnabled;
 
-  CustomAppBar({Key? key, required this.title, this.bottom}) : super(key: key);
+  CustomAppBar({
+    Key? key,
+    required this.title,
+    this.bottom,
+    this.isDrawerEnabled = false,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    //final profileProvider = Provider.of<ProfileProvider>(context);
-    // final user = profileProvider.userProfile;
     bool isMobile = MediaQuery.of(context).size.width < 700;
     final bool canGoBack = Navigator.canPop(context);
+
+    Widget leadingWidget;
+
+    if (isMobile && isDrawerEnabled) {
+      // 1. En móvil y con Drawer, forzamos el ícono de Menú.
+      leadingWidget = Builder(
+        builder: (context) {
+          return IconButton(
+            icon: const Icon(Icons.menu, color: Colors.white),
+            onPressed: () {
+              Scaffold.of(context).openDrawer();
+            },
+          );
+        },
+      );
+    } else if (canGoBack) {
+      // 2. Si NO hay Drawer o es Web, y podemos volver, mostramos la flecha de atrás.
+      leadingWidget = const BackButton(color: Colors.white);
+    } else {
+      // 3. En caso contrario (Web, sin atrás, sin Drawer), un espacio vacío.
+      leadingWidget = const SizedBox(width: 56.0);
+    }
 
     return AppBar(
       iconTheme: IconThemeData(color: Colors.white),
@@ -26,11 +52,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       automaticallyImplyLeading: false,
 
       // 3. Definimos el widget 'leading' con nuestra lógica condicional.
-      leading: canGoBack
-          ? const BackButton(
-              color: Colors.white,
-            ) // Si podemos volver, muestra el botón.
-          : const SizedBox(width: 56.0),
+      leading: leadingWidget,
 
       // Si no, muestra un espacio invisible del mismo ancho.
       title: Row(

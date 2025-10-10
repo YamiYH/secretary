@@ -9,6 +9,7 @@ class Users extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    bool isMobile = MediaQuery.of(context).size.width < 700;
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: CustomAppBar(title: 'Usuarios'),
@@ -30,10 +31,36 @@ class Users extends StatelessWidget {
         return Card(
           margin: const EdgeInsets.only(bottom: 16.0),
           child: ListTile(
-            leading: const Icon(Icons.person_outline, size: 40),
             title: Text('Usuario $index'),
             subtitle: const Text('Rol: Miembro'),
-            trailing: const Icon(Icons.edit),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: const Icon(
+                    Icons.edit,
+                    color: Colors.blue,
+                  ), // Puedes darle un color si quieres
+                  onPressed: () {
+                    // Lógica para editar usuario
+                    print('Editar Usuario $index');
+                  },
+                ),
+
+                // 2. Botón de Eliminar
+                IconButton(
+                  icon: const Icon(
+                    Icons.delete,
+                    color: Colors.red,
+                  ), // Ícono de eliminar
+                  onPressed: () {
+                    // Lógica para eliminar usuario.
+                    // ¡Aquí deberías mostrar un diálogo de confirmación!
+                    print('Eliminar Usuario $index');
+                  },
+                ),
+              ],
+            ),
             onTap: () {
               // Lógica para editar usuario
             },

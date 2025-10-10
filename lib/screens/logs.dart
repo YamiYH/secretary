@@ -7,6 +7,7 @@ class Logs extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    bool isMobile = MediaQuery.of(context).size.width < 700;
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: CustomAppBar(title: 'Registros de Actividad'),
@@ -28,7 +29,6 @@ class Logs extends StatelessWidget {
         return Card(
           margin: const EdgeInsets.only(bottom: 16.0),
           child: ListTile(
-            leading: const Icon(Icons.info_outline, size: 40),
             title: Text('Usuario X ha creado un servicio'),
             subtitle: Text('Fecha: 12/09/2025, Hora: 14:00'),
           ),
