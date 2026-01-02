@@ -1,4 +1,10 @@
+// main.dart
+
+import 'package:app/providers/log_provider.dart';
+import 'package:app/providers/role_provider.dart';
 import 'package:app/providers/service_provider.dart';
+// 1. Importa el nuevo UserProvider que creamos
+import 'package:app/providers/user_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
@@ -7,9 +13,16 @@ import 'routes/routes.dart';
 
 void main() {
   runApp(
-    ChangeNotifierProvider(
-      create: (context) => ServiceProvider(),
-      child: const MyApp(), // O como se llame tu widget principal
+    // 2. Reemplaza ChangeNotifierProvider por MultiProvider
+    MultiProvider(
+      providers: [
+        // 3. Registra aquí todos tus proveedores
+        ChangeNotifierProvider(create: (context) => ServiceProvider()),
+        ChangeNotifierProvider(create: (context) => UserProvider()),
+        ChangeNotifierProvider(create: (context) => RoleProvider()),
+        ChangeNotifierProvider(create: (context) => LogProvider()),
+      ],
+      child: const MyApp(),
     ),
   );
 }
@@ -33,10 +46,7 @@ class MyApp extends StatelessWidget {
         Locale('en', ''), // Inglés
         Locale('es', ''), // Español
       ],
-      locale: const Locale(
-        'es',
-        '',
-      ), // Establece el idioma por defecto a español
+      locale: const Locale('es', ''),
     );
   }
 }

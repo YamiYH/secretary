@@ -96,7 +96,7 @@ class _MembersState extends State<Members> {
       appBar: CustomAppBar(title: 'Miembros', isDrawerEnabled: isMobile),
       drawer: isMobile ? Drawer(child: Menu()) : null,
       body: isMobile
-          ? SingleChildScrollView(child: _buildMembers(context, isMobile))
+          ? _buildMembers(context, isMobile)
           : Row(
               children: [
                 Menu(),
@@ -152,8 +152,8 @@ class _MembersState extends State<Members> {
           ],
         ),
         child: ListView.builder(
-          shrinkWrap: isMobile ? true : false,
-          physics: isMobile ? const NeverScrollableScrollPhysics() : null,
+          //shrinkWrap: isMobile ? true : false,
+          //physics: isMobile ? const NeverScrollableScrollPhysics() : null,
           padding: const EdgeInsets.all(16.0),
           itemCount: _filteredMembers.length,
           itemBuilder: (context, index) {

@@ -1,49 +1,99 @@
-// En tu archivo 'roles_screen.dart'
 import 'package:app/widgets/custom_appbar.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../models/log_model.dart';
+import '../models/role_model.dart';
+import '../providers/log_provider.dart';
+import '../providers/role_provider.dart';
+import '../routes/page_route_builder.dart';
 import '../widgets/add_button.dart';
+import 'create/create_role.dart';
 
 class Roles extends StatelessWidget {
   const Roles({Key? key}) : super(key: key);
 
+  // Función para el diálogo de confirmación de borrado
+  void _showDeleteConfirmationDialog(BuildContext context, Role role) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Confirmar Eliminación'),
+        content: Text(
+          '¿Estás seguro de que deseas eliminar el rol "${role.name}"?',
+        ),
+        actions: [
+          TextButton(
+            child: const Text('Cancelar'),
+            onPressed: () => Navigator.of(ctx).pop(),
+          ),
+          TextButton(
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Eliminar'),
+            onPressed: () {
+              Provider.of<LogProvider>(context, listen: false).addLog(
+                userName: 'Usuario Actual', // Temporalmente hardcodeado
+                action: LogAction.delete,
+                entity: LogEntity.role, // Especifica que la entidad es un Rol
+                details: 'Se eliminó el rol: "${role.name}"',
+              );
+
+              Provider.of<RoleProvider>(
+                context,
+                listen: false,
+              ).deleteRole(role.id);
+              Navigator.of(ctx).pop();
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  TextStyle _headerStyle() {
+    return TextStyle(fontWeight: FontWeight.bold, fontSize: 18);
+  }
+
   @override
   Widget build(BuildContext context) {
-    bool isMobile = MediaQuery.of(context).size.width < 700;
+    final roleProvider = Provider.of<RoleProvider>(context);
+    final List<Role> roles = roleProvider.roles;
+
+    //bool isMobile = MediaQuery.of(context).size.width < 700;
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: CustomAppBar(title: 'Roles'),
       body: LayoutBuilder(
         builder: (context, constraints) {
           return constraints.maxWidth < 600
-              ? _buildMobileLayout()
-              : _buildWebLayout(context);
+              ? _buildMobileLayout(context, roles)
+              : _buildWebLayout(context, roles);
         },
       ),
     );
   }
 
-  Widget _buildMobileLayout() {
+  Widget _buildMobileLayout(BuildContext context, List<Role> roles) {
     return ListView.builder(
       padding: const EdgeInsets.all(16.0),
-      itemCount: 5,
+      itemCount: roles.length,
       itemBuilder: (context, index) {
+        final role = roles[index];
         return Card(
           margin: const EdgeInsets.only(bottom: 16.0),
           child: ListTile(
-            title: Text('Rol $index'),
-            subtitle: const Text('Permisos: Ver, Editar'),
+            title: Text(role.name),
+            subtitle: Text(role.description),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 IconButton(
-                  icon: const Icon(
-                    Icons.edit,
-                    color: Colors.blue,
-                  ), // Puedes darle un color si quieres
+                  icon: const Icon(Icons.edit, color: Colors.blue),
                   onPressed: () {
-                    // Lógica para editar usuario
-                    print('Editar Usuario $index');
+                    Navigator.push(
+                      context,
+                      createFadeRoute(CreateRole(roleToEdit: role)),
+                    );
                   },
                 ),
 
@@ -54,9 +104,7 @@ class Roles extends StatelessWidget {
                     color: Colors.red,
                   ), // Ícono de eliminar
                   onPressed: () {
-                    // Lógica para eliminar usuario.
-                    // ¡Aquí deberías mostrar un diálogo de confirmación!
-                    print('Eliminar Usuario $index');
+                    _showDeleteConfirmationDialog(context, role);
                   },
                 ),
               ],
@@ -68,7 +116,7 @@ class Roles extends StatelessWidget {
     );
   }
 
-  Widget _buildWebLayout(context) {
+  Widget _buildWebLayout(BuildContext context, List<Role> roles) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20.0),
       child: Column(
@@ -76,7 +124,11 @@ class Roles extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              AddButton(onPressed: () {}),
+              AddButton(
+                onPressed: () {
+                  Navigator.push(context, createFadeRoute(const CreateRole()));
+                },
+              ),
               SizedBox(width: 35),
             ],
           ),
@@ -90,12 +142,11 @@ class Roles extends StatelessWidget {
                   DataColumn(label: Text('Descripción', style: _headerStyle())),
                   DataColumn(label: Text('Acciones', style: _headerStyle())),
                 ],
-                rows: List.generate(
-                  5,
-                  (index) => DataRow(
+                rows: roles.map((role) {
+                  return DataRow(
                     cells: [
-                      DataCell(Text('Rol $index')),
-                      DataCell(Text('Descripción del Rol $index')),
+                      DataCell(Text(role.name)),
+                      DataCell(Text(role.description)),
                       DataCell(
                         Row(
                           children: [
@@ -105,7 +156,12 @@ class Roles extends StatelessWidget {
                                 size: 20,
                                 color: Colors.blue,
                               ),
-                              onPressed: () {},
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  createFadeRoute(CreateRole(roleToEdit: role)),
+                                );
+                              },
                             ),
                             IconButton(
                               icon: const Icon(
@@ -113,23 +169,21 @@ class Roles extends StatelessWidget {
                                 size: 20,
                                 color: Colors.red,
                               ),
-                              onPressed: () {},
+                              onPressed: () {
+                                _showDeleteConfirmationDialog(context, role);
+                              },
                             ),
                           ],
                         ),
                       ),
                     ],
-                  ),
-                ),
+                  );
+                }).toList(),
               ),
             ),
           ),
         ],
       ),
     );
-  }
-
-  TextStyle _headerStyle() {
-    return TextStyle(fontWeight: FontWeight.bold, fontSize: 18);
   }
 }

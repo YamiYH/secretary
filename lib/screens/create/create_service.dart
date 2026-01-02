@@ -70,7 +70,7 @@ class _CreateServiceState extends State<CreateService> {
   @override
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 800;
-    final locale = Localizations.localeOf(context);
+    // final locale = Localizations.localeOf(context);
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: CustomAppBar(title: 'Crear servicio'),
@@ -185,7 +185,7 @@ class _CreateServiceState extends State<CreateService> {
               calendarBuilders: CalendarBuilders(
                 markerBuilder: (context, date, events) {
                   if (events.isNotEmpty) {
-                    final tooltipMessage = (events as List<ServiceModel>)
+                    final tooltipMessage = (events)
                         .map((e) {
                           final formattedTime =
                               '${e.time.hourOfPeriod}:${e.time.minute.toString().padLeft(2, '0')} ${e.time.period == DayPeriod.am ? 'A.M.' : 'P.M.'}';

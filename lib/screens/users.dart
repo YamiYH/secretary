@@ -1,38 +1,49 @@
 // En tu archivo 'users_screen.dart'
 import 'package:app/widgets/custom_appbar.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../models/log_model.dart';
+import '../models/user_model.dart';
+import '../providers/log_provider.dart';
+import '../providers/user_provider.dart';
+import '../routes/page_route_builder.dart';
 import '../widgets/add_button.dart';
+import 'create/create_user.dart';
 
 class Users extends StatelessWidget {
   const Users({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    bool isMobile = MediaQuery.of(context).size.width < 700;
+    //bool isMobile = MediaQuery.of(context).size.width < 700;
+    final userProvider = Provider.of<UserProvider>(context);
+    final List<User> users = userProvider.users;
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: CustomAppBar(title: 'Usuarios'),
       body: LayoutBuilder(
         builder: (context, constraints) {
           return constraints.maxWidth < 600
-              ? _buildMobileLayout()
-              : _buildWebLayout(context);
+              ? _buildMobileLayout(context, users)
+              : _buildWebLayout(context, users);
         },
       ),
     );
   }
 
-  Widget _buildMobileLayout() {
+  Widget _buildMobileLayout(BuildContext context, List<User> users) {
     return ListView.builder(
       padding: const EdgeInsets.all(16.0),
-      itemCount: 10, // Ejemplo, deberías usar tu lista de usuarios
+      itemCount: users.length,
       itemBuilder: (context, index) {
+        final user = users[index]; // Obtener el usuario actual
         return Card(
           margin: const EdgeInsets.only(bottom: 16.0),
           child: ListTile(
-            title: Text('Usuario $index'),
-            subtitle: const Text('Rol: Miembro'),
+            title: Text('${user.name} ${user.lastName}'),
+            subtitle: Text('Rol: ${user.role}'),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -42,8 +53,10 @@ class Users extends StatelessWidget {
                     color: Colors.blue,
                   ), // Puedes darle un color si quieres
                   onPressed: () {
-                    // Lógica para editar usuario
-                    print('Editar Usuario $index');
+                    Navigator.push(
+                      context,
+                      createFadeRoute(CreateUser(userToEdit: user)),
+                    );
                   },
                 ),
 
@@ -54,9 +67,7 @@ class Users extends StatelessWidget {
                     color: Colors.red,
                   ), // Ícono de eliminar
                   onPressed: () {
-                    // Lógica para eliminar usuario.
-                    // ¡Aquí deberías mostrar un diálogo de confirmación!
-                    print('Eliminar Usuario $index');
+                    _showDeleteConfirmationDialog(context, user);
                   },
                 ),
               ],
@@ -70,7 +81,7 @@ class Users extends StatelessWidget {
     );
   }
 
-  Widget _buildWebLayout(context) {
+  Widget _buildWebLayout(BuildContext context, List<User> users) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20.0),
       child: Column(
@@ -78,7 +89,11 @@ class Users extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              AddButton(onPressed: () {}),
+              AddButton(
+                onPressed: () {
+                  Navigator.push(context, createFadeRoute(CreateUser()));
+                },
+              ),
               SizedBox(width: 35),
             ],
           ),
@@ -94,46 +109,98 @@ class Users extends StatelessWidget {
                   DataColumn(label: Text('Rol', style: _headerStyle())),
                   DataColumn(label: Text('Acciones', style: _headerStyle())),
                 ],
-                rows: List.generate(
-                  10, // Ejemplo, usar tu lista de usuarios
-                  (index) => DataRow(
-                    cells: [
-                      DataCell(Text('Nombre $index')),
-                      DataCell(Text('Apellidos')),
-                      DataCell(Text('Teléfono')),
-                      DataCell(
-                        Text(index.isEven ? 'Administrador' : 'Miembro'),
-                      ),
-                      DataCell(
-                        Row(
-                          children: [
-                            IconButton(
-                              icon: const Icon(
-                                Icons.edit,
-                                size: 20,
-                                color: Colors.blue,
-                              ),
-                              onPressed: () {},
+                rows: users
+                    .map(
+                      (user) => DataRow(
+                        cells: [
+                          DataCell(Text(user.name)),
+                          DataCell(Text(user.lastName)),
+                          DataCell(Text(user.phone)),
+                          DataCell(Text(user.role)),
+                          DataCell(
+                            Row(
+                              children: [
+                                IconButton(
+                                  icon: const Icon(
+                                    Icons.edit,
+                                    size: 20,
+                                    color: Colors.blue,
+                                  ),
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      createFadeRoute(
+                                        CreateUser(userToEdit: user),
+                                      ),
+                                    );
+                                  },
+                                ),
+                                IconButton(
+                                  icon: const Icon(
+                                    Icons.delete,
+                                    size: 20,
+                                    color: Colors.red,
+                                  ),
+                                  onPressed: () {
+                                    _showDeleteConfirmationDialog(
+                                      context,
+                                      user,
+                                    );
+                                  },
+                                ),
+                              ],
                             ),
-                            IconButton(
-                              icon: const Icon(
-                                Icons.delete,
-                                size: 20,
-                                color: Colors.red,
-                              ),
-                              onPressed: () {},
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                ),
+                    )
+                    .toList(),
               ),
             ),
           ),
         ],
       ),
+    );
+  }
+
+  void _showDeleteConfirmationDialog(BuildContext context, User user) {
+    showDialog(
+      context: context,
+      builder: (BuildContext ctx) {
+        return AlertDialog(
+          title: const Text('Confirmar Eliminación'),
+          content: Text(
+            '¿Estás seguro de que deseas eliminar a ${user.name} ${user.lastName}?',
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancelar'),
+              onPressed: () {
+                Navigator.of(ctx).pop(); // Cierra el diálogo
+              },
+            ),
+            TextButton(
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              child: const Text('Eliminar'),
+              onPressed: () {
+                Provider.of<LogProvider>(context, listen: false).addLog(
+                  userName: 'Usuario Actual',
+                  action: LogAction.delete,
+                  entity: LogEntity.user,
+                  details:
+                      'Se eliminó al usuario: ${user.name} ${user.lastName}',
+                );
+                // Llama al provider para eliminar el usuario
+                Provider.of<UserProvider>(
+                  context,
+                  listen: false,
+                ).deleteUser(user.id);
+                Navigator.of(ctx).pop(); // Cierra el diálogo
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 
