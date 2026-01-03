@@ -50,7 +50,7 @@ class Admin extends StatelessWidget {
         physics: const NeverScrollableScrollPhysics(),
         children: [
           _buildCard(context, Icons.people, 'Usuarios'),
-          _buildCard(context, Icons.shield, 'Roles'),
+          _buildCard(context, Icons.admin_panel_settings, 'Roles'),
           _buildCard(context, Icons.history, 'Logs'),
         ],
       ),

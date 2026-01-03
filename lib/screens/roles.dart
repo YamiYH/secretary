@@ -74,45 +74,64 @@ class Roles extends StatelessWidget {
   }
 
   Widget _buildMobileLayout(BuildContext context, List<Role> roles) {
-    return ListView.builder(
-      padding: const EdgeInsets.all(16.0),
-      itemCount: roles.length,
-      itemBuilder: (context, index) {
-        final role = roles[index];
-        return Card(
-          margin: const EdgeInsets.only(bottom: 16.0),
-          child: ListTile(
-            title: Text(role.name),
-            subtitle: Text(role.description),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.edit, color: Colors.blue),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      createFadeRoute(CreateRole(roleToEdit: role)),
-                    );
-                  },
-                ),
-
-                // 2. Botón de Eliminar
-                IconButton(
-                  icon: const Icon(
-                    Icons.delete,
-                    color: Colors.red,
-                  ), // Ícono de eliminar
-                  onPressed: () {
-                    _showDeleteConfirmationDialog(context, role);
-                  },
-                ),
-              ],
+    return Column(
+      children: [
+        SizedBox(height: 10),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Align(
+            alignment: Alignment.center,
+            child: AddButton(
+              size: Size(MediaQuery.of(context).size.width * 0.9, 50),
+              onPressed: () {
+                Navigator.push(context, createFadeRoute(CreateRole()));
+              },
             ),
-            onTap: () {},
           ),
-        );
-      },
+        ),
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.all(16.0),
+            itemCount: roles.length,
+            itemBuilder: (context, index) {
+              final role = roles[index];
+              return Card(
+                margin: const EdgeInsets.only(bottom: 16.0),
+                child: ListTile(
+                  title: Text(role.name),
+                  subtitle: Text(role.description),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.edit, color: Colors.blue),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            createFadeRoute(CreateRole(roleToEdit: role)),
+                          );
+                        },
+                      ),
+
+                      // 2. Botón de Eliminar
+                      IconButton(
+                        icon: const Icon(
+                          Icons.delete,
+                          color: Colors.red,
+                        ), // Ícono de eliminar
+                        onPressed: () {
+                          _showDeleteConfirmationDialog(context, role);
+                        },
+                      ),
+                    ],
+                  ),
+                  onTap: () {},
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 

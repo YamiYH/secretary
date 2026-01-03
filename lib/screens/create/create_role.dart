@@ -76,7 +76,7 @@ class _CreateRoleState extends State<CreateRole> {
           userName: 'Usuario Actual', // Temporalmente hardcodeado
           action: LogAction.create,
           entity: LogEntity.role, // Especifica que la entidad es un Rol
-          details: 'Se creó el nuevo rol: "${newRole.name}"',
+          details: 'Se creó el rol: "${newRole.name}"',
         );
       }
       if (!mounted) return;

@@ -44,7 +44,7 @@ class Logs extends StatelessWidget {
   Widget _buildMobileLayout(List<Log> logs) {
     return ListView.builder(
       padding: const EdgeInsets.all(16.0),
-      itemCount: 20,
+      itemCount: logs.length,
       itemBuilder: (context, index) {
         final log = logs[index];
         // Formateamos la fecha y hora
@@ -56,14 +56,6 @@ class Logs extends StatelessWidget {
           child: ListTile(
             title: Text(log.details),
             subtitle: Text('Por: ${log.userName} - $formattedDate'),
-            leading: Icon(
-              log.action == LogAction.create
-                  ? Icons.add_circle
-                  : log.action == LogAction.update
-                  ? Icons.edit
-                  : Icons.delete_forever,
-              color: log.action == LogAction.delete ? Colors.red : Colors.grey,
-            ),
           ),
         );
       },

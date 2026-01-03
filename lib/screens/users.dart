@@ -34,50 +34,68 @@ class Users extends StatelessWidget {
   }
 
   Widget _buildMobileLayout(BuildContext context, List<User> users) {
-    return ListView.builder(
-      padding: const EdgeInsets.all(16.0),
-      itemCount: users.length,
-      itemBuilder: (context, index) {
-        final user = users[index]; // Obtener el usuario actual
-        return Card(
-          margin: const EdgeInsets.only(bottom: 16.0),
-          child: ListTile(
-            title: Text('${user.name} ${user.lastName}'),
-            subtitle: Text('Rol: ${user.role}'),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  icon: const Icon(
-                    Icons.edit,
-                    color: Colors.blue,
-                  ), // Puedes darle un color si quieres
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      createFadeRoute(CreateUser(userToEdit: user)),
-                    );
-                  },
-                ),
-
-                // 2. Botón de Eliminar
-                IconButton(
-                  icon: const Icon(
-                    Icons.delete,
-                    color: Colors.red,
-                  ), // Ícono de eliminar
-                  onPressed: () {
-                    _showDeleteConfirmationDialog(context, user);
-                  },
-                ),
-              ],
+    return Column(
+      children: [
+        SizedBox(height: 10),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Align(
+            alignment: Alignment.center,
+            child: AddButton(
+              size: Size(MediaQuery.of(context).size.width * 0.9, 50),
+              onPressed: () {
+                Navigator.push(context, createFadeRoute(CreateUser()));
+              },
             ),
-            onTap: () {
-              // Lógica para editar usuario
+          ),
+        ),
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.all(16.0),
+
+            itemCount: users.length,
+            itemBuilder: (context, index) {
+              final user = users[index]; // Obtener el usuario actual
+              return Card(
+                margin: const EdgeInsets.only(bottom: 16.0),
+                child: ListTile(
+                  title: Text('${user.name} ${user.lastName}\n${user.phone}'),
+                  subtitle: Text('Rol: ${user.role}'),
+
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.edit, color: Colors.blue),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            createFadeRoute(CreateUser(userToEdit: user)),
+                          );
+                        },
+                      ),
+
+                      // 2. Botón de Eliminar
+                      IconButton(
+                        icon: const Icon(
+                          Icons.delete,
+                          color: Colors.red,
+                        ), // Ícono de eliminar
+                        onPressed: () {
+                          _showDeleteConfirmationDialog(context, user);
+                        },
+                      ),
+                    ],
+                  ),
+                  onTap: () {
+                    // Lógica para editar usuario
+                  },
+                ),
+              );
             },
           ),
-        );
-      },
+        ),
+      ],
     );
   }
 

@@ -77,7 +77,7 @@ class _CreateUserState extends State<CreateUser> {
           action: LogAction.update,
           entity: LogEntity.user,
           details:
-              'Se actualizó al usuario: ${updatedUser.name} ${updatedUser.lastName}',
+              'Se actualizó el usuario: ${updatedUser.name} ${updatedUser.lastName}',
         );
       } else {
         final newUser = User(
@@ -94,8 +94,7 @@ class _CreateUserState extends State<CreateUser> {
           userName: 'Usuario Actual',
           action: LogAction.create,
           entity: LogEntity.user,
-          details:
-              'Se creó al nuevo usuario: ${newUser.name} ${newUser.lastName}',
+          details: 'Se creó el usuario: ${newUser.name} ${newUser.lastName}',
         );
       }
       if (!mounted) return;
