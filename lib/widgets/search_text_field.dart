@@ -3,20 +3,41 @@ import 'package:flutter/material.dart';
 class SearchTextField extends StatefulWidget {
   final Function(String)? onChanged;
   final TextEditingController? controller;
-
   final String? Function(String?)? validator;
-  SearchTextField({
-    super.key,
-    this.onChanged,
-    required this.controller,
-    this.validator,
-  });
+
+  SearchTextField({super.key, this.onChanged, this.controller, this.validator});
 
   @override
   State<SearchTextField> createState() => _SearchTextFieldState();
 }
 
 class _SearchTextFieldState extends State<SearchTextField> {
+  late final TextEditingController _internalController;
+
+  @override
+  void initState() {
+    super.initState();
+    // 3. Decidimos qué controller usar.
+    // Si el widget padre nos da uno, lo usamos. Si no, usamos el nuestro.
+    _internalController = widget.controller ?? TextEditingController();
+
+    // 4. Añadimos el listener para notificar los cambios a través de onChanged.
+    _internalController.addListener(() {
+      // Si el callback onChanged existe, lo llamamos con el texto actual.
+      widget.onChanged?.call(_internalController.text);
+    });
+  }
+
+  @override
+  void dispose() {
+    // 5. Solo hacemos dispose del controller si lo creamos nosotros.
+    // Si vino de afuera, la pantalla padre es responsable de él.
+    if (widget.controller == null) {
+      _internalController.dispose();
+    }
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     bool isMobile = MediaQuery.of(context).size.width < 700;
@@ -41,7 +62,7 @@ class _SearchTextFieldState extends State<SearchTextField> {
             ],
           ),
           child: TextField(
-            controller: widget.controller,
+            controller: _internalController,
             decoration: InputDecoration(
               hintText: 'Buscar',
               hintStyle: TextStyle(color: Colors.grey[600], fontSize: 18),

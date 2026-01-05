@@ -2,142 +2,115 @@ import 'package:app/routes/page_route_builder.dart';
 import 'package:app/screens/create/create_member.dart';
 import 'package:app/widgets/add_button.dart';
 import 'package:app/widgets/custom_appbar.dart';
+import 'package:app/widgets/showDeleteConfirmationDialog.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../colors.dart';
+import '../models/log_model.dart';
+import '../models/member_model.dart';
+import '../providers/log_provider.dart';
+import '../providers/member_provider.dart';
 import '../widgets/menu.dart';
 import '../widgets/search_text_field.dart';
 
-// Definimos la clase Member para representar a cada miembro
-class Member {
-  final String name;
-  final String groups;
-
-  Member({required this.name, required this.groups});
-}
-
-class Members extends StatefulWidget {
+class Members extends StatelessWidget {
   const Members({super.key});
-
-  @override
-  State<Members> createState() => _MembersState();
-}
-
-class _MembersState extends State<Members> {
-  // Lista de miembros de ejemplo
-  final List<Member> _allMembers = [
-    Member(name: 'Ethan Carter', groups: 'Jóvenes'),
-    Member(name: 'Olivia Bennett', groups: 'Mujeres'),
-    Member(name: 'Noah Thompson', groups: 'Hombres'),
-    Member(name: 'Sophia Ramirez', groups: 'Jóvenes'),
-    Member(name: 'Liam Walker', groups: 'Hombres'),
-    Member(name: 'Ava Rodriguez', groups: 'Jóvenes'),
-    Member(name: 'Jackson Davis', groups: 'Hombres'),
-    Member(name: 'Isabella Lewis', groups: '3ra Edad'),
-    Member(name: 'Carlos Garcia', groups: 'Jóvenes'),
-    Member(name: 'Maria Fernandez', groups: '3ra Edad'),
-  ];
-
-  List<Member> _filteredMembers = [];
-  final TextEditingController _searchController = TextEditingController();
-
-  @override
-  void initState() {
-    super.initState();
-    _filteredMembers = _allMembers; // Inicialmente, muestra todos los miembros
-    _searchController.addListener(_filterMembers);
-  }
-
-  @override
-  void dispose() {
-    _searchController.removeListener(_filterMembers);
-    _searchController.dispose();
-    super.dispose();
-  }
-
-  void _filterMembers() {
-    String query = _searchController.text.toLowerCase();
-    setState(() {
-      _filteredMembers = _allMembers.where((member) {
-        return member.name.toLowerCase().contains(query) ||
-            member.groups.toLowerCase().contains(query);
-      }).toList();
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 700;
-    final Widget membersContent = _buildMembers(context, isMobile);
 
-    // 🚀 CLAVE: Definir el widget leading (el botón de la izquierda)
-    Widget? leadingWidget;
-    if (isMobile) {
-      // Usamos Builder para obtener un contexto capaz de encontrar el Scaffold
-      leadingWidget = Builder(
-        builder: (context) {
-          return IconButton(
-            icon: const Icon(
-              Icons.menu,
-              color: Colors.white,
-            ), // Usamos el color de tu AppBar
-            onPressed: () {
-              // Abrir el Drawer usando el contexto del Builder
-              Scaffold.of(context).openDrawer();
-            },
-          );
-        },
-      );
-    }
-    // Si no es móvil, Flutter mostrará automáticamente la flecha de atrás si es necesario,
-    // o nada si es la pantalla raíz.
+    // 1. Obtener la instancia del provider.
+    //    Usamos 'watch' (el método por defecto) para que la UI se reconstruya cuando cambien los datos.
+    final memberProvider = Provider.of<MemberProvider>(context);
+    final List<Member> filteredMembers = memberProvider.filteredMembers;
+
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: CustomAppBar(title: 'Miembros', isDrawerEnabled: isMobile),
       drawer: isMobile ? Drawer(child: Menu()) : null,
       body: isMobile
-          ? _buildMembers(context, isMobile)
+          ? _buildMembersContent(
+              context,
+              isMobile,
+              memberProvider,
+              filteredMembers,
+            )
           : Row(
               children: [
                 Menu(),
-                Expanded(child: _buildMembers(context, isMobile)),
+                Expanded(
+                  child: _buildMembersContent(
+                    context,
+                    isMobile,
+                    memberProvider,
+                    filteredMembers,
+                  ),
+                ),
               ],
             ),
     );
   }
 
-  Column _buildMembers(BuildContext context, isMobile) {
+  // Este widget ahora recibe el provider y la lista de miembros como parámetros
+  Widget _buildMembersContent(
+    BuildContext context,
+    bool isMobile,
+    MemberProvider provider,
+    List<Member> members,
+  ) {
     return Column(
       children: [
-        SizedBox(height: 20),
+        const SizedBox(height: 20),
         // Barra de búsqueda
         Padding(
           padding: EdgeInsets.symmetric(horizontal: isMobile ? 16.0 : 24.0),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              //if (!isMobile) SizedBox(width: 20),
-              Expanded(child: SearchTextField(controller: _searchController)),
-              SizedBox(width: 20),
+              Expanded(
+                // 2. El SearchTextField ahora llama al método del provider
+                child: SearchTextField(
+                  onChanged: (query) {
+                    // Llama al método 'search' del provider en lugar de a un listener local.
+                    provider.search(query);
+                  },
+                  controller: null,
+                ),
+              ),
+              const SizedBox(width: 20),
               AddButton(
                 onPressed: () {
-                  Navigator.push(context, createFadeRoute(CreateMember()));
+                  Navigator.push(
+                    context,
+                    createFadeRoute(const CreateMember()),
+                  );
                 },
               ),
-              //SizedBox(width: 20),
             ],
           ),
         ),
-        SizedBox(height: 30),
+        const SizedBox(height: 30),
         // Lista de miembros
-        Expanded(child: _buildMemberList(isMobile)),
+        Expanded(
+          child: _buildMemberList(context, isMobile, members),
+        ), // Pasa la lista filtrada
       ],
     );
   }
 
-  Padding _buildMemberList(isMobile) {
+  Widget _buildMemberList(
+    BuildContext context,
+    bool isMobile,
+    List<Member> members,
+  ) {
+    if (members.isEmpty) {
+      return const Center(child: Text('No se encontraron miembros.'));
+    }
+
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 25.0),
+      padding: const EdgeInsets.symmetric(horizontal: 25.0),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
@@ -152,19 +125,19 @@ class _MembersState extends State<Members> {
           ],
         ),
         child: ListView.builder(
-          //shrinkWrap: isMobile ? true : false,
-          //physics: isMobile ? const NeverScrollableScrollPhysics() : null,
           padding: const EdgeInsets.all(16.0),
-          itemCount: _filteredMembers.length,
+          itemCount: members.length,
           itemBuilder: (context, index) {
-            final member = _filteredMembers[index];
+            final member = members[index];
             return Padding(
               padding: const EdgeInsets.symmetric(vertical: 8.0),
               child: ListTile(
                 leading: CircleAvatar(
                   backgroundColor: Colors.red.withOpacity(0.1),
                   child: Text(
-                    member.name.substring(0, 1).toUpperCase(),
+                    member.name.isNotEmpty
+                        ? member.name.substring(0, 1).toUpperCase()
+                        : '?',
                     style: TextStyle(
                       color: Colors.redAccent[200],
                       fontWeight: FontWeight.bold,
@@ -172,30 +145,68 @@ class _MembersState extends State<Members> {
                   ),
                 ),
                 title: Text(
-                  member.name,
+                  '${member.name} ${member.lastName}',
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
                     color: Colors.black87,
                   ),
                 ),
+                // 3. Muestra los grupos de forma más elegante
                 subtitle: Text(
-                  member.groups,
+                  member.group,
                   style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                  overflow: TextOverflow.ellipsis,
                 ),
-                trailing: Icon(
-                  Icons.arrow_forward_ios,
-                  color: Colors.grey[400],
-                  size: 18,
+                trailing: Row(
+                  mainAxisSize:
+                      MainAxisSize.min, // Para que ocupe el mínimo espacio
+                  children: [
+                    IconButton(
+                      icon: Icon(Icons.edit, color: Colors.blue[600]),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          createFadeRoute(CreateMember(memberToEdit: member)),
+                        );
+                      },
+                    ),
+
+                    IconButton(
+                      icon: Icon(Icons.delete, color: Colors.red[600]),
+                      onPressed: () {
+                        showDeleteConfirmation(context, member);
+                      },
+                    ),
+                  ],
                 ),
-                onTap: () {
-                  // Acción al tocar un miembro (ej. ir a su perfil)
-                },
               ),
             );
           },
         ),
       ),
+    );
+  }
+
+  Future<void> showDeleteConfirmation(BuildContext context, Member member) {
+    return showDeleteConfirmationDialog(
+      context: context,
+      itemName: member.name,
+      onConfirm: () {
+        final memberProvider = Provider.of<MemberProvider>(
+          context,
+          listen: false,
+        );
+        final logProvider = Provider.of<LogProvider>(context, listen: false);
+
+        logProvider.addLog(
+          userName: 'Admin',
+          action: LogAction.delete,
+          entity: LogEntity.user,
+          details: 'Se eliminó al miembro: "${member.name}"',
+        );
+        memberProvider.deleteMember(member.id);
+      },
     );
   }
 }

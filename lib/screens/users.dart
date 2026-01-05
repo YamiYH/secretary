@@ -1,5 +1,6 @@
 // En tu archivo 'users_screen.dart'
 import 'package:app/widgets/custom_appbar.dart';
+import 'package:app/widgets/showDeleteConfirmationDialog.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -82,20 +83,36 @@ class Users extends StatelessWidget {
                           color: Colors.red,
                         ), // Ícono de eliminar
                         onPressed: () {
-                          _showDeleteConfirmationDialog(context, user);
+                          showDeleteConfirmation(context, user);
                         },
                       ),
                     ],
                   ),
-                  onTap: () {
-                    // Lógica para editar usuario
-                  },
                 ),
               );
             },
           ),
         ),
       ],
+    );
+  }
+
+  void showDeleteConfirmation(BuildContext context, User user) {
+    showDeleteConfirmationDialog(
+      context: context,
+      itemName: '${user.name} ${user.lastName}',
+      onConfirm: () {
+        final userProvider = Provider.of<UserProvider>(context, listen: false);
+        final logProvider = Provider.of<LogProvider>(context, listen: false);
+
+        logProvider.addLog(
+          userName: 'Admin',
+          action: LogAction.delete,
+          entity: LogEntity.user,
+          details: 'Se eliminó al usuario: ${user.name} ${user.lastName}',
+        );
+        userProvider.deleteUser(user.id);
+      },
     );
   }
 
@@ -160,10 +177,7 @@ class Users extends StatelessWidget {
                                     color: Colors.red,
                                   ),
                                   onPressed: () {
-                                    _showDeleteConfirmationDialog(
-                                      context,
-                                      user,
-                                    );
+                                    showDeleteConfirmation(context, user);
                                   },
                                 ),
                               ],
@@ -178,47 +192,6 @@ class Users extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-
-  void _showDeleteConfirmationDialog(BuildContext context, User user) {
-    showDialog(
-      context: context,
-      builder: (BuildContext ctx) {
-        return AlertDialog(
-          title: const Text('Confirmar Eliminación'),
-          content: Text(
-            '¿Estás seguro de que deseas eliminar a ${user.name} ${user.lastName}?',
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Cancelar'),
-              onPressed: () {
-                Navigator.of(ctx).pop(); // Cierra el diálogo
-              },
-            ),
-            TextButton(
-              style: TextButton.styleFrom(foregroundColor: Colors.red),
-              child: const Text('Eliminar'),
-              onPressed: () {
-                Provider.of<LogProvider>(context, listen: false).addLog(
-                  userName: 'Usuario Actual',
-                  action: LogAction.delete,
-                  entity: LogEntity.user,
-                  details:
-                      'Se eliminó al usuario: ${user.name} ${user.lastName}',
-                );
-                // Llama al provider para eliminar el usuario
-                Provider.of<UserProvider>(
-                  context,
-                  listen: false,
-                ).deleteUser(user.id);
-                Navigator.of(ctx).pop(); // Cierra el diálogo
-              },
-            ),
-          ],
-        );
-      },
     );
   }
 
