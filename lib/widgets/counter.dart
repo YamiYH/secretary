@@ -3,15 +3,41 @@ import 'package:flutter/material.dart';
 class Counter extends StatefulWidget {
   final String label;
   final Function(int) onCountChanged; // Callback para notificar el cambio
+  final int initialValue;
 
-  const Counter({super.key, required this.label, required this.onCountChanged});
+  const Counter({
+    super.key,
+    required this.label,
+    required this.onCountChanged,
+    this.initialValue = 0,
+  });
 
   @override
   State<Counter> createState() => _CounterState();
 }
 
 class _CounterState extends State<Counter> {
-  int _count = 0;
+  late int _count;
+
+  @override
+  void initState() {
+    super.initState();
+    // 3. INICIALIZAMOS EL CONTADOR CON EL VALOR RECIBIDO
+    _count = widget.initialValue;
+  }
+
+  // 4. MÉTODO CLAVE PARA ACTUALIZAR EL CONTADOR DESDE FUERA
+  // Se ejecuta cuando el widget padre se reconstruye con nuevos datos (ej. al cambiar de fecha)
+  @override
+  void didUpdateWidget(Counter oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Si el nuevo valor inicial es diferente al que teníamos, actualizamos el estado.
+    if (widget.initialValue != oldWidget.initialValue) {
+      setState(() {
+        _count = widget.initialValue;
+      });
+    }
+  }
 
   void _increment() {
     setState(() {

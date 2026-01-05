@@ -1,11 +1,19 @@
-import 'package:app/widgets/button.dart';
-import 'package:app/widgets/counter.dart';
-import 'package:app/widgets/custom_appbar.dart';
-import 'package:app/widgets/date.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../colors.dart';
+import '../models/attendance_record_model.dart';
+import '../models/log_model.dart';
+import '../models/member_model.dart';
+import '../providers/attendance_provider.dart';
+import '../providers/log_provider.dart';
+import '../providers/member_provider.dart';
+import '../widgets/button.dart';
+import '../widgets/counter.dart';
+import '../widgets/custom_appbar.dart';
+import '../widgets/date.dart';
 import '../widgets/menu.dart';
+import '../widgets/search_text_field.dart';
 
 class Attendance extends StatefulWidget {
   const Attendance({super.key});
@@ -15,52 +23,94 @@ class Attendance extends StatefulWidget {
 }
 
 class _AttendanceState extends State<Attendance> {
-  final DateTime? selectedDate = DateTime.now();
-
-  // Lista de miembros de ejemplo
-  final List _allMembers = [
-    'Ethan Carter',
-    'Olivia Bennett',
-    'Noah Thompson',
-    'Sophia Ramirez',
-    'Liam Walker',
-    'Ava Rodriguez',
-    'Jackson Davis',
-  ];
-
-  List _filteredMembers = [];
-  final TextEditingController _searchController = TextEditingController();
-
-  int _guestCount = 0; // Estado para el contador de visitas
-  int _pastoralVisitCount = 0; // Estado para el contador de visitas pastorales
-  bool value = false;
+  // --- ESTADO DE LA PANTALLA ---
+  DateTime _selectedDate = DateTime.now();
+  int _guestCount = 0;
+  int _pastoralVisitCount = 0;
+  // Set para almacenar los IDs de los miembros marcados como presentes
+  final Set<String> _presentMemberIds = {};
 
   @override
-  void initState() {
-    super.initState();
-    _filteredMembers = _allMembers;
-    _searchController.addListener(_filterMembers);
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Cargar datos existentes si hay para la fecha seleccionada
+    _loadRecordForDate(_selectedDate);
   }
 
-  @override
-  void dispose() {
-    _searchController.removeListener(_filterMembers);
-    _searchController.dispose();
-    super.dispose();
-  }
+  void _loadRecordForDate(DateTime date) {
+    final attendanceProvider = Provider.of<AttendanceProvider>(
+      context,
+      listen: false,
+    );
+    final record = attendanceProvider.getRecordForDate(date);
 
-  void _filterMembers() {
-    String query = _searchController.text.toLowerCase();
     setState(() {
-      _filteredMembers = _allMembers.where((member) {
-        return member.toLowerCase().contains(query);
-      }).toList();
+      if (record != null) {
+        // Si existe un registro, cargamos sus datos en el estado de la UI
+        _guestCount = record.guestCount;
+        _pastoralVisitCount = record.pastoralVisitCount;
+        _presentMemberIds.clear();
+        _presentMemberIds.addAll(record.presentMemberIds);
+      } else {
+        // Si no hay registro, reseteamos el estado
+        _guestCount = 0;
+        _pastoralVisitCount = 0;
+        _presentMemberIds.clear();
+      }
     });
+  }
+
+  void _onDateSelected(DateTime date) {
+    setState(() {
+      _selectedDate = date;
+    });
+    _loadRecordForDate(date);
+  }
+
+  void _saveAttendance() {
+    final attendanceProvider = Provider.of<AttendanceProvider>(
+      context,
+      listen: false,
+    );
+    final logProvider = Provider.of<LogProvider>(context, listen: false);
+    final dateId =
+        "${_selectedDate.year}-${_selectedDate.month.toString().padLeft(2, '0')}-${_selectedDate.day.toString().padLeft(2, '0')}";
+
+    final newRecord = AttendanceRecord(
+      id: dateId,
+      date: _selectedDate,
+      guestCount: _guestCount,
+      pastoralVisitCount: _pastoralVisitCount,
+      presentMemberIds: Set.from(
+        _presentMemberIds,
+      ), // Creamos una copia del Set
+    );
+
+    attendanceProvider.saveRecord(newRecord);
+
+    logProvider.addLog(
+      userName: 'Admin',
+      action: LogAction.create, // O update si el registro ya existía
+      entity: LogEntity.report, // Podrías crear un LogEntity.attendance
+      details:
+          'Se guardó la asistencia para la fecha: $dateId. Asistentes: ${_presentMemberIds.length}, Visitas: $_guestCount.',
+    );
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Asistencia guardada correctamente.'),
+        backgroundColor: Colors.green,
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 800;
+    // Obtenemos los miembros del MemberProvider
+    final memberProvider = Provider.of<MemberProvider>(context);
+    final List<Member> members = memberProvider.filteredMembers;
+
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: CustomAppBar(title: 'Asistencia', isDrawerEnabled: isMobile),
@@ -70,111 +120,26 @@ class _AttendanceState extends State<Attendance> {
           if (!isMobile) Menu(),
           Expanded(
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
+                // --- WIDGETS DE CONTROL SUPERIORES ---
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: isMobile
-                      ? Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                _buildDateWidget(),
-                                SizedBox(width: 20),
-                                _buildButton(),
-                              ],
-                            ),
-                            SizedBox(height: 20),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                _buildVisitas(),
-                                SizedBox(width: 50),
-                                _buildPastorales(),
-                              ],
-                            ),
-                          ],
-                        )
-                      : Wrap(
-                          crossAxisAlignment: WrapCrossAlignment.end,
-                          children: [
-                            //SizedBox(width: 20),
-                            _buildDateWidget(),
-                            SizedBox(width: 40),
-                            _buildVisitas(),
-                            SizedBox(width: 40),
-                            _buildPastorales(),
-                            SizedBox(width: 40),
-                            _buildButton(),
-                          ],
-                        ),
+                      ? _buildMobileControls()
+                      : _buildWebControls(),
                 ),
-                SizedBox(height: 30),
-                // Lista de miembros
-                Expanded(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 25.0),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(
-                          12,
-                        ), // Esquinas redondeadas
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.1),
-                            spreadRadius: 2.5,
-                            blurRadius: 5,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
-                      ),
-
-                      child: ListView.builder(
-                        padding: const EdgeInsets.all(20),
-                        itemCount: _filteredMembers.length,
-                        itemBuilder: (context, index) {
-                          final member = _filteredMembers[index];
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8.0),
-                            child: ListTile(
-                              leading: CircleAvatar(
-                                backgroundColor: Colors.red.withOpacity(0.1),
-                                child: Text(
-                                  member.substring(0, 1).toUpperCase(),
-                                  style: TextStyle(
-                                    color: Colors.redAccent[200],
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                              title: Text(
-                                member,
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.black87,
-                                ),
-                              ),
-                              trailing: Checkbox(
-                                checkColor: Colors.grey,
-                                value: value,
-                                onChanged: (value) {},
-                              ),
-                              onTap: () {
-                                // Acción al tocar un miembro (ej. ir a su perfil)
-                              },
-                            ),
-                          );
-                        },
-                      ),
-                    ),
+                const SizedBox(height: 20),
+                // --- BARRA DE BÚSQUEDA ---
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 25.0),
+                  child: SearchTextField(
+                    onChanged: (query) => memberProvider.search(query),
                   ),
                 ),
+                const SizedBox(height: 20),
+                // --- LISTA DE MIEMBROS ---
+                Expanded(child: _buildMemberList(members)),
               ],
             ),
           ),
@@ -183,42 +148,143 @@ class _AttendanceState extends State<Attendance> {
     );
   }
 
-  Flexible _buildPastorales() {
-    return Flexible(
-      child: Counter(
-        label: 'Visitas Pastorales',
-        onCountChanged: (count) {
-          setState(() {
-            _pastoralVisitCount = count;
-          });
-        },
-      ),
+  // --- MÉTODOS BUILD REFACTORIZADOS ---
+
+  Widget _buildMobileControls() {
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            DateWidget(
+              selectedDate: _selectedDate,
+              onDateSelected: _onDateSelected,
+            ),
+            const SizedBox(width: 20),
+            Button(
+              text: 'Guardar',
+              onPressed: _saveAttendance,
+              size: const Size(160, 45),
+            ),
+          ],
+        ),
+        const SizedBox(height: 20),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            Counter(
+              label: 'Visitas',
+              initialValue: _guestCount,
+              onCountChanged: (count) => _guestCount = count,
+            ),
+            Counter(
+              label: 'Visitas Pastorales',
+              initialValue: _pastoralVisitCount,
+              onCountChanged: (count) => _pastoralVisitCount = count,
+            ),
+          ],
+        ),
+      ],
     );
   }
 
-  Button _buildButton() {
-    return Button(text: 'Guardar', onPressed: () {}, size: Size(160, 45));
-  }
-
-  Flexible _buildVisitas() {
-    return Flexible(
-      child: Counter(
-        label: 'Visitas',
-        onCountChanged: (count) {
-          setState(() {
-            _guestCount = count;
-          });
-        },
-      ),
+  Widget _buildWebControls() {
+    return Wrap(
+      spacing: 40,
+      runSpacing: 20,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      alignment: WrapAlignment.center,
+      children: [
+        DateWidget(
+          selectedDate: _selectedDate,
+          onDateSelected: _onDateSelected,
+        ),
+        Counter(
+          label: 'Visitas',
+          initialValue: _guestCount,
+          onCountChanged: (count) => _guestCount = count,
+        ),
+        Counter(
+          label: 'Visitas Pastorales',
+          initialValue: _pastoralVisitCount,
+          onCountChanged: (count) => _pastoralVisitCount = count,
+        ),
+        Button(
+          text: 'Guardar',
+          onPressed: _saveAttendance,
+          size: const Size(160, 45),
+        ),
+      ],
     );
   }
 
-  DateWidget _buildDateWidget() {
-    return DateWidget(
-      selectedDate: DateTime.now(),
-      onDateSelected: (date) {
-        setState(() {});
-      },
+  Widget _buildMemberList(List<Member> members) {
+    if (members.isEmpty) {
+      return const Center(child: Text('No se encontraron miembros.'));
+    }
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(25, 0, 25, 25),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.1),
+              spreadRadius: 2.5,
+              blurRadius: 5,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: members.length,
+          itemBuilder: (context, index) {
+            final member = members[index];
+            final bool isPresent = _presentMemberIds.contains(member.id);
+
+            return ListTile(
+              leading: CircleAvatar(
+                backgroundColor: isPresent
+                    ? Colors.green.withOpacity(0.1)
+                    : Colors.red.withOpacity(0.1),
+                child: Text(
+                  member.name.isNotEmpty
+                      ? member.name.substring(0, 1).toUpperCase()
+                      : '?',
+                  style: TextStyle(
+                    color: isPresent ? Colors.green : Colors.redAccent[200],
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              title: Text('${member.name} ${member.lastName}'),
+              trailing: Checkbox(
+                value: isPresent,
+                onChanged: (bool? value) {
+                  setState(() {
+                    if (value == true) {
+                      _presentMemberIds.add(member.id);
+                    } else {
+                      _presentMemberIds.remove(member.id);
+                    }
+                  });
+                },
+              ),
+              onTap: () {
+                setState(() {
+                  if (isPresent) {
+                    _presentMemberIds.remove(member.id);
+                  } else {
+                    _presentMemberIds.add(member.id);
+                  }
+                });
+              },
+            );
+          },
+        ),
+      ),
     );
   }
 }

@@ -103,6 +103,8 @@ class MemberProvider with ChangeNotifier {
   // 2. El término de búsqueda actual
   String _searchQuery = '';
 
+  List<Member> get allMembers => _allMembers;
+
   List<Member> get filteredMembers {
     if (_searchQuery.isEmpty) {
       return _allMembers; // Si no hay búsqueda, devuelve todos.

@@ -1,5 +1,6 @@
 // main.dart
 
+import 'package:app/providers/attendance_provider.dart';
 import 'package:app/providers/log_provider.dart';
 import 'package:app/providers/member_provider.dart';
 import 'package:app/providers/role_provider.dart';
@@ -23,6 +24,7 @@ void main() {
         ChangeNotifierProvider(create: (context) => RoleProvider()),
         ChangeNotifierProvider(create: (context) => LogProvider()),
         ChangeNotifierProvider(create: (context) => MemberProvider()),
+        ChangeNotifierProvider(create: (context) => AttendanceProvider()),
       ],
       child: const MyApp(),
     ),

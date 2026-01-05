@@ -41,8 +41,8 @@ class _DateWidgetState extends State<DateWidget> {
               final pickedDate = await showDatePicker(
                 context: context,
                 initialDate: DateTime.now(),
-                firstDate: DateTime.now(),
-                lastDate: DateTime.now().add(Duration(days: 90)),
+                firstDate: DateTime.now().subtract(const Duration(days: 365)),
+                lastDate: DateTime.now(),
                 builder: (BuildContext context, Widget? child) {
                   return Theme(
                     data: ThemeData(

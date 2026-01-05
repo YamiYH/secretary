@@ -1,6 +1,13 @@
 import 'package:app/widgets/custom_appbar.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
+import '../models/attendance_record_model.dart';
+import '../models/member_model.dart';
+import '../providers/attendance_provider.dart';
+import '../providers/member_provider.dart';
 import '../widgets/menu.dart'; // Tu widget de menú lateral
 
 // 1. Widget principal de la pantalla de Reportes
@@ -28,11 +35,46 @@ class _ReportsState extends State<Reports> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    final isMobile = MediaQuery.of(context).size.width < 800;
+    final isMobile = MediaQuery.of(context).size.width < 700;
+    final attendanceProvider = Provider.of<AttendanceProvider>(context);
+    final memberProvider = Provider.of<MemberProvider>(context);
+
+    // Obtenemos todos los registros de asistencia
+    final allRecordsOriginal = attendanceProvider.records.values.toList();
+    // Obtenemos todos los miembros para poder saber sus grupos
+    final allMembers = memberProvider.allMembers;
+    allRecordsOriginal.sort((a, b) => a.date.compareTo(b.date));
 
     return Scaffold(
       backgroundColor: backgroundColor,
-      appBar: CustomAppBar(title: 'Reportes', isDrawerEnabled: isMobile),
+      appBar: CustomAppBar(
+        title: 'Reportes',
+        isDrawerEnabled: isMobile,
+        bottom: TabBar(
+          unselectedLabelColor: Colors.white.withOpacity(0.7),
+          labelColor: Colors.white,
+          labelStyle: TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+          indicatorSize: TabBarIndicatorSize.tab,
+
+          indicator: BoxDecoration(
+            // El color del recuadro. Un gris oscuro semitransparente funciona bien.
+            color: Colors.black.withOpacity(0.1),
+            // Opcional: si quieres que el recuadro tenga bordes redondeados.
+            borderRadius: BorderRadius.circular(8.0),
+          ),
+
+          controller: _tabController,
+          tabs: const [
+            Tab(text: 'Asistencia'),
+            Tab(text: 'Miembros'),
+            Tab(text: 'Eventos'),
+          ],
+        ),
+      ),
       drawer: isMobile ? Drawer(child: Menu()) : null,
       body: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -42,8 +84,10 @@ class _ReportsState extends State<Reports> with TickerProviderStateMixin {
             child: TabBarView(
               controller: _tabController,
               children: [
-                // Contenido para la pestaña "Resúmenes de asistencia"
-                ReportContent(),
+                ReportContent(
+                  allRecords: allRecordsOriginal,
+                  allMembers: allMembers,
+                ),
                 // Placeholder para las otras pestañas
                 const Center(child: Text('Estadísticas de Miembros')),
                 const Center(child: Text('Participación en Eventos')),
@@ -88,11 +132,178 @@ class _ReportsState extends State<Reports> with TickerProviderStateMixin {
 }
 
 // 2. Widget para el contenido de los reportes
-class ReportContent extends StatelessWidget {
-  const ReportContent({super.key});
+class ReportContent extends StatefulWidget {
+  final List<AttendanceRecord> allRecords;
+  final List<Member> allMembers;
+
+  const ReportContent({
+    super.key,
+    required this.allRecords,
+    required this.allMembers,
+  });
+
+  @override
+  State<ReportContent> createState() => _ReportContentState();
+}
+
+class _ReportContentState extends State<ReportContent> {
+  String? _selectedGroup; // null significa "Todos"
+  DateTimeRange? _selectedDateRange;
+
+  @override
+  void initState() {
+    super.initState();
+    // Inicialmente, no hay filtros aplicados.
+    _selectedGroup = null;
+    _selectedDateRange = null;
+  }
+
+  // Muestra un menú para seleccionar un grupo
+  void _showGroupFilter(BuildContext context) {
+    // Obtenemos la lista única de grupos de los miembros
+    final Set<String> groups = widget.allMembers.map((m) => m.group).toSet();
+    final List<String> groupList = groups.toList()..sort();
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return SimpleDialog(
+          title: const Text('Seleccionar Grupo'),
+          children: [
+            // Opción para quitar el filtro
+            SimpleDialogOption(
+              onPressed: () {
+                setState(() {
+                  _selectedGroup = null;
+                });
+                Navigator.pop(context);
+              },
+              child: const Text('Todos los Grupos'),
+            ),
+            // Opciones para cada grupo
+            ...groupList.map(
+              (group) => SimpleDialogOption(
+                onPressed: () {
+                  setState(() {
+                    _selectedGroup = group;
+                  });
+                  Navigator.pop(context);
+                },
+                child: Text(group),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // Muestra el selector de rango de fechas
+  Future<void> _showDateRangeFilter(BuildContext context) async {
+    final now = DateTime.now();
+    final initialRange =
+        _selectedDateRange ??
+        DateTimeRange(start: now.subtract(const Duration(days: 30)), end: now);
+    final DateTimeRange? picked = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime(now.year - 5),
+
+      lastDate: DateTime.now(),
+      initialDateRange: initialRange,
+    );
+    if (picked != null && picked != _selectedDateRange) {
+      setState(() {
+        _selectedDateRange = picked;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    List<AttendanceRecord> filteredRecords = List.from(widget.allRecords);
+
+    // 1. Filtrar por Rango de Fechas
+    if (_selectedDateRange != null) {
+      filteredRecords = filteredRecords.where((record) {
+        final recordDate = record.date;
+        // Normalizamos las fechas para ignorar la hora del día
+        final startDate = DateTime(
+          _selectedDateRange!.start.year,
+          _selectedDateRange!.start.month,
+          _selectedDateRange!.start.day,
+        );
+        final endDate = DateTime(
+          _selectedDateRange!.end.year,
+          _selectedDateRange!.end.month,
+          _selectedDateRange!.end.day,
+        );
+        return (recordDate.isAtSameMomentAs(startDate) ||
+                recordDate.isAfter(startDate)) &&
+            (recordDate.isAtSameMomentAs(endDate) ||
+                recordDate.isBefore(endDate));
+      }).toList();
+    }
+
+    // Si se selecciona un grupo, primero encontramos qué miembros pertenecen a él.
+    // Luego, filtramos los registros de asistencia para que solo incluyan a esos miembros.
+    Set<String> membersInGroup = {};
+    if (_selectedGroup != null) {
+      membersInGroup = widget.allMembers
+          .where((member) => member.group == _selectedGroup)
+          .map((member) => member.id)
+          .toSet();
+    }
+
+    // --- CÁLCULO DE MÉTRICAS SOBRE DATOS FILTRADOS ---
+    final int totalAttendance = filteredRecords.fold(0, (sum, record) {
+      if (_selectedGroup == null) {
+        return sum + record.presentMemberIds.length;
+      }
+      // Si hay un grupo, solo contamos los miembros de ese grupo
+      return sum +
+          record.presentMemberIds
+              .where((id) => membersInGroup.contains(id))
+              .length;
+    });
+    final int totalGuests = (_selectedGroup == null)
+        ? filteredRecords.fold(0, (sum, record) => sum + record.guestCount)
+        : 0;
+    final int grandTotal = totalAttendance + totalGuests;
+
+    // Preparación de datos para el gráfico (ahora con datos filtrados)
+    filteredRecords.sort((a, b) => a.date.compareTo(b.date));
+    final List<FlSpot> spots = filteredRecords.asMap().entries.map((entry) {
+      final index = entry.key;
+      final record = entry.value;
+      final totalAttendees = (_selectedGroup == null)
+          ? record.presentMemberIds.length + record.guestCount
+          : record.presentMemberIds
+                .where((id) => membersInGroup.contains(id))
+                .length;
+      return FlSpot(index.toDouble(), totalAttendees.toDouble());
+    }).toList();
+
+    // --- 3. CALCULAMOS LA ASISTENCIA POR GRUPO ---
+    final Map<String, int> attendanceByGroup = {};
+    // Creamos un mapa de ID de miembro a su grupo para una búsqueda rápida
+    final memberGroupMap = {
+      for (var member in widget.allMembers) member.id: member.group,
+    };
+
+    for (var record in widget.allRecords) {
+      for (var memberId in record.presentMemberIds) {
+        final group = memberGroupMap[memberId];
+        if (group != null) {
+          // Si el grupo ya está en el mapa, suma 1. Si no, inicialízalo en 1.
+          attendanceByGroup.update(
+            group,
+            (value) => value + 1,
+            ifAbsent: () => 1,
+          );
+        }
+      }
+    }
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(32.0),
       child: Column(
@@ -108,14 +319,15 @@ class ReportContent extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
-            'Tendencia de Asistencia',
-            style: TextStyle(fontSize: 18, color: Colors.grey),
+          Text(
+            _selectedGroup ??
+                'Todos los Grupos', // <-- CAMBIO: Muestra el filtro activo
+            style: const TextStyle(fontSize: 18, color: Colors.grey),
           ),
           const SizedBox(height: 16),
           // Métrica principal
-          const Text(
-            '1,250',
+          Text(
+            grandTotal.toString(),
             style: TextStyle(
               fontSize: 48,
               fontWeight: FontWeight.bold,
@@ -123,39 +335,87 @@ class ReportContent extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 4),
-          const Text(
-            'Últimos 30 días +15%',
+          Text(
+            '${totalAttendance.toString()} Miembros + ${totalGuests.toString()} Visitas',
             style: TextStyle(fontSize: 16, color: Colors.green),
           ),
+          if (_selectedGroup == null)
+            //Solo muestra visitas si no hay filtro de grupo
+            Text(
+              '${totalAttendance.toString()} Miembros + ${totalGuests.toString()} Visitas',
+              style: const TextStyle(fontSize: 16, color: Colors.green),
+            ),
           const SizedBox(height: 32),
           // Gráfico de tendencia (puedes usar un paquete como fl_chart)
-          Container(
-            height: 150,
-            color: Colors.grey[200],
-            child: const Center(child: Text('Gráfico de Líneas Aquí')),
+          const Text(
+            'Tendencia de Asistencia',
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           ),
+          const SizedBox(height: 24),
+          if (spots.isEmpty)
+            Container(
+              height: 200,
+              child: const Center(
+                child: Text(
+                  'No hay suficientes datos para mostrar una tendencia.',
+                ),
+              ),
+            )
+          else
+            buildAspectRatioLines(spots, filteredRecords),
+
           const SizedBox(height: 32),
           // Sección de Asistencia por Grupo
-          const Text(
-            'Asistencia por Grupo',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
+          if (_selectedGroup == null) ...[
+            // <-- CAMBIO: Lógica para ocultar la sección
+            const Text(
+              'Asistencia por Grupo',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
-          ),
-          const SizedBox(height: 16),
-          _buildGroupBar('Jóvenes', 250),
-          _buildGroupBar('Adultos', 300),
-          _buildGroupBar('Mayores', 400),
-          _buildGroupBar('Niños', 300),
-          const SizedBox(height: 32),
-          // Filtros
+            const SizedBox(height: 16),
+            if (attendanceByGroup.isEmpty)
+              const Text('No hay datos de asistencia por grupo.')
+            else
+              ...attendanceByGroup.entries.map((entry) {
+                return _buildGroupBar(entry.key, entry.value, grandTotal);
+              }).toList(),
+            const SizedBox(height: 32),
+          ],
           Row(
             children: [
-              _buildFilterButton('Rango de Fecha'),
+              Row(
+                children: [
+                  _buildFilterButton(
+                    _selectedDateRange == null
+                        ? 'Rango de Fecha'
+                        : '${DateFormat('d/M/y', 'es_ES').format(_selectedDateRange!.start)} - ${DateFormat('d/M/y', 'es_ES').format(_selectedDateRange!.end)}',
+                    () => _showDateRangeFilter(context),
+                  ),
+                  if (_selectedDateRange != null)
+                    Padding(
+                      padding: const EdgeInsets.only(left: 8.0),
+                      child: InkWell(
+                        onTap: () {
+                          // Al tocarlo, limpia el estado y reconstruye la UI
+                          setState(() {
+                            _selectedDateRange = null;
+                          });
+                        },
+                        borderRadius: BorderRadius.circular(20),
+                        child: const Icon(
+                          Icons.clear,
+                          color: Colors.red,
+                          size: 20,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
               const SizedBox(width: 16),
-              _buildFilterButton('Grupo'),
+              _buildFilterButton(
+                _selectedGroup ?? 'Grupo',
+                () => _showGroupFilter(context),
+              ),
             ],
           ),
         ],
@@ -163,8 +423,93 @@ class ReportContent extends StatelessWidget {
     );
   }
 
-  Widget _buildGroupBar(String title, int attendance) {
-    // La lógica de la barra podría ser más compleja
+  AspectRatio buildAspectRatioLines(
+    List<FlSpot> spots,
+    List<AttendanceRecord> records,
+  ) {
+    return AspectRatio(
+      aspectRatio: 1.7, // Proporción del gráfico (ancho vs alto)
+      child: LineChart(
+        LineChartData(
+          // --- ESTILOS Y CONFIGURACIÓN DEL GRÁFICO ---
+          gridData: FlGridData(show: false), // Oculta la cuadrícula de fondo
+          titlesData: FlTitlesData(
+            leftTitles: AxisTitles(
+              sideTitles: SideTitles(showTitles: true, reservedSize: 40),
+            ),
+            rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            bottomTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                reservedSize: 30,
+                interval: 1,
+                // Formateador para mostrar la fecha en el eje X
+                getTitlesWidget: (value, meta) {
+                  // Solo muestra algunas etiquetas para no saturar
+                  if (value.toInt() % (spots.length ~/ 4 + 1) == 0) {
+                    final record = widget.allRecords[value.toInt()];
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: Text(
+                        DateFormat('d MMM', 'es_ES').format(record.date),
+                      ),
+                    );
+                  }
+                  return const Text('');
+                },
+              ),
+            ),
+          ),
+          borderData: FlBorderData(
+            show: true,
+            border: Border.all(color: Colors.grey[300]!),
+          ),
+          lineBarsData: [
+            LineChartBarData(
+              spots: spots,
+              isCurved: true, // Líneas curvas para un look más suave
+              color: accentColor, // Usa tu color de acento
+              barWidth: 4,
+              isStrokeCapRound: true,
+              dotData: FlDotData(show: false), // Oculta los puntos en la línea
+              belowBarData: BarAreaData(
+                // Sombreado debajo de la línea
+                show: true,
+                color: accentColor.withOpacity(0.2),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // --- MÉTODOS AUXILIARES ---
+  Map<String, int> _calculateAttendanceByGroup() {
+    final Map<String, int> attendanceByGroup = {};
+    final memberGroupMap = {
+      for (var member in widget.allMembers) member.id: member.group,
+    };
+    for (var record in widget.allRecords) {
+      for (var memberId in record.presentMemberIds) {
+        final group = memberGroupMap[memberId];
+        if (group != null) {
+          attendanceByGroup.update(
+            group,
+            (value) => value + 1,
+            ifAbsent: () => 1,
+          );
+        }
+      }
+    }
+    return attendanceByGroup;
+  }
+
+  Widget _buildGroupBar(String title, int attendance, int total) {
+    // Evitamos división por cero si el total es 0
+    final double percentage = (total > 0) ? attendance / total : 0.0;
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
@@ -180,9 +525,7 @@ class ReportContent extends StatelessWidget {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: LinearProgressIndicator(
-                value:
-                    attendance /
-                    1250, // Ejemplo de cálculo, ajusta según tus datos
+                value: percentage,
                 minHeight: 20,
                 backgroundColor: Colors.grey[300],
                 color: accentColor,
@@ -199,20 +542,24 @@ class ReportContent extends StatelessWidget {
     );
   }
 
-  Widget _buildFilterButton(String text) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.grey[300]!),
-      ),
-      child: Row(
-        children: [
-          Text(text),
-          const SizedBox(width: 8),
-          const Icon(Icons.keyboard_arrow_down, size: 18),
-        ],
+  Widget _buildFilterButton(String text, VoidCallback onPressed) {
+    return InkWell(
+      onTap: onPressed,
+      borderRadius: BorderRadius.circular(24),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: Colors.grey[300]!),
+        ),
+        child: Row(
+          children: [
+            Text(text),
+            const SizedBox(width: 8),
+            const Icon(Icons.keyboard_arrow_down, size: 18),
+          ],
+        ),
       ),
     );
   }
