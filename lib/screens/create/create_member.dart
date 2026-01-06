@@ -5,6 +5,7 @@ import 'package:app/widgets/custom_appbar.dart';
 import 'package:app/widgets/custom_text_form_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../models/log_model.dart';
@@ -27,7 +28,7 @@ class _CreateMemberState extends State<CreateMember> {
   final _lastNameController = TextEditingController();
   final _phoneController = TextEditingController();
   final _addressController = TextEditingController();
-  final _birthDateController = TextEditingController();
+  DateTime? _selectedBirthDate;
 
   String? _selectedGroup;
 
@@ -43,9 +44,8 @@ class _CreateMemberState extends State<CreateMember> {
       _lastNameController.text = member.lastName;
       _phoneController.text = member.phone;
       _addressController.text = member.address;
-      _birthDateController.text = member.birthDate;
-
       _selectedGroup = member.group;
+      _selectedBirthDate = member.birthDate;
     }
   }
 
@@ -55,11 +55,19 @@ class _CreateMemberState extends State<CreateMember> {
     _lastNameController.dispose();
     _phoneController.dispose();
     _addressController.dispose();
-    _birthDateController.dispose();
     super.dispose();
   }
 
   void _saveMember() {
+    if (_selectedBirthDate == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Por favor, selecciona una fecha de nacimiento.'),
+        ),
+      );
+      return;
+    }
+
     if (_formKey.currentState!.validate()) {
       final memberProvider = Provider.of<MemberProvider>(
         context,
@@ -79,8 +87,9 @@ class _CreateMemberState extends State<CreateMember> {
           lastName: lastName,
           phone: _phoneController.text,
           address: _addressController.text,
-          birthDate: _birthDateController.text,
+          birthDate: _selectedBirthDate!,
           group: group,
+          registrationDate: widget.memberToEdit!.registrationDate,
         );
         memberProvider.updateMember(updatedMember);
         logProvider.addLog(
@@ -96,8 +105,9 @@ class _CreateMemberState extends State<CreateMember> {
           lastName: lastName,
           phone: _phoneController.text,
           address: _addressController.text,
-          birthDate: _birthDateController.text,
+          birthDate: _selectedBirthDate!,
           group: group,
+          registrationDate: DateTime.now(),
         );
         memberProvider.addMember(newMember);
         logProvider.addLog(
@@ -214,15 +224,35 @@ class _CreateMemberState extends State<CreateMember> {
             controller: _phoneController,
           ),
           const SizedBox(height: 16.0),
-          DropDownNetwork(),
-          const SizedBox(height: 30.0),
-          Button(
-            size: Size(150, 45),
-            text: 'Guardar',
-            onPressed: () {
-              _saveMember();
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Icons.calendar_today),
+            title: const Text('Fecha de Nacimiento'),
+            subtitle: Text(
+              _selectedBirthDate == null
+                  ? 'No seleccionada'
+                  : DateFormat(
+                      'dd/MM/yyyy',
+                      'es_ES',
+                    ).format(_selectedBirthDate!),
+            ),
+            onTap: () async {
+              final DateTime? picked = await showDatePicker(
+                context: context,
+                initialDate: _selectedBirthDate ?? DateTime.now(),
+                firstDate: DateTime(1920),
+                lastDate: DateTime.now(),
+              );
+              if (picked != null) {
+                setState(() {
+                  _selectedBirthDate = picked;
+                });
+              }
             },
           ),
+          DropDownNetwork(),
+          const SizedBox(height: 30.0),
+          Button(size: Size(150, 45), text: 'Guardar', onPressed: _saveMember),
         ],
       ),
     );

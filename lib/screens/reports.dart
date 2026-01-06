@@ -71,7 +71,6 @@ class _ReportsState extends State<Reports> with TickerProviderStateMixin {
           tabs: const [
             Tab(text: 'Asistencia'),
             Tab(text: 'Miembros'),
-            Tab(text: 'Eventos'),
           ],
         ),
       ),
@@ -84,12 +83,18 @@ class _ReportsState extends State<Reports> with TickerProviderStateMixin {
             child: TabBarView(
               controller: _tabController,
               children: [
+                // Pestaña 1
                 ReportContent(
                   allRecords: allRecordsOriginal,
                   allMembers: allMembers,
                 ),
                 // Placeholder para las otras pestañas
-                const Center(child: Text('Estadísticas de Miembros')),
+                // Pestaña 2
+                MembershipAnalyticsTab(
+                  allMembers: allMembers,
+                  allRecords: allRecordsOriginal,
+                ),
+                // Pestaña 3
                 const Center(child: Text('Participación en Eventos')),
               ],
             ),
@@ -428,7 +433,7 @@ class _ReportContentState extends State<ReportContent> {
     List<AttendanceRecord> records,
   ) {
     return AspectRatio(
-      aspectRatio: 1.7, // Proporción del gráfico (ancho vs alto)
+      aspectRatio: 5.0, // Proporción del gráfico (ancho vs alto)
       child: LineChart(
         LineChartData(
           // --- ESTILOS Y CONFIGURACIÓN DEL GRÁFICO ---
@@ -561,6 +566,266 @@ class _ReportContentState extends State<ReportContent> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class MembershipAnalyticsTab extends StatelessWidget {
+  final List<Member> allMembers;
+  final List<AttendanceRecord> allRecords;
+
+  const MembershipAnalyticsTab({
+    super.key,
+    required this.allMembers,
+    required this.allRecords,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    // --- LÓGICA DE CÁLCULO PARA LA MEMBRESÍA ---
+
+    // 1. Calcular Miembros Activos vs. Inactivos
+    final thirtyDaysAgo = DateTime.now().subtract(const Duration(days: 30));
+    // Creamos un conjunto con los IDs de todos los que han asistido en los últimos 30 días.
+    final Set<String> recentAttendees = {};
+    for (var record in allRecords) {
+      if (record.date.isAfter(thirtyDaysAgo)) {
+        recentAttendees.addAll(record.presentMemberIds);
+      }
+    }
+    final int activeMembers = allMembers
+        .where((m) => recentAttendees.contains(m.id))
+        .length;
+    final int inactiveMembers = allMembers.length - activeMembers;
+
+    // 2. Calcular Distribución por Grupo
+    final Map<String, int> membersByGroup = {};
+    for (var member in allMembers) {
+      membersByGroup.update(
+        member.group,
+        (value) => value + 1,
+        ifAbsent: () => 1,
+      );
+    }
+
+    // 3. Calcular Crecimiento de la Membresía (para el gráfico de líneas)
+    // Ordenamos los miembros por su fecha de registro
+    final sortedMembers = List<Member>.from(allMembers)
+      ..sort((a, b) => a.registrationDate.compareTo(b.registrationDate));
+    final List<FlSpot> growthSpots = [];
+    for (int i = 0; i < sortedMembers.length; i++) {
+      // El eje X es el índice (tiempo) y el eje Y es el número total de miembros hasta ese punto.
+      growthSpots.add(FlSpot(i.toDouble(), (i + 1).toDouble()));
+    }
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // --- SECCIÓN DE ACTIVIDAD DE MIEMBROS ---
+          const Text(
+            'Actividad de la Membresía',
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          ),
+          const Text(
+            'Últimos 30 días',
+            style: TextStyle(fontSize: 16, color: Colors.grey),
+          ),
+          const SizedBox(height: 24),
+          _buildActivityChart(context, activeMembers, inactiveMembers),
+
+          const SizedBox(height: 48),
+
+          // --- SECCIÓN DE CRECIMIENTO HISTÓRICO ---
+          const Text(
+            'Crecimiento de la Membresía',
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 24),
+          if (growthSpots.length < 2)
+            const Center(
+              child: Text(
+                'No hay suficientes datos para mostrar el crecimiento.',
+              ),
+            )
+          else
+            AspectRatio(
+              aspectRatio: 2,
+              child: LineChart(
+                _buildGrowthChartData(growthSpots, sortedMembers),
+              ),
+            ),
+          const SizedBox(height: 48),
+
+          // --- SECCIÓN DE DISTRIBUCIÓN POR GRUPO ---
+          const Text(
+            'Distribución por Grupo',
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 24),
+          ...membersByGroup.entries.map((entry) {
+            return _buildGroupDistributionBar(
+              title: entry.key,
+              count: entry.value,
+              total: allMembers.length,
+            );
+          }).toList(),
+        ],
+      ),
+    );
+  }
+
+  // Widget para el gráfico de dona (Activos vs. Inactivos)
+  Widget _buildActivityChart(BuildContext context, int active, int inactive) {
+    return SizedBox(
+      height: 200,
+      child: Row(
+        children: [
+          Expanded(
+            flex: 2,
+            child: PieChart(
+              PieChartData(
+                sectionsSpace: 4,
+                centerSpaceRadius: 40,
+                sections: [
+                  PieChartSectionData(
+                    value: active.toDouble(),
+                    title:
+                        '${((active / (active + inactive)) * 100).toStringAsFixed(0)}%',
+                    color: Colors.green,
+                    radius: 50,
+                    titleStyle: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  PieChartSectionData(
+                    value: inactive.toDouble(),
+                    title:
+                        '${((inactive / (active + inactive)) * 100).toStringAsFixed(0)}%',
+                    color: Colors.orange,
+                    radius: 50,
+                    titleStyle: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 3,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildLegend(color: Colors.green, text: 'Activos ($active)'),
+                const SizedBox(height: 8),
+                _buildLegend(
+                  color: Colors.orange,
+                  text: 'Inactivos ($inactive)',
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Widget para la leyenda del gráfico
+  Widget _buildLegend({required Color color, required String text}) {
+    return Row(
+      children: [
+        Container(width: 16, height: 16, color: color),
+        const SizedBox(width: 8),
+        Text(text, style: const TextStyle(fontSize: 16)),
+      ],
+    );
+  }
+
+  // Widget para la barra de distribución de grupos
+  Widget _buildGroupDistributionBar({
+    required String title,
+    required int count,
+    required int total,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '$title ($count)',
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 4),
+          LinearProgressIndicator(
+            value: count / total,
+            minHeight: 12,
+            backgroundColor: Colors.grey[300],
+            color: primaryColor1,
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Configuración para el gráfico de crecimiento
+  LineChartData _buildGrowthChartData(
+    List<FlSpot> spots,
+    List<Member> sortedMembers,
+  ) {
+    return LineChartData(
+      gridData: FlGridData(show: false),
+      titlesData: FlTitlesData(
+        leftTitles: AxisTitles(
+          sideTitles: SideTitles(showTitles: true, reservedSize: 40),
+        ),
+        rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+        topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+        bottomTitles: AxisTitles(
+          sideTitles: SideTitles(
+            showTitles: true,
+            reservedSize: 30,
+            interval: 1,
+            getTitlesWidget: (value, meta) {
+              final int index = value.toInt();
+              if (index == 0 || index == spots.length - 1) {
+                final member = sortedMembers[index];
+                return Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: Text(
+                    DateFormat(
+                      'MMM yyyy',
+                      'es_ES',
+                    ).format(member.registrationDate),
+                  ),
+                );
+              }
+              return const Text('');
+            },
+          ),
+        ),
+      ),
+      borderData: FlBorderData(
+        show: true,
+        border: Border.all(color: Colors.grey[300]!),
+      ),
+      lineBarsData: [
+        LineChartBarData(
+          spots: spots,
+          isCurved: true,
+          color: accentColor,
+          barWidth: 4,
+          dotData: FlDotData(show: false),
+          belowBarData: BarAreaData(
+            show: true,
+            color: accentColor.withOpacity(0.2),
+          ),
+        ),
+      ],
     );
   }
 }

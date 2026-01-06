@@ -6,8 +6,9 @@ class Member {
   final String lastName;
   final String phone;
   final String address;
-  final String birthDate;
+  final DateTime birthDate;
   final String group;
+  final DateTime registrationDate;
 
   Member({
     required this.id,
@@ -17,5 +18,6 @@ class Member {
     required this.address,
     required this.birthDate,
     required this.group,
+    required this.registrationDate,
   });
 }
