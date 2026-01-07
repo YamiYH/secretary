@@ -3,6 +3,8 @@
 import 'package:app/providers/attendance_provider.dart';
 import 'package:app/providers/log_provider.dart';
 import 'package:app/providers/member_provider.dart';
+import 'package:app/providers/ministry_provider.dart';
+import 'package:app/providers/network_provider.dart';
 import 'package:app/providers/role_provider.dart';
 import 'package:app/providers/service_provider.dart';
 // 1. Importa el nuevo UserProvider que creamos
@@ -25,6 +27,8 @@ void main() {
         ChangeNotifierProvider(create: (context) => LogProvider()),
         ChangeNotifierProvider(create: (context) => MemberProvider()),
         ChangeNotifierProvider(create: (context) => AttendanceProvider()),
+        ChangeNotifierProvider(create: (context) => NetworkProvider()),
+        ChangeNotifierProvider(create: (context) => MinistryProvider()),
       ],
       child: const MyApp(),
     ),

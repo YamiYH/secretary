@@ -7,7 +7,7 @@ class MemberProvider with ChangeNotifier {
   // --- ESTADO INTERNO DEL PROVIDER ---
 
   // 1. La lista maestra de todos los miembros (nuestra "base de datos" en memoria)
-  final List<Member> _allMembers = [
+  final List<Member> _members = [
     Member(
       id: 'm1',
       name: 'Ethan',
@@ -110,17 +110,24 @@ class MemberProvider with ChangeNotifier {
     ),
   ];
 
+  // Getter para todos los miembros (ya deberías tenerlo)
+  List<Member> get members => List.unmodifiable(_members);
+
+  List<Member> getMembersByIds(List<String> ids) {
+    return _members.where((member) => ids.contains(member.id)).toList();
+  }
+
   // 2. El término de búsqueda actual
   String _searchQuery = '';
 
-  List<Member> get allMembers => _allMembers;
+  List<Member> get allMembers => _members;
 
   List<Member> get filteredMembers {
     if (_searchQuery.isEmpty) {
-      return _allMembers; // Si no hay búsqueda, devuelve todos.
+      return _members; // Si no hay búsqueda, devuelve todos.
     } else {
       // Si hay búsqueda, filtra la lista maestra.
-      return _allMembers.where((member) {
+      return _members.where((member) {
         final query = _searchQuery.toLowerCase();
         final fullName = '${member.name} ${member.lastName}'.toLowerCase();
         final nameMatches = fullName.contains(query);
@@ -141,22 +148,22 @@ class MemberProvider with ChangeNotifier {
 
   // Aquí irán las futuras funciones CRUD
   void addMember(Member member) {
-    _allMembers.add(member);
+    _members.add(member);
     notifyListeners();
   }
 
   void updateMember(Member updatedMember) {
-    final index = _allMembers.indexWhere(
+    final index = _members.indexWhere(
       (member) => member.id == updatedMember.id,
     );
     if (index != -1) {
-      _allMembers[index] = updatedMember;
+      _members[index] = updatedMember;
       notifyListeners();
     }
   }
 
   void deleteMember(String id) {
-    _allMembers.removeWhere((member) => member.id == id);
+    _members.removeWhere((member) => member.id == id);
     notifyListeners();
   }
 }

@@ -4,7 +4,7 @@
 enum LogAction { create, update, delete }
 
 // Un enum para las entidades que pueden ser modificadas.
-enum LogEntity { user, role, service, report }
+enum LogEntity { user, role, service, report, network, ministry }
 
 class Log {
   final String id;

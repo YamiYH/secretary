@@ -1,66 +1,130 @@
 import 'package:app/widgets/button.dart';
 import 'package:app/widgets/custom_appbar.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-class CreateMinistry extends StatelessWidget {
-  const CreateMinistry({super.key});
+import '../../models/log_model.dart';
+import '../../models/ministry_model.dart';
+import '../../providers/log_provider.dart';
+import '../../providers/ministry_provider.dart';
+import '../../widgets/custom_text_form_field.dart';
+
+class CreateMinistry extends StatefulWidget {
+  final MinistryModel? ministryToEdit;
+
+  const CreateMinistry({super.key, this.ministryToEdit});
+
+  @override
+  State<CreateMinistry> createState() => _CreateMinistryState();
+}
+
+class _CreateMinistryState extends State<CreateMinistry> {
+  final _formKey = GlobalKey<FormState>();
+  late TextEditingController _nameController;
+  late TextEditingController _detailsController;
+
+  // Propiedad para saber si estamos editando
+  bool get _isEditing => widget.ministryToEdit != null;
+
+  @override
+  void initState() {
+    super.initState();
+    // Inicializa los controladores con los datos existentes si estamos editando
+    _nameController = TextEditingController(
+      text: widget.ministryToEdit?.name ?? '',
+    );
+    _detailsController = TextEditingController(
+      text: widget.ministryToEdit?.details ?? '',
+    );
+  }
+
+  @override
+  void dispose() {
+    // Limpia los controladores
+    _nameController.dispose();
+    _detailsController.dispose();
+    super.dispose();
+  }
+
+  void _submitForm() {
+    if (_formKey.currentState!.validate()) {
+      final ministryProvider = Provider.of<MinistryProvider>(
+        context,
+        listen: false,
+      );
+      final logProvider = Provider.of<LogProvider>(context, listen: false);
+
+      if (_isEditing) {
+        // Lógica para ACTUALIZAR
+        final updatedMinistry = MinistryModel(
+          id: widget.ministryToEdit!.id,
+          name: _nameController.text,
+          details: _detailsController.text,
+        );
+        ministryProvider.updateMinistry(updatedMinistry);
+        logProvider.addLog(
+          userName: 'Usuario Actual',
+          action: LogAction.update,
+          entity: LogEntity.ministry,
+          details: 'Se actualizó el ministerio: "${updatedMinistry.name}"',
+        );
+      } else {
+        // Lógica para CREAR
+        final newMinistry = MinistryModel(
+          id: '', // El provider asignará un ID
+          name: _nameController.text,
+          details: _detailsController.text,
+        );
+        ministryProvider.addMinistry(newMinistry);
+        logProvider.addLog(
+          userName: 'Usuario Actual',
+          action: LogAction.create,
+          entity: LogEntity.ministry,
+          details: 'Se creó el nuevo ministerio: "${newMinistry.name}"',
+        );
+      }
+      Navigator.of(context).pop();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     bool isMobile = MediaQuery.of(context).size.width < 700;
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: CustomAppBar(title: 'Crear nuevo ministerio'),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(isMobile ? 50 : 70),
-        child: Center(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxWidth:
-                  MediaQuery.of(context).size.width * (isMobile ? 0.9 : 0.5),
-            ), // Limita el ancho en pantallas grandes
+      appBar: CustomAppBar(
+        title: _isEditing ? 'Editar Ministerio' : 'Crear Ministerio',
+      ),
+      body: Center(
+        child: Container(
+          width: MediaQuery.of(context).size.width * 0.5,
+          constraints: const BoxConstraints(maxWidth: 600),
+          child: Form(
+            key: _formKey,
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Center(
-                  child: Text(
-                    'Detalles del Ministerio',
-                    style: TextStyle(
-                      fontSize: isMobile ? 22 : 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                CustomTextFormField(
+                  controller: _nameController,
+                  labelText: 'Nombre del Ministerio',
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Por favor, ingrese un nombre.';
+                    }
+                    return null;
+                  },
                 ),
-                const SizedBox(height: 40),
-                TextFormField(
-                  decoration: InputDecoration(
-                    labelText: 'Nombre del Ministerio',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(5),
-                    ),
-                  ),
+                const SizedBox(height: 20),
+                CustomTextFormField(
+                  controller: _detailsController,
+                  labelText: 'Detalles (opcional)',
+                  maxLines: 3, // Permite más espacio para detalles
                 ),
-                const SizedBox(height: 15),
-                TextFormField(
-                  decoration: InputDecoration(
-                    labelText: 'Descripción',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(5),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 40),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Button(
-                      size: Size(130, 45),
-                      text: 'Guardar',
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                    ),
-                  ],
+                const SizedBox(height: 30),
+                Button(
+                  onPressed: _submitForm,
+                  // Texto del botón dinámico
+                  text: _isEditing ? 'Actualizar' : 'Guardar',
                 ),
               ],
             ),

@@ -1,6 +1,8 @@
 import 'package:app/routes/page_route_builder.dart';
 import 'package:app/screens/create/create_network.dart';
+import 'package:app/screens/network_manage.dart';
 import 'package:app/widgets/add_button.dart';
+import 'package:app/widgets/button.dart';
 import 'package:app/widgets/custom_appbar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -11,6 +13,7 @@ import '../models/member_model.dart';
 import '../providers/attendance_provider.dart';
 import '../providers/member_provider.dart';
 import '../widgets/menu.dart';
+import 'network_detail.dart';
 
 class Networks extends StatefulWidget {
   const Networks({super.key});
@@ -73,13 +76,28 @@ class _NetworksState extends State<Networks> {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      AddButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            createFadeRoute(CreateNetwork()),
-                          );
-                        },
+                      Row(
+                        children: [
+                          Button(
+                            text: 'Gestionar redes',
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                createFadeRoute(NetworkManage()),
+                              );
+                            },
+                            size: Size(180, 45),
+                          ),
+                          const SizedBox(width: 15),
+                          AddButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                createFadeRoute(CreateNetwork()),
+                              );
+                            },
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -125,8 +143,12 @@ class _NetworksState extends State<Networks> {
                               _groupIcons['Default'] ??
                               Icons.group,
                           onTap: () {
-                            print(
-                              'Navegar a los detalles del grupo: $groupName',
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    NetworkDetail(groupName: groupName),
+                              ),
                             );
                           },
                         );
@@ -181,14 +203,6 @@ class _NetworksState extends State<Networks> {
                     Flexible(
                       child: Text(
                         '$memberCount Miembros',
-                        style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    // Mostramos la asistencia promedio
-                    Flexible(
-                      child: Text(
-                        '${avgAttendance.toStringAsFixed(1)} Asist. Promedio',
                         style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                       ),
                     ),

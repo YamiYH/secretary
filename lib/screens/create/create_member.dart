@@ -224,6 +224,8 @@ class _CreateMemberState extends State<CreateMember> {
             controller: _phoneController,
           ),
           const SizedBox(height: 16.0),
+          DropDownNetwork(),
+          const SizedBox(height: 16.0),
           ListTile(
             contentPadding: EdgeInsets.zero,
             leading: const Icon(Icons.calendar_today),
@@ -250,7 +252,6 @@ class _CreateMemberState extends State<CreateMember> {
               }
             },
           ),
-          DropDownNetwork(),
           const SizedBox(height: 30.0),
           Button(size: Size(150, 45), text: 'Guardar', onPressed: _saveMember),
         ],
