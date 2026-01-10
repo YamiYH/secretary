@@ -110,7 +110,7 @@ class Members extends StatelessWidget {
     }
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 25.0),
+      padding: const EdgeInsets.all(25),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
@@ -129,57 +129,54 @@ class Members extends StatelessWidget {
           itemCount: members.length,
           itemBuilder: (context, index) {
             final member = members[index];
-            return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8.0),
-              child: ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: Colors.red.withOpacity(0.1),
-                  child: Text(
-                    member.name.isNotEmpty
-                        ? member.name.substring(0, 1).toUpperCase()
-                        : '?',
-                    style: TextStyle(
-                      color: Colors.redAccent[200],
-                      fontWeight: FontWeight.bold,
-                    ),
+            return ListTile(
+              leading: CircleAvatar(
+                backgroundColor: Colors.red.withOpacity(0.1),
+                child: Text(
+                  member.name.isNotEmpty
+                      ? member.name.substring(0, 1).toUpperCase()
+                      : '?',
+                  style: TextStyle(
+                    color: Colors.redAccent[200],
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-                title: Text(
-                  '${member.name} ${member.lastName}',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black87,
+              ),
+              title: Text(
+                '${member.name} ${member.lastName}',
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.black87,
+                ),
+              ),
+              // 3. Muestra los grupos de forma más elegante
+              subtitle: Text(
+                member.group,
+                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                overflow: TextOverflow.ellipsis,
+              ),
+              trailing: Row(
+                mainAxisSize:
+                    MainAxisSize.min, // Para que ocupe el mínimo espacio
+                children: [
+                  IconButton(
+                    icon: Icon(Icons.edit, color: Colors.blue[600]),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        createFadeRoute(CreateMember(memberToEdit: member)),
+                      );
+                    },
                   ),
-                ),
-                // 3. Muestra los grupos de forma más elegante
-                subtitle: Text(
-                  member.group,
-                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-                  overflow: TextOverflow.ellipsis,
-                ),
-                trailing: Row(
-                  mainAxisSize:
-                      MainAxisSize.min, // Para que ocupe el mínimo espacio
-                  children: [
-                    IconButton(
-                      icon: Icon(Icons.edit, color: Colors.blue[600]),
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          createFadeRoute(CreateMember(memberToEdit: member)),
-                        );
-                      },
-                    ),
 
-                    IconButton(
-                      icon: Icon(Icons.delete, color: Colors.red[600]),
-                      onPressed: () {
-                        showDeleteConfirmation(context, member);
-                      },
-                    ),
-                  ],
-                ),
+                  IconButton(
+                    icon: Icon(Icons.delete, color: Colors.red[600]),
+                    onPressed: () {
+                      showDeleteConfirmation(context, member);
+                    },
+                  ),
+                ],
               ),
             );
           },

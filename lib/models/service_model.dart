@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 
 class ServiceModel {
+  final String id;
   final String title;
   final DateTime date;
   final TimeOfDay time;
@@ -9,6 +10,7 @@ class ServiceModel {
   final String worshipMinister;
 
   ServiceModel({
+    required this.id,
     required this.title,
     required this.date,
     required this.time,

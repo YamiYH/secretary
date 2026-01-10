@@ -4,13 +4,13 @@ import 'package:app/widgets/showDeleteConfirmationDialog.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../models/log_model.dart';
-import '../models/user_model.dart';
-import '../providers/log_provider.dart';
-import '../providers/user_provider.dart';
-import '../routes/page_route_builder.dart';
-import '../widgets/add_button.dart';
-import 'create/create_user.dart';
+import '../../models/log_model.dart';
+import '../../models/user_model.dart';
+import '../../providers/log_provider.dart';
+import '../../providers/user_provider.dart';
+import '../../routes/page_route_builder.dart';
+import '../../widgets/add_button.dart';
+import '../create/create_user.dart';
 
 class Users extends StatelessWidget {
   const Users({Key? key}) : super(key: key);

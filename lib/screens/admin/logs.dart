@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
-import '../models/log_model.dart';
-import '../providers/log_provider.dart';
+import '../../models/log_model.dart';
+import '../../providers/log_provider.dart';
 
 class Logs extends StatelessWidget {
   const Logs({Key? key}) : super(key: key);

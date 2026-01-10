@@ -9,6 +9,7 @@ class Member {
   final DateTime birthDate;
   final String group;
   final DateTime registrationDate;
+  final DateTime entryDate;
 
   Member({
     required this.id,
@@ -19,5 +20,6 @@ class Member {
     required this.birthDate,
     required this.group,
     required this.registrationDate,
+    required this.entryDate,
   });
 }

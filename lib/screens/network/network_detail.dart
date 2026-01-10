@@ -2,15 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
-import '../../colors.dart';
-import '../../models/member_model.dart';
-import '../../providers/member_provider.dart';
-import '../../widgets/custom_appbar.dart';
+import '../../../colors.dart';
+import '../../../models/member_model.dart';
+import '../../../providers/member_provider.dart';
+import '../../../widgets/custom_appbar.dart';
+import '../../models/network_model.dart';
 
 class NetworkDetail extends StatelessWidget {
-  final String groupName;
+  final NetworkModel network;
 
-  const NetworkDetail({Key? key, required this.groupName}) : super(key: key);
+  const NetworkDetail({Key? key, required this.network}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +20,7 @@ class NetworkDetail extends StatelessWidget {
 
     // 2. Filtrar la lista para obtener solo los miembros de este grupo
     final List<Member> membersInGroup = memberProvider.allMembers
-        .where((member) => member.group == groupName)
+        .where((member) => member.group == network.name)
         .toList();
 
     // Opcional: Ordenar la lista de miembros alfabéticamente
@@ -30,7 +31,7 @@ class NetworkDetail extends StatelessWidget {
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: CustomAppBar(
-        title: groupName, // El título del AppBar es el nombre de la red
+        title: network.name, // El título del AppBar es el nombre de la red
       ),
       body: membersInGroup.isEmpty
           ? const Center(
@@ -50,7 +51,6 @@ class NetworkDetail extends StatelessWidget {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  // --- CAMBIOS AQUÍ DENTRO DEL LISTTILE ---
                   child: ListTile(
                     leading: CircleAvatar(
                       backgroundColor: primaryColor.withOpacity(0.1),

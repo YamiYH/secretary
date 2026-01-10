@@ -17,6 +17,7 @@ class MemberProvider with ChangeNotifier {
       birthDate: DateTime(2023, 1, 15),
       group: 'Jóvenes',
       registrationDate: DateTime(2023, 1, 15),
+      entryDate: DateTime.now(),
     ),
     Member(
       id: 'm2',
@@ -27,6 +28,7 @@ class MemberProvider with ChangeNotifier {
       birthDate: DateTime(2023, 1, 15),
       group: 'Mujeres',
       registrationDate: DateTime(2023, 1, 15),
+      entryDate: DateTime.now(),
     ),
     Member(
       id: 'm3',
@@ -37,6 +39,7 @@ class MemberProvider with ChangeNotifier {
       birthDate: DateTime(2023, 1, 15),
       group: 'Hombres',
       registrationDate: DateTime(2023, 1, 15),
+      entryDate: DateTime.now(),
     ),
     Member(
       id: 'm4',
@@ -47,6 +50,7 @@ class MemberProvider with ChangeNotifier {
       birthDate: DateTime(2023, 1, 15),
       group: 'Jóvenes',
       registrationDate: DateTime(2023, 1, 15),
+      entryDate: DateTime.now(),
     ),
     Member(
       id: 'm5',
@@ -57,6 +61,7 @@ class MemberProvider with ChangeNotifier {
       birthDate: DateTime(2023, 1, 15),
       group: 'Hombres',
       registrationDate: DateTime(2023, 1, 15),
+      entryDate: DateTime.now(),
     ),
     Member(
       id: 'm6',
@@ -67,6 +72,7 @@ class MemberProvider with ChangeNotifier {
       birthDate: DateTime(2023, 1, 15),
       group: 'Jóvenes',
       registrationDate: DateTime(2023, 1, 15),
+      entryDate: DateTime.now(),
     ),
     Member(
       id: 'm7',
@@ -77,6 +83,7 @@ class MemberProvider with ChangeNotifier {
       birthDate: DateTime(2023, 1, 15),
       group: 'Hombres',
       registrationDate: DateTime(2023, 1, 15),
+      entryDate: DateTime.now(),
     ),
     Member(
       id: 'm8',
@@ -87,6 +94,7 @@ class MemberProvider with ChangeNotifier {
       birthDate: DateTime(2023, 1, 15),
       group: '3ra Edad',
       registrationDate: DateTime(2023, 1, 15),
+      entryDate: DateTime.now(),
     ),
     Member(
       id: 'm9',
@@ -97,6 +105,7 @@ class MemberProvider with ChangeNotifier {
       birthDate: DateTime(2023, 1, 15),
       group: 'Jóvenes',
       registrationDate: DateTime(2023, 1, 15),
+      entryDate: DateTime.now(),
     ),
     Member(
       id: 'm10',
@@ -107,6 +116,7 @@ class MemberProvider with ChangeNotifier {
       birthDate: DateTime(2023, 1, 15),
       group: '3ra Edad',
       registrationDate: DateTime(2023, 1, 15),
+      entryDate: DateTime.now(),
     ),
   ];
 

@@ -1,4 +1,5 @@
 import 'package:app/models/service_model.dart';
+import 'package:app/providers/service_type_provider.dart';
 import 'package:app/widgets/custom_appbar.dart';
 import 'package:app/widgets/small_button.dart';
 import 'package:flutter/material.dart';
@@ -6,44 +7,25 @@ import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 import '../../colors.dart';
+import '../../models/member_model.dart';
 import '../../providers/service_provider.dart';
-import '../../widgets/custom_text_form_field.dart';
+import '../../widgets/member_autocomplete_field.dart';
 import '../../widgets/menu.dart';
 
 class CreateService extends StatefulWidget {
-  const CreateService({super.key});
+  final ServiceModel? serviceToEdit;
+  const CreateService({super.key, this.serviceToEdit});
 
   @override
   State<CreateService> createState() => _CreateServiceState();
-}
-
-// 🚀 NUEVA CLASE: Para almacenar los datos del evento
-class ServiceEvent {
-  final String title;
-  final DateTime date;
-  final TimeOfDay time;
-  final String preacher;
-  final String worshipMinister;
-
-  ServiceEvent({
-    required this.title,
-    required this.date,
-    required this.time,
-    required this.preacher,
-    required this.worshipMinister,
-  });
 }
 
 class _CreateServiceState extends State<CreateService> {
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
   TimeOfDay? _selectedStartTime;
-
-  // Se usan para seleccionar un rango de días, si no se usan, se dejan como null
   DateTime? _rangeStartDay;
   DateTime? _rangeEndDay;
-
-  // Define el formato inicial del calendario (ej: Mes, Semana)
   CalendarFormat _calendarFormat = CalendarFormat.month;
 
   void _onDaySelected(DateTime selectedDay, DateTime focusedDay) {
@@ -51,16 +33,15 @@ class _CreateServiceState extends State<CreateService> {
       setState(() {
         _selectedDay = selectedDay;
         _focusedDay = focusedDay;
-        _rangeStartDay = null; // Reinicia el rango si se selecciona un día
+        _rangeStartDay = null;
         _rangeEndDay = null;
       });
     }
-    // Asegúrate de que tu lógica para abrir el diálogo de creación esté aquí:
     _showServiceForm(context, selectedDay);
   }
 
+  // Este método es usado por el calendario y debe quedarse aquí.
   List<ServiceModel> _getEventsForDay(DateTime day) {
-    // 🚀 Leemos la lista del provider para el calendario
     return Provider.of<ServiceProvider>(
       context,
       listen: false,
@@ -70,43 +51,54 @@ class _CreateServiceState extends State<CreateService> {
   @override
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 800;
-    // final locale = Localizations.localeOf(context);
-    return Scaffold(
-      backgroundColor: backgroundColor,
-      appBar: CustomAppBar(title: 'Crear servicio'),
-      drawer: isMobile ? Drawer(child: Menu()) : null,
-      body: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (!isMobile) const SizedBox(child: Menu()),
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(32.0),
-              child: isMobile
-                  ? Column(
-                      children: [
-                        _buildCalendar(isMobile, context),
-                        const SizedBox(width: 50, height: 32),
-                        _buildServices(),
-                      ],
-                    )
-                  : Row(
-                      children: [
-                        Expanded(child: _buildCalendar(isMobile, context)),
-                        const SizedBox(width: 50, height: 32),
-                        Expanded(child: _buildServices()),
-                      ],
-                    ),
-            ),
+
+    // Usamos un Consumer aquí para que la lista de 'Hoy' se actualice.
+    return Consumer<ServiceProvider>(
+      builder: (context, serviceProvider, child) {
+        final todayEvents = serviceProvider.getEventsForDay(DateTime.now());
+
+        return Scaffold(
+          backgroundColor: backgroundColor,
+          appBar: CustomAppBar(title: 'Crear servicio'),
+          drawer: isMobile ? Drawer(child: Menu()) : null,
+          body: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (!isMobile) const SizedBox(child: Menu()),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(32.0),
+                  child: isMobile
+                      ? Column(
+                          children: [
+                            _buildCalendar(isMobile, context),
+                            const SizedBox(height: 32),
+                            _buildServices(
+                              todayEvents,
+                            ), // Pasamos la lista reactiva
+                          ],
+                        )
+                      : Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(child: _buildCalendar(isMobile, context)),
+                            const SizedBox(width: 50),
+                            Expanded(
+                              child: _buildServices(todayEvents),
+                            ), // Pasamos la lista reactiva
+                          ],
+                        ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
-  Column _buildServices() {
-    final today = DateTime.now();
-    final todayEvents = _getEventsForDay(today);
+  // El método ahora recibe la lista de eventos como parámetro.
+  Widget _buildServices(List<ServiceModel> todayEvents) {
     return Column(
       children: [
         const Text(
@@ -114,26 +106,37 @@ class _CreateServiceState extends State<CreateService> {
           style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 16),
-
         if (todayEvents.isEmpty)
-          Text(
-            'No hay servicios programados para hoy, ${today.day}/${today.month}.',
-            style: TextStyle(color: Colors.grey[600]),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16.0),
+            child: Text(
+              'No hay servicios programados para hoy.',
+              style: TextStyle(color: Colors.grey[600], fontSize: 16),
+            ),
+          )
+        else
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: todayEvents.length,
+            itemBuilder: (context, index) {
+              final event = todayEvents[index];
+              final formattedTime = event.time.format(context);
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: _buildServiceListItem(
+                  Icons.schedule,
+                  event.title,
+                  formattedTime,
+                ),
+              );
+            },
           ),
-
-        ...todayEvents.map((event) {
-          final formattedTime =
-              '${event.time.hourOfPeriod}:${event.time.minute.toString().padLeft(2, '0')} ${event.time.period == DayPeriod.am ? 'A.M.' : 'P.M.'}';
-          return _buildServiceListItem(
-            Icons.schedule,
-            event.title,
-            formattedTime,
-          );
-        }).toList(),
       ],
     );
   }
 
+  // El resto de los métodos se quedan como estaban, ya que ahora tienen acceso a las variables de estado.
   Column _buildCalendar(bool isMobile, BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -159,7 +162,7 @@ class _CreateServiceState extends State<CreateService> {
             child: TableCalendar<ServiceModel>(
               locale: 'es_ES',
               eventLoader: _getEventsForDay,
-              firstDay: DateTime.now(),
+              firstDay: DateTime.now().subtract(const Duration(days: 365)),
               lastDay: DateTime.utc(2030, 12, 31),
               focusedDay: _focusedDay,
               selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
@@ -167,9 +170,18 @@ class _CreateServiceState extends State<CreateService> {
               rangeEndDay: _rangeEndDay,
               calendarFormat: _calendarFormat,
               onDaySelected: _onDaySelected,
-
+              onFormatChanged: (format) {
+                if (_calendarFormat != format) {
+                  setState(() {
+                    _calendarFormat = format;
+                  });
+                }
+              },
+              onPageChanged: (focusedDay) {
+                _focusedDay = focusedDay;
+              },
               headerStyle: const HeaderStyle(
-                formatButtonVisible: false,
+                formatButtonVisible: true,
                 titleCentered: true,
               ),
               calendarStyle: CalendarStyle(
@@ -185,18 +197,15 @@ class _CreateServiceState extends State<CreateService> {
               calendarBuilders: CalendarBuilders(
                 markerBuilder: (context, date, events) {
                   if (events.isNotEmpty) {
-                    final tooltipMessage = (events)
-                        .map((e) {
-                          final formattedTime =
-                              '${e.time.hourOfPeriod}:${e.time.minute.toString().padLeft(2, '0')} ${e.time.period == DayPeriod.am ? 'A.M.' : 'P.M.'}';
-                          return '${e.title} a las $formattedTime, Predica: ${e.preacher} y ministra: ${e.worshipMinister}';
-                        })
+                    final tooltipMessage = events
+                        .map(
+                          (e) => '${e.title} a las ${e.time.format(context)}',
+                        )
                         .join('\n');
-
-                    // Devolvemos el marcador (el punto rojo) envuelto en un Tooltip
                     return Tooltip(
                       message: tooltipMessage,
                       child: Container(
+                        margin: const EdgeInsets.only(top: 30),
                         width: 7,
                         height: 7,
                         decoration: BoxDecoration(
@@ -206,7 +215,7 @@ class _CreateServiceState extends State<CreateService> {
                       ),
                     );
                   }
-                  return null; // Si no hay eventos, no muestra nada
+                  return null;
                 },
               ),
             ),
@@ -216,7 +225,6 @@ class _CreateServiceState extends State<CreateService> {
     );
   }
 
-  // Widget para las tarjetas de servicio
   Widget _buildServiceListItem(IconData icon, String title, String time) {
     return Card(
       elevation: 2,
@@ -230,15 +238,12 @@ class _CreateServiceState extends State<CreateService> {
     );
   }
 
-  // En tu archivo create_service.dart, dentro de _CreateServiceState
-
   Future<TimeOfDay?> _showCustomTimePickerDialog(
     BuildContext context,
     TimeOfDay? initialTime,
   ) async {
-    // Inicializamos la hora en formato 12 horas.
     int selectedHour = initialTime?.hourOfPeriod ?? 12;
-    if (selectedHour == 0) selectedHour = 12; // 0:00 se mapea a 12 AM
+    if (selectedHour == 0) selectedHour = 12;
     int selectedMinute = initialTime?.minute ?? 0;
     String selectedPeriod =
         (initialTime?.period ?? DayPeriod.am) == DayPeriod.am ? 'AM' : 'PM';
@@ -253,15 +258,16 @@ class _CreateServiceState extends State<CreateService> {
               content: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  // Dropdown para la Hora (1 a 12)
                   DropdownButton<int>(
                     value: selectedHour,
-                    items: List.generate(12, (i) => i + 1).map((h) {
-                      return DropdownMenuItem(
-                        value: h,
-                        child: Text(h.toString().padLeft(2, '0')),
-                      );
-                    }).toList(),
+                    items: List.generate(12, (i) => i + 1)
+                        .map(
+                          (h) => DropdownMenuItem(
+                            value: h,
+                            child: Text(h.toString().padLeft(2, '0')),
+                          ),
+                        )
+                        .toList(),
                     onChanged: (value) {
                       if (value != null) setState(() => selectedHour = value);
                     },
@@ -270,28 +276,28 @@ class _CreateServiceState extends State<CreateService> {
                     ':',
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
-                  // Dropdown para el Minuto (0 a 59)
                   DropdownButton<int>(
                     value: selectedMinute,
-                    items: List.generate(60, (i) => i).map((m) {
-                      return DropdownMenuItem(
-                        value: m,
-                        child: Text(m.toString().padLeft(2, '0')),
-                      );
-                    }).toList(),
+                    items: List.generate(60, (i) => i)
+                        .map(
+                          (m) => DropdownMenuItem(
+                            value: m,
+                            child: Text(m.toString().padLeft(2, '0')),
+                          ),
+                        )
+                        .toList(),
                     onChanged: (value) {
                       if (value != null) setState(() => selectedMinute = value);
                     },
                   ),
-                  // Botones para AM/PM
                   ToggleButtons(
                     isSelected: [
                       selectedPeriod == 'AM',
                       selectedPeriod == 'PM',
                     ],
-                    onPressed: (index) {
-                      setState(() => selectedPeriod = index == 0 ? 'AM' : 'PM');
-                    },
+                    onPressed: (index) => setState(
+                      () => selectedPeriod = index == 0 ? 'AM' : 'PM',
+                    ),
                     children: const [Text('AM'), Text('PM')],
                   ),
                 ],
@@ -303,19 +309,14 @@ class _CreateServiceState extends State<CreateService> {
                 ),
                 TextButton(
                   onPressed: () {
-                    // Lógica para convertir el formato 12h a 24h (TimeOfDay)
                     int hour24 = selectedHour;
-                    if (selectedPeriod == 'PM' && selectedHour != 12) {
+                    if (selectedPeriod == 'PM' && selectedHour != 12)
                       hour24 += 12;
-                    }
-                    if (selectedPeriod == 'AM' && selectedHour == 12) {
-                      hour24 = 0; // Medianoche
-                    }
-                    final resultTime = TimeOfDay(
-                      hour: hour24,
-                      minute: selectedMinute,
-                    );
-                    Navigator.of(dialogContext).pop(resultTime);
+                    if (selectedPeriod == 'AM' && selectedHour == 12)
+                      hour24 = 0;
+                    Navigator.of(
+                      dialogContext,
+                    ).pop(TimeOfDay(hour: hour24, minute: selectedMinute));
                   },
                   child: const Text('Aceptar'),
                 ),
@@ -327,21 +328,28 @@ class _CreateServiceState extends State<CreateService> {
     );
   }
 
-  // Muestra la ventana de diálogo para añadir el servicio
   Future<void> _showServiceForm(
     BuildContext context,
     DateTime selectedDay,
   ) async {
-    final TextEditingController titleController = TextEditingController();
     final TextEditingController predicadorController = TextEditingController();
     final TextEditingController alabanzaController = TextEditingController();
-    // 🚀 2. Variable local para manejar el estado de la hora DENTRO del diálogo
     TimeOfDay? dialogSelectedTime = _selectedStartTime;
+    Member? selectedPreacherMember;
+    Member? selectedWorshipMinisterMember;
 
-    showDialog(
+    final serviceTypeProvider = Provider.of<ServiceTypeProvider>(
+      context,
+      listen: false,
+    );
+    final serviceNames = serviceTypeProvider.serviceTypes
+        .map((type) => type.name)
+        .toList();
+
+    await showDialog(
       context: context,
       builder: (BuildContext dialogContext) {
-        // Formulario dentro del diálogo
+        String? selectedTitle;
         return StatefulBuilder(
           builder: (context, dialogSetState) {
             return AlertDialog(
@@ -352,113 +360,118 @@ class _CreateServiceState extends State<CreateService> {
               content: SingleChildScrollView(
                 child: ListBody(
                   children: <Widget>[
+                    DropdownButtonFormField<String>(
+                      decoration: const InputDecoration(
+                        labelText: 'Nombre del Servicio',
+                      ),
+                      value: selectedTitle,
+                      hint: const Text('Selecciona un tipo'),
+                      items: serviceNames
+                          .map(
+                            (name) => DropdownMenuItem<String>(
+                              value: name,
+                              child: Text(name),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (value) =>
+                          dialogSetState(() => selectedTitle = value),
+                      validator: (value) =>
+                          value == null ? 'Selecciona un nombre' : null,
+                    ),
                     const SizedBox(height: 16),
-                    SizedBox(
-                      height: 55,
-                      child: InkWell(
-                        onTap: () async {
-                          // 1. Abrimos el selector nativo de hora
-                          final TimeOfDay? selectedTime =
-                              await _showCustomTimePickerDialog(
-                                context,
-                                dialogSelectedTime,
-                              );
-
-                          if (selectedTime != null) {
-                            // 2. Usamos dialogSetState para actualizar la variable y la vista
-                            dialogSetState(() {
-                              dialogSelectedTime = selectedTime;
-                            });
-                            // NOTA: Ya no necesitamos el widget TimePicker.
-                          }
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 16,
-                          ),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              // 3. MOSTRAMOS EL TEXTO DE FORMA REACTIVA
-                              Text(
-                                dialogSelectedTime != null
-                                    ? 'Hora de inicio: ${dialogSelectedTime!.hourOfPeriod}:${dialogSelectedTime!.minute.toString().padLeft(2, '0')} ${dialogSelectedTime!.period == DayPeriod.am ? 'A.M.' : 'P.M.'}'
-                                    : 'Seleccionar hora de inicio',
-                                style: TextStyle(
-                                  color: dialogSelectedTime != null
-                                      ? Colors.black87
-                                      : Colors.grey[700],
-                                  fontSize: 16,
-                                ),
+                    InkWell(
+                      onTap: () async {
+                        final TimeOfDay? selectedTime =
+                            await _showCustomTimePickerDialog(
+                              context,
+                              dialogSelectedTime,
+                            );
+                        if (selectedTime != null) {
+                          dialogSetState(
+                            () => dialogSelectedTime = selectedTime,
+                          );
+                        }
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 16,
+                        ),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              dialogSelectedTime != null
+                                  ? 'Hora de inicio: ${dialogSelectedTime!.format(context)}'
+                                  : 'Seleccionar hora de inicio',
+                              style: TextStyle(
+                                color: dialogSelectedTime != null
+                                    ? Colors.black87
+                                    : Colors.grey[700],
+                                fontSize: 16,
                               ),
-                              const Icon(Icons.access_time),
-                            ],
-                          ),
+                            ),
+                            const Icon(Icons.access_time),
+                          ],
                         ),
                       ),
                     ),
                     const SizedBox(height: 16),
-                    CustomTextFormField(
-                      controller: titleController,
-                      labelText: 'Nombre del Servicio',
-                    ),
-                    const SizedBox(height: 16),
-                    CustomTextFormField(
+                    MemberAutocompleteField(
                       controller: predicadorController,
                       labelText: 'Predicador(a)',
+                      onMemberSelected: (member) =>
+                          selectedPreacherMember = member,
                     ),
                     const SizedBox(height: 16),
-                    CustomTextFormField(
+                    MemberAutocompleteField(
                       controller: alabanzaController,
                       labelText: 'Ministro de Alabanza',
+                      onMemberSelected: (member) =>
+                          selectedWorshipMinisterMember = member,
                     ),
                   ],
                 ),
               ),
               actions: <Widget>[
                 TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
                   child: const Text(
                     'Cancelar',
                     style: TextStyle(color: Colors.grey),
                   ),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
                 ),
                 SmallButton(
                   onPressed: () {
-                    // 🚀 5. Lógica para guardar los datos
-                    final String title = titleController.text;
-                    final String predicador = predicadorController.text;
-                    final String alabanza = alabanzaController.text;
-
-                    // Verificamos que se hayan llenado los campos (puedes añadir validación)
                     if (dialogSelectedTime != null &&
-                        title.isNotEmpty &&
-                        predicador.isNotEmpty &&
-                        alabanza.isNotEmpty) {
-                      // 🚀 1. CREAMOS EL NUEVO EVENTO
+                        selectedTitle != null &&
+                        predicadorController.text.isNotEmpty &&
+                        alabanzaController.text.isNotEmpty) {
                       final newService = ServiceModel(
-                        title: title,
+                        id: '',
+                        title: selectedTitle!,
                         date: selectedDay,
                         time: dialogSelectedTime!,
-                        preacher: predicador,
-                        worshipMinister: alabanza,
+                        preacher: predicadorController.text,
+                        worshipMinister: alabanzaController.text,
                       );
-
                       Provider.of<ServiceProvider>(
                         context,
                         listen: false,
                       ).addService(newService);
-                      Navigator.pop(context);
-                      setState(() {});
+                      Navigator.of(dialogContext).pop();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Servicio guardado correctamente.'),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
                     } else {
-                      // Opcional: Muestra un mensaje si faltan datos
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text('Por favor, completa todos los campos'),
@@ -474,7 +487,6 @@ class _CreateServiceState extends State<CreateService> {
         );
       },
     ).whenComplete(() {
-      // 🚀 6. Limpiamos los controladores para evitar fugas de memoria
       predicadorController.dispose();
       alabanzaController.dispose();
     });

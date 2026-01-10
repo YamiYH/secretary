@@ -1,43 +1,32 @@
 import 'package:app/routes/page_route_builder.dart';
 import 'package:app/screens/create/create_network.dart';
-import 'package:app/screens/network_manage.dart';
+import 'package:app/screens/network/network_manage.dart';
 import 'package:app/widgets/add_button.dart';
 import 'package:app/widgets/button.dart';
 import 'package:app/widgets/custom_appbar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../colors.dart';
-import '../models/attendance_record_model.dart';
-import '../models/member_model.dart';
-import '../providers/attendance_provider.dart';
-import '../providers/member_provider.dart';
-import '../widgets/menu.dart';
+import '../../colors.dart';
+import '../../models/attendance_record_model.dart';
+import '../../models/member_model.dart';
+import '../../models/network_model.dart';
+import '../../providers/attendance_provider.dart';
+import '../../providers/member_provider.dart';
+import '../../providers/network_provider.dart';
+import '../../widgets/menu.dart';
 import 'network_detail.dart';
 
-class Networks extends StatefulWidget {
+class Networks extends StatelessWidget {
   const Networks({super.key});
-
-  @override
-  State<Networks> createState() => _NetworksState();
-}
-
-class _NetworksState extends State<Networks> {
-  final Map<String, IconData> _groupIcons = {
-    'Niños': Icons.child_care,
-    'Juveniles': Icons.sports_esports,
-    'Jóvenes': Icons.school,
-    'Mujeres': Icons.woman,
-    'Hombres': Icons.man,
-    '3ra Edad': Icons.elderly,
-  };
 
   @override
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 700;
 
-    // --- CAMBIO 1: Conectar a los Providers ---
-    final memberProvider = Provider.of<MemberProvider>(context);
+    final networkProvider = context.watch<NetworkProvider>();
+    final List<NetworkModel> networks = networkProvider.networks;
+    final memberProvider = context.watch<MemberProvider>();
     final attendanceProvider = Provider.of<AttendanceProvider>(context);
     final List<Member> allMembers = memberProvider.allMembers;
     final List<AttendanceRecord> allRecords = attendanceProvider.records.values
@@ -113,41 +102,30 @@ class _NetworksState extends State<Networks> {
                             crossAxisSpacing: 20,
                             mainAxisSpacing: 20,
                           ),
-                      itemCount: groupNames.length,
+                      itemCount: networks.length,
                       itemBuilder: (context, index) {
                         // La lógica interna no cambia
-                        final groupName = groupNames[index];
-                        final membersInGroup = allMembers
-                            .where((m) => m.group == groupName)
+                        final network = networks[index];
+                        final membersInNetwork = memberProvider.members
+                            .where(
+                              (m) => m.group == network.name,
+                            ) // O m.networkId == network.id
                             .toList();
-                        final memberCount = membersInGroup.length;
-                        final groupMemberIds = membersInGroup
-                            .map((m) => m.id)
-                            .toSet();
-                        int totalGroupAttendance = 0;
-                        for (var record in allRecords) {
-                          totalGroupAttendance += record.presentMemberIds
-                              .where((id) => groupMemberIds.contains(id))
-                              .length;
-                        }
-                        final double avgAttendance = allRecords.isNotEmpty
-                            ? totalGroupAttendance / allRecords.length
-                            : 0.0;
+                        final memberCount = membersInNetwork.length;
+                        // Por ahora, la dejamos en 0.0 para simplificar.
+                        const double avgAttendance = 0.0;
 
                         return _buildGroupCard(
-                          title: groupName,
+                          title: network.name,
                           memberCount: memberCount,
                           avgAttendance: avgAttendance,
-                          icon:
-                              _groupIcons[groupName] ??
-                              _groupIcons['Default'] ??
-                              Icons.group,
+                          icon: Icons.group,
                           onTap: () {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) =>
-                                    NetworkDetail(groupName: groupName),
+                                    NetworkDetail(network: network),
                               ),
                             );
                           },

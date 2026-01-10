@@ -3,12 +3,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../colors.dart';
-import '../models/member_model.dart';
-import '../models/ministry_model.dart';
-import '../providers/member_provider.dart'; // Necesitas un MemberProvider
-import '../providers/ministry_provider.dart';
-import '../widgets/custom_appbar.dart';
+import '../../colors.dart';
+import '../../models/member_model.dart';
+import '../../models/ministry_model.dart';
+import '../../providers/member_provider.dart'; // Necesitas un MemberProvider
+import '../../providers/ministry_provider.dart';
+import '../../widgets/custom_appbar.dart';
+import '../../widgets/small_button.dart';
 
 class MinistryMembers extends StatelessWidget {
   final MinistryModel ministry;
@@ -90,8 +91,8 @@ class MinistryMembers extends StatelessWidget {
               child: const Text('Cancelar'),
               onPressed: () => Navigator.of(ctx).pop(),
             ),
-            TextButton(
-              child: const Text('Agregar'),
+            SmallButton(
+              text: 'Agregar',
               onPressed: () {
                 if (selectedMember != null) {
                   // Llama al provider para agregar al miembro
@@ -131,8 +132,9 @@ class MinistryMembers extends StatelessWidget {
       backgroundColor: backgroundColor,
       appBar: CustomAppBar(title: 'Miembros de ${ministry.name}'),
       floatingActionButton: FloatingActionButton(
+        backgroundColor: primaryColor,
         onPressed: () => _showAddMemberDialog(context, allMembers),
-        child: const Icon(Icons.add),
+        child: const Icon(Icons.add, color: Colors.white),
       ),
       body: members.isEmpty
           ? const Center(child: Text('No hay miembros en este ministerio.'))
@@ -147,7 +149,7 @@ class MinistryMembers extends StatelessWidget {
                     title: Text('${member.name} ${member.lastName}'),
                     subtitle: Text(member.phone), // O cualquier otro dato
                     trailing: IconButton(
-                      icon: const Icon(Icons.delete_outline, color: Colors.red),
+                      icon: const Icon(Icons.delete, color: Colors.red),
                       onPressed: () =>
                           _showDeleteConfirmationDialog(context, member),
                     ),

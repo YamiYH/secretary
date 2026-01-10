@@ -7,6 +7,7 @@ import 'package:app/providers/ministry_provider.dart';
 import 'package:app/providers/network_provider.dart';
 import 'package:app/providers/role_provider.dart';
 import 'package:app/providers/service_provider.dart';
+import 'package:app/providers/service_type_provider.dart';
 // 1. Importa el nuevo UserProvider que creamos
 import 'package:app/providers/user_provider.dart';
 import 'package:flutter/material.dart';
@@ -29,6 +30,7 @@ void main() {
         ChangeNotifierProvider(create: (context) => AttendanceProvider()),
         ChangeNotifierProvider(create: (context) => NetworkProvider()),
         ChangeNotifierProvider(create: (context) => MinistryProvider()),
+        ChangeNotifierProvider(create: (context) => ServiceTypeProvider()),
       ],
       child: const MyApp(),
     ),

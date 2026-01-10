@@ -1,14 +1,18 @@
 import 'package:app/routes/page_route_builder.dart';
 import 'package:app/screens/create/create_service.dart';
 import 'package:app/widgets/add_button.dart';
+import 'package:app/widgets/button.dart';
 import 'package:app/widgets/custom_appbar.dart';
 import 'package:app/widgets/menu.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
-import '../colors.dart';
-import '../providers/service_provider.dart';
+import '../../colors.dart';
+import '../../providers/service_provider.dart';
+import '../../widgets/showDeleteConfirmationDialog.dart';
+import 'edit_service.dart';
+import 'manage_service_types.dart';
 
 class Services extends StatefulWidget {
   const Services({super.key});
@@ -28,7 +32,7 @@ class _ServicesState extends State<Services> {
 
   @override
   Widget build(BuildContext context) {
-    final isMobile = MediaQuery.of(context).size.width < 800;
+    final isMobile = MediaQuery.of(context).size.width < 700;
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: CustomAppBar(title: 'Servicios', isDrawerEnabled: isMobile),
@@ -99,10 +103,28 @@ class _ServicesState extends State<Services> {
                       color: Colors.black87,
                     ),
                   ),
-                  AddButton(
-                    onPressed: () {
-                      Navigator.push(context, createFadeRoute(CreateService()));
-                    },
+                  Row(
+                    children: [
+                      Button(
+                        size: Size(220, 45),
+                        text: 'Gestionar Servicios',
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            createFadeRoute(const ManageServiceTypesScreen()),
+                          );
+                        },
+                      ),
+                      const SizedBox(width: 16),
+                      AddButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            createFadeRoute(CreateService()),
+                          );
+                        },
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -142,6 +164,7 @@ class _ServicesState extends State<Services> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                              SizedBox(height: 10),
                               Text(
                                 service.title,
                                 style: const TextStyle(
@@ -153,11 +176,26 @@ class _ServicesState extends State<Services> {
                               Text(
                                 '$formattedDate a las $formattedTime',
                                 style: TextStyle(
-                                  fontSize: 14,
+                                  fontSize: 15,
                                   color: Colors.grey[600],
                                 ),
                               ),
-                              SizedBox(height: 20),
+                              Text(
+                                'Predica: ${service.preacher}',
+                                style: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w400,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                              Text(
+                                'Ministra: ${service.worshipMinister}',
+                                style: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w400,
+                                  color: Colors.black87,
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -170,7 +208,14 @@ class _ServicesState extends State<Services> {
                                 size: 22,
                               ),
                               tooltip: 'Editar servicio',
-                              onPressed: () {},
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  createFadeRoute(
+                                    EditService(serviceToEdit: service),
+                                  ),
+                                );
+                              },
                             ),
                             IconButton(
                               icon: Icon(
@@ -179,7 +224,20 @@ class _ServicesState extends State<Services> {
                                 size: 22,
                               ),
                               tooltip: 'Eliminar servicio',
-                              onPressed: () {},
+                              onPressed: () {
+                                showDeleteConfirmationDialog(
+                                  context: context,
+                                  itemName: service
+                                      .title, // Pasamos el nombre del servicio
+                                  onConfirm: () {
+                                    // Esta es la lógica que se ejecutará si el usuario presiona "Eliminar"
+                                    Provider.of<ServiceProvider>(
+                                      context,
+                                      listen: false,
+                                    ).deleteService(service.id);
+                                  },
+                                );
+                              },
                             ),
                           ],
                         ),

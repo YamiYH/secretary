@@ -90,6 +90,7 @@ class _CreateMemberState extends State<CreateMember> {
           birthDate: _selectedBirthDate!,
           group: group,
           registrationDate: widget.memberToEdit!.registrationDate,
+          entryDate: DateTime.now(),
         );
         memberProvider.updateMember(updatedMember);
         logProvider.addLog(
@@ -108,6 +109,7 @@ class _CreateMemberState extends State<CreateMember> {
           birthDate: _selectedBirthDate!,
           group: group,
           registrationDate: DateTime.now(),
+          entryDate: DateTime.now(),
         );
         memberProvider.addMember(newMember);
         logProvider.addLog(

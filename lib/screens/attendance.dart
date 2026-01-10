@@ -122,21 +122,13 @@ class _AttendanceState extends State<Attendance> {
             child: Column(
               children: [
                 const SizedBox(height: 20),
-                // --- WIDGETS DE CONTROL SUPERIORES ---
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: isMobile
-                      ? _buildMobileControls()
-                      : _buildWebControls(),
+                      ? _buildMobileControls(memberProvider)
+                      : _buildWebControls(memberProvider),
                 ),
-                const SizedBox(height: 20),
-                // --- BARRA DE BÚSQUEDA ---
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 25.0),
-                  child: SearchTextField(
-                    onChanged: (query) => memberProvider.search(query),
-                  ),
-                ),
+
                 const SizedBox(height: 20),
                 // --- LISTA DE MIEMBROS ---
                 Expanded(child: _buildMemberList(members)),
@@ -150,12 +142,18 @@ class _AttendanceState extends State<Attendance> {
 
   // --- MÉTODOS BUILD REFACTORIZADOS ---
 
-  Widget _buildMobileControls() {
+  Widget _buildMobileControls(memberProvider) {
     return Column(
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 25.0),
+              child: SearchTextField(
+                onChanged: (query) => memberProvider.search(query),
+              ),
+            ),
             DateWidget(
               selectedDate: _selectedDate,
               onDateSelected: _onDateSelected,
@@ -188,13 +186,19 @@ class _AttendanceState extends State<Attendance> {
     );
   }
 
-  Widget _buildWebControls() {
+  Widget _buildWebControls(memberProvider) {
     return Wrap(
       spacing: 40,
       runSpacing: 20,
       crossAxisAlignment: WrapCrossAlignment.center,
       alignment: WrapAlignment.center,
       children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 25.0),
+          child: SearchTextField(
+            onChanged: (query) => memberProvider.search(query),
+          ),
+        ),
         DateWidget(
           selectedDate: _selectedDate,
           onDateSelected: _onDateSelected,
@@ -223,7 +227,7 @@ class _AttendanceState extends State<Attendance> {
       return const Center(child: Text('No se encontraron miembros.'));
     }
     return Padding(
-      padding: const EdgeInsets.fromLTRB(25, 0, 25, 25),
+      padding: const EdgeInsets.all(25),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,

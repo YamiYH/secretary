@@ -346,11 +346,7 @@ class _ReportContentState extends State<ReportContent> {
           ),
           if (_selectedGroup == null)
             //Solo muestra visitas si no hay filtro de grupo
-            Text(
-              '${totalAttendance.toString()} Miembros + ${totalGuests.toString()} Visitas',
-              style: const TextStyle(fontSize: 16, color: Colors.green),
-            ),
-          const SizedBox(height: 32),
+            const SizedBox(height: 32),
           // Gráfico de tendencia (puedes usar un paquete como fl_chart)
           const Text(
             'Tendencia de Asistencia',

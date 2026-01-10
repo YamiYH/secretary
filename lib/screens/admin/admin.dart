@@ -2,8 +2,8 @@
 
 import 'package:app/colors.dart';
 import 'package:app/routes/page_route_builder.dart';
-import 'package:app/screens/roles.dart';
-import 'package:app/screens/users.dart';
+import 'package:app/screens/admin/roles.dart';
+import 'package:app/screens/admin/users.dart';
 import 'package:app/widgets/custom_appbar.dart';
 import 'package:app/widgets/menu.dart';
 import 'package:flutter/material.dart';

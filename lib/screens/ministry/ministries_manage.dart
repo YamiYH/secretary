@@ -1,28 +1,28 @@
-import 'package:app/models/network_model.dart';
-import 'package:app/screens/create/create_network.dart';
+import 'package:app/providers/ministry_provider.dart';
+import 'package:app/screens/create/create_ministry.dart';
 import 'package:app/widgets/custom_appbar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../models/log_model.dart';
-import '../providers/log_provider.dart';
-import '../providers/network_provider.dart';
-import '../routes/page_route_builder.dart';
+import '../../models/log_model.dart';
+import '../../models/ministry_model.dart';
+import '../../providers/log_provider.dart';
+import '../../routes/page_route_builder.dart';
 
-class NetworkManage extends StatelessWidget {
-  const NetworkManage({Key? key}) : super(key: key);
+class MinistryManage extends StatelessWidget {
+  const MinistryManage({Key? key}) : super(key: key);
 
   // Función para el diálogo de confirmación de borrado
   void _showDeleteConfirmationDialog(
     BuildContext context,
-    NetworkModel network,
+    MinistryModel ministry,
   ) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Confirmar Eliminación'),
         content: Text(
-          '¿Estás seguro de que deseas eliminar la red "${network.name}"?',
+          '¿Estás seguro de que deseas eliminar el ministerio "${ministry.name}"?',
         ),
         actions: [
           TextButton(
@@ -37,14 +37,14 @@ class NetworkManage extends StatelessWidget {
                 userName: 'Usuario Actual', // Temporalmente hardcodeado
                 action: LogAction.delete,
                 entity:
-                    LogEntity.network, // Especifica que la entidad es un Rol
-                details: 'Se eliminó la red: "${network.name}"',
+                    LogEntity.ministry, // Especifica que la entidad es un Rol
+                details: 'Se eliminó el ministerio: "${ministry.name}"',
               );
 
-              Provider.of<NetworkProvider>(
+              Provider.of<MinistryProvider>(
                 context,
                 listen: false,
-              ).deleteNetwork(network.id);
+              ).deleteMinistry(ministry.id);
               Navigator.of(ctx).pop();
             },
           ),
@@ -59,41 +59,40 @@ class NetworkManage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final networkProvider = Provider.of<NetworkProvider>(context);
-    final List<NetworkModel> networks = networkProvider.networks;
+    final ministryProvider = context.watch<MinistryProvider>();
+    final List<MinistryModel> ministries = ministryProvider.ministries;
 
     //bool isMobile = MediaQuery.of(context).size.width < 700;
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: CustomAppBar(title: 'Gestionar redes'),
+      appBar: CustomAppBar(title: 'Gestionar ministerios'),
       body: LayoutBuilder(
         builder: (context, constraints) {
           // --- ADAPTADO: Pasar la lista de redes a los métodos de layout ---
-          return networks.isEmpty
+          return ministries.isEmpty
               ? const Center(child: Text('No hay redes para mostrar.'))
               : constraints.maxWidth < 600
-              ? _buildMobileLayout(context, networks)
-              : _buildWebLayout(context, networks);
+              ? _buildMobileLayout(context, ministries)
+              : _buildWebLayout(context, ministries);
         },
       ),
     );
   }
 
-  Widget _buildMobileLayout(BuildContext context, List<NetworkModel> networks) {
+  Widget _buildMobileLayout(
+    BuildContext context,
+    List<MinistryModel> ministries,
+  ) {
     return ListView.builder(
       padding: const EdgeInsets.all(16.0),
-      itemCount: networks.length,
+      itemCount: ministries.length,
       itemBuilder: (context, index) {
-        final network = networks[index];
+        final ministry = ministries[index];
         return Card(
           margin: const EdgeInsets.only(bottom: 16.0),
           child: ListTile(
-            title: Text(network.name),
-            subtitle: Text(
-              network.ageRange.isNotEmpty
-                  ? network.ageRange
-                  : 'Sin rango de edad',
-            ),
+            title: Text(ministry.name),
+            subtitle: Text(ministry.details),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -102,7 +101,7 @@ class NetworkManage extends StatelessWidget {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      createFadeRoute(CreateNetwork(networkToEdit: network)),
+                      createFadeRoute(CreateMinistry(ministryToEdit: ministry)),
                     );
                   },
                 ),
@@ -114,7 +113,7 @@ class NetworkManage extends StatelessWidget {
                     color: Colors.red,
                   ), // Ícono de eliminar
                   onPressed: () {
-                    _showDeleteConfirmationDialog(context, network);
+                    _showDeleteConfirmationDialog(context, ministry);
                   },
                 ),
               ],
@@ -128,7 +127,7 @@ class NetworkManage extends StatelessWidget {
 
   Widget _buildWebLayout(
     BuildContext context,
-    List<NetworkModel> networkModel,
+    List<MinistryModel> ministryModel,
   ) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20.0),
@@ -140,17 +139,15 @@ class NetworkManage extends StatelessWidget {
               child: DataTable(
                 columnSpacing: MediaQuery.of(context).size.width * 0.15,
                 columns: [
-                  DataColumn(label: Text('Red', style: _headerStyle())),
-                  DataColumn(
-                    label: Text('Rango de edades', style: _headerStyle()),
-                  ),
+                  DataColumn(label: Text('Ministerio', style: _headerStyle())),
+                  DataColumn(label: Text('Detalles', style: _headerStyle())),
                   DataColumn(label: Text('Acciones', style: _headerStyle())),
                 ],
-                rows: networkModel.map((network) {
+                rows: ministryModel.map((ministry) {
                   return DataRow(
                     cells: [
-                      DataCell(Text(network.name)),
-                      DataCell(Text(network.ageRange)),
+                      DataCell(Text(ministry.name)),
+                      DataCell(Text(ministry.details)),
                       DataCell(
                         Row(
                           children: [
@@ -164,7 +161,7 @@ class NetworkManage extends StatelessWidget {
                                 Navigator.push(
                                   context,
                                   createFadeRoute(
-                                    CreateNetwork(networkToEdit: network),
+                                    CreateMinistry(ministryToEdit: ministry),
                                   ),
                                 );
                               },
@@ -176,7 +173,10 @@ class NetworkManage extends StatelessWidget {
                                 color: Colors.red,
                               ),
                               onPressed: () {
-                                _showDeleteConfirmationDialog(context, network);
+                                _showDeleteConfirmationDialog(
+                                  context,
+                                  ministry,
+                                );
                               },
                             ),
                           ],

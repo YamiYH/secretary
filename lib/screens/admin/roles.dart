@@ -2,13 +2,13 @@ import 'package:app/widgets/custom_appbar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../models/log_model.dart';
-import '../models/role_model.dart';
-import '../providers/log_provider.dart';
-import '../providers/role_provider.dart';
-import '../routes/page_route_builder.dart';
-import '../widgets/add_button.dart';
-import 'create/create_role.dart';
+import '../../models/log_model.dart';
+import '../../models/role_model.dart';
+import '../../providers/log_provider.dart';
+import '../../providers/role_provider.dart';
+import '../../routes/page_route_builder.dart';
+import '../../widgets/add_button.dart';
+import '../create/create_role.dart';
 
 class Roles extends StatelessWidget {
   const Roles({Key? key}) : super(key: key);

@@ -7,6 +7,7 @@ class ServiceProvider with ChangeNotifier {
   // Lista privada de servicios
   final List<ServiceModel> _services = [
     ServiceModel(
+      id: 's1',
       title: 'Culto Matutino',
       date: DateTime(2024, 7, 21),
       time: const TimeOfDay(hour: 9, minute: 0),
@@ -14,6 +15,7 @@ class ServiceProvider with ChangeNotifier {
       worshipMinister: 'Líder de Alabanza',
     ),
     ServiceModel(
+      id: 's2',
       title: 'Servicio de Mitad de Semana',
       date: DateTime(2024, 7, 24),
       time: const TimeOfDay(hour: 19, minute: 30),
@@ -21,6 +23,7 @@ class ServiceProvider with ChangeNotifier {
       worshipMinister: 'Equipo de Alabanza',
     ),
     ServiceModel(
+      id: 's3',
       title: 'Convivencia Juvenil',
       date: DateTime(2024, 7, 26),
       time: const TimeOfDay(hour: 21, minute: 0),
@@ -34,11 +37,32 @@ class ServiceProvider with ChangeNotifier {
 
   // Método para añadir un nuevo servicio
   void addService(ServiceModel service) {
+    final newService = ServiceModel(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      title: service.title,
+      date: service.date,
+      time: service.time,
+      preacher: service.preacher,
+      worshipMinister: service.worshipMinister,
+    );
     _services.add(service);
     _services.sort(
       (a, b) => a.date.compareTo(b.date),
     ); // Opcional: mantener la lista ordenada por fecha
     notifyListeners(); // ¡Crucial! Notifica a los widgets que escuchan que hubo un cambio.
+  }
+
+  void deleteService(String serviceId) {
+    _services.removeWhere((service) => service.id == serviceId);
+    notifyListeners();
+  }
+
+  void updateService(ServiceModel updatedService) {
+    final serviceIndex = _services.indexWhere((s) => s.id == updatedService.id);
+    if (serviceIndex >= 0) {
+      _services[serviceIndex] = updatedService;
+      notifyListeners();
+    }
   }
 
   // Puedes añadir aquí la lógica para _getEventsForDay que tenías en create_service

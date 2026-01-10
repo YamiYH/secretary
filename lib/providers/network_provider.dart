@@ -13,7 +13,9 @@ class NetworkProvider with ChangeNotifier {
     NetworkModel(id: 'n6', name: '3ra Edad', ageRange: ''),
   ];
 
-  List<NetworkModel> get networks => [..._networks];
+  List<NetworkModel> get networks => List.unmodifiable(_networks);
+
+  //List<NetworkModel> get networks => [..._networks];
 
   void addNetwork(NetworkModel network) {
     final newNetwork = NetworkModel(
