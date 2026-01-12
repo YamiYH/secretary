@@ -77,7 +77,7 @@ class _CreateMemberState extends State<CreateMember> {
 
       final String name = _nameController.text.trim();
       final String lastName = _lastNameController.text.trim();
-      final String logDisplayName = '$name $lastName'.trim();
+      //final String logDisplayName = '$name $lastName'.trim();
       final String group = _selectedGroup!;
 
       if (_isEditing) {

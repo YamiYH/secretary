@@ -149,7 +149,7 @@ class _DashboardState extends State<Dashboard> {
         .toList();
     upcomingServices.sort((a, b) => a.date.compareTo(b.date));
     // Tomamos solo los primeros 2 para mostrar en el dashboard.
-    final nextTwoServices = upcomingServices.take(2).toList();
+    //final nextTwoServices = upcomingServices.take(2).toList();
     final now = DateTime.now();
     // 2. Calculamos el inicio de la semana (Lunes).
     //    now.weekday devuelve 1 para Lunes, 2 para Martes, ..., 7 para Domingo.

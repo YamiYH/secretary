@@ -9,16 +9,14 @@ class UserProvider with ChangeNotifier {
     // Datos de ejemplo para empezar
     User(
       id: '1',
-      name: 'Olivia',
-      lastName: 'Bennett',
-      phone: '123-456-7890',
+      userName: 'olivia',
+      password: 'hashed_password_1',
       role: 'Administrador',
     ),
     User(
       id: '2',
-      name: 'Ethan',
-      lastName: 'Carter',
-      phone: '234-567-8901',
+      userName: 'ethan',
+      password: 'hashed_password_2',
       role: 'Miembro',
     ),
   ];

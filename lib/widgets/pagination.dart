@@ -195,20 +195,20 @@ class _PaginationState extends State<Pagination> {
     );
   }
 
-  Widget _buildSizeAndGoControls(bool isMobile) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        _buildPerPageDropdown(),
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _buildGoToPage(isMobile),
-            const SizedBox(width: 5),
-            _buildGoButton(),
-          ],
-        ),
-      ],
-    );
-  }
+  // Widget _buildSizeAndGoControls(bool isMobile) {
+  //   return Row(
+  //     mainAxisAlignment: MainAxisAlignment.center,
+  //     children: [
+  //       _buildPerPageDropdown(),
+  //       Row(
+  //         mainAxisSize: MainAxisSize.min,
+  //         children: [
+  //           _buildGoToPage(isMobile),
+  //           const SizedBox(width: 5),
+  //           _buildGoButton(),
+  //         ],
+  //       ),
+  //     ],
+  //   );
+  // }
 }

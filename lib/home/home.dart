@@ -1,6 +1,6 @@
 import 'package:app/colors.dart';
+import 'package:app/home/login.dart';
 import 'package:app/routes/page_route_builder.dart';
-import 'package:app/screens/login.dart';
 import 'package:flutter/material.dart';
 
 class Home extends StatefulWidget {

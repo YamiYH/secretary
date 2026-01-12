@@ -26,7 +26,7 @@ class Logs extends StatelessWidget {
   Widget build(BuildContext context) {
     final logProvider = Provider.of<LogProvider>(context);
     final List<Log> logs = logProvider.logs;
-    bool isMobile = MediaQuery.of(context).size.width < 700;
+    //bool isMobile = MediaQuery.of(context).size.width < 700;
 
     return Scaffold(
       backgroundColor: Colors.white,

@@ -1,5 +1,5 @@
+import 'package:app/home/dashboard.dart';
 import 'package:app/routes/page_route_builder.dart';
-import 'package:app/screens/dashboard.dart';
 import 'package:flutter/material.dart';
 
 import '../widgets/button.dart';

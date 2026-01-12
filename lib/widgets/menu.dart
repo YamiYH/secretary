@@ -1,7 +1,7 @@
+import 'package:app/home/dashboard.dart';
 import 'package:app/routes/page_route_builder.dart';
 import 'package:app/screens/admin/admin.dart';
 import 'package:app/screens/attendance.dart';
-import 'package:app/screens/dashboard.dart';
 import 'package:app/screens/members.dart';
 import 'package:app/screens/ministry/ministries.dart';
 import 'package:app/screens/service/services.dart';

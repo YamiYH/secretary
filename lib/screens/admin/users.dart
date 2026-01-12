@@ -56,11 +56,11 @@ class Users extends StatelessWidget {
 
             itemCount: users.length,
             itemBuilder: (context, index) {
-              final user = users[index]; // Obtener el usuario actual
+              final user = users[index];
               return Card(
-                margin: const EdgeInsets.only(bottom: 16.0),
+                margin: EdgeInsets.only(bottom: 16.0),
                 child: ListTile(
-                  title: Text('${user.name} ${user.lastName}\n${user.phone}'),
+                  title: Text(user.userName),
                   subtitle: Text('Rol: ${user.role}'),
 
                   trailing: Row(
@@ -100,7 +100,7 @@ class Users extends StatelessWidget {
   Future<void> _showDelete(BuildContext context, User user) {
     return showDeleteConfirmationDialog(
       context: context,
-      itemName: user.name,
+      itemName: user.userName,
       onConfirm: () {
         final userProvider = Provider.of<UserProvider>(context, listen: false);
         final logProvider = Provider.of<LogProvider>(context, listen: false);
@@ -109,7 +109,7 @@ class Users extends StatelessWidget {
           userName: 'Admin',
           action: LogAction.delete,
           entity: LogEntity.user,
-          details: 'Se eliminó al usuario: ${user.name} ${user.lastName}',
+          details: 'Se eliminó al usuario: ${user.userName}',
         );
         userProvider.deleteUser(user.id);
       },
@@ -138,9 +138,9 @@ class Users extends StatelessWidget {
               child: DataTable(
                 columnSpacing: MediaQuery.of(context).size.width * 0.15,
                 columns: [
-                  DataColumn(label: Text('Nombre', style: _headerStyle())),
-                  DataColumn(label: Text('Apellidos', style: _headerStyle())),
-                  DataColumn(label: Text('Teléfono', style: _headerStyle())),
+                  DataColumn(
+                    label: Text('Nombre de usuario', style: _headerStyle()),
+                  ),
                   DataColumn(label: Text('Rol', style: _headerStyle())),
                   DataColumn(label: Text('Acciones', style: _headerStyle())),
                 ],
@@ -148,9 +148,7 @@ class Users extends StatelessWidget {
                     .map(
                       (user) => DataRow(
                         cells: [
-                          DataCell(Text(user.name)),
-                          DataCell(Text(user.lastName)),
-                          DataCell(Text(user.phone)),
+                          DataCell(Text(user.userName)),
                           DataCell(Text(user.role)),
                           DataCell(
                             Row(

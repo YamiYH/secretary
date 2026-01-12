@@ -1,9 +1,9 @@
-import 'package:app/screens/dashboard.dart';
-import 'package:app/screens/home.dart';
+import 'package:app/home/dashboard.dart';
+import 'package:app/home/home.dart';
 import 'package:flutter/material.dart';
 
 import '../routes/page_route_builder.dart';
-import '../screens/profile.dart';
+import '../screens/admin/profile.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
