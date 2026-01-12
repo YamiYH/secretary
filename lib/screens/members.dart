@@ -65,37 +65,68 @@ class Members extends StatelessWidget {
         const SizedBox(height: 20),
         // Barra de búsqueda
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: isMobile ? 16.0 : 24.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Expanded(
-                // 2. El SearchTextField ahora llama al método del provider
-                child: SearchTextField(
-                  onChanged: (query) {
-                    // Llama al método 'search' del provider en lugar de a un listener local.
-                    provider.search(query);
-                  },
-                  controller: null,
-                ),
-              ),
-              const SizedBox(width: 20),
-              AddButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    createFadeRoute(const CreateMember()),
-                  );
-                },
-              ),
-            ],
-          ),
+          padding: EdgeInsets.symmetric(horizontal: isMobile ? 18.0 : 24.0),
+          child: isMobile
+              ? _buildMobileLayout(context, provider)
+              : _buildWebLayout(provider, context),
         ),
-        const SizedBox(height: 30),
+        SizedBox(height: isMobile ? 15 : 30),
         // Lista de miembros
         Expanded(
           child: _buildMemberList(context, isMobile, members),
         ), // Pasa la lista filtrada
+      ],
+    );
+  }
+
+  Row _buildWebLayout(MemberProvider provider, BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Expanded(
+          // 2. El SearchTextField ahora llama al método del provider
+          child: SearchTextField(
+            onChanged: (query) {
+              // Llama al método 'search' del provider en lugar de a un listener local.
+              provider.search(query);
+            },
+            controller: null,
+          ),
+        ),
+        const SizedBox(width: 20),
+        AddButton(
+          onPressed: () {
+            Navigator.push(context, createFadeRoute(const CreateMember()));
+          },
+        ),
+      ],
+    );
+  }
+
+  Column _buildMobileLayout(BuildContext context, MemberProvider provider) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        // 2. El SearchTextField ahora llama al método del provider
+        Container(
+          width: MediaQuery.of(context).size.width * 0.9,
+          child: SearchTextField(
+            onChanged: (query) {
+              // Llama al método 'search' del provider en lugar de a un listener local.
+              provider.search(query);
+            },
+            controller: null,
+          ),
+        ),
+
+        const SizedBox(height: 15),
+        AddButton(
+          size: Size(MediaQuery.of(context).size.width * 0.9, 50),
+
+          onPressed: () {
+            Navigator.push(context, createFadeRoute(const CreateMember()));
+          },
+        ),
       ],
     );
   }
@@ -110,7 +141,7 @@ class Members extends StatelessWidget {
     }
 
     return Padding(
-      padding: const EdgeInsets.all(25),
+      padding: const EdgeInsets.all(20),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
@@ -125,7 +156,7 @@ class Members extends StatelessWidget {
           ],
         ),
         child: ListView.builder(
-          padding: const EdgeInsets.all(16.0),
+          padding: EdgeInsets.all(isMobile ? 10.0 : 25),
           itemCount: members.length,
           itemBuilder: (context, index) {
             final member = members[index];
@@ -173,7 +204,28 @@ class Members extends StatelessWidget {
                   IconButton(
                     icon: Icon(Icons.delete, color: Colors.red[600]),
                     onPressed: () {
-                      showDeleteConfirmation(context, member);
+                      showDeleteConfirmationDialog(
+                        context: context,
+                        itemName: member.name,
+                        onConfirm: () {
+                          final memberProvider = Provider.of<MemberProvider>(
+                            context,
+                            listen: false,
+                          );
+                          final logProvider = Provider.of<LogProvider>(
+                            context,
+                            listen: false,
+                          );
+
+                          logProvider.addLog(
+                            userName: 'Admin',
+                            action: LogAction.delete,
+                            entity: LogEntity.user,
+                            details: 'Se eliminó al miembro: "${member.name}"',
+                          );
+                          memberProvider.deleteMember(member.id);
+                        },
+                      );
                     },
                   ),
                 ],
@@ -182,28 +234,6 @@ class Members extends StatelessWidget {
           },
         ),
       ),
-    );
-  }
-
-  Future<void> showDeleteConfirmation(BuildContext context, Member member) {
-    return showDeleteConfirmationDialog(
-      context: context,
-      itemName: member.name,
-      onConfirm: () {
-        final memberProvider = Provider.of<MemberProvider>(
-          context,
-          listen: false,
-        );
-        final logProvider = Provider.of<LogProvider>(context, listen: false);
-
-        logProvider.addLog(
-          userName: 'Admin',
-          action: LogAction.delete,
-          entity: LogEntity.user,
-          details: 'Se eliminó al miembro: "${member.name}"',
-        );
-        memberProvider.deleteMember(member.id);
-      },
     );
   }
 }

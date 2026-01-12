@@ -50,7 +50,7 @@ class _CreateServiceState extends State<CreateService> {
 
   @override
   Widget build(BuildContext context) {
-    final isMobile = MediaQuery.of(context).size.width < 800;
+    final isMobile = MediaQuery.of(context).size.width < 700;
 
     // Usamos un Consumer aquí para que la lista de 'Hoy' se actualice.
     return Consumer<ServiceProvider>(
@@ -181,7 +181,7 @@ class _CreateServiceState extends State<CreateService> {
                 _focusedDay = focusedDay;
               },
               headerStyle: const HeaderStyle(
-                formatButtonVisible: true,
+                formatButtonVisible: false,
                 titleCentered: true,
               ),
               calendarStyle: CalendarStyle(
@@ -305,9 +305,12 @@ class _CreateServiceState extends State<CreateService> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(dialogContext).pop(null),
-                  child: const Text('Cancelar'),
+                  child: const Text(
+                    'Cancelar',
+                    style: TextStyle(color: Colors.grey),
+                  ),
                 ),
-                TextButton(
+                SmallButton(
                   onPressed: () {
                     int hour24 = selectedHour;
                     if (selectedPeriod == 'PM' && selectedHour != 12)
@@ -318,7 +321,7 @@ class _CreateServiceState extends State<CreateService> {
                       dialogContext,
                     ).pop(TimeOfDay(hour: hour24, minute: selectedMinute));
                   },
-                  child: const Text('Aceptar'),
+                  text: 'Aceptar',
                 ),
               ],
             );
@@ -349,17 +352,24 @@ class _CreateServiceState extends State<CreateService> {
     await showDialog(
       context: context,
       builder: (BuildContext dialogContext) {
+        bool isMobile = MediaQuery.of(context).size.width < 700;
         String? selectedTitle;
         return StatefulBuilder(
           builder: (context, dialogSetState) {
             return AlertDialog(
-              title: Text(
-                'Nuevo Servicio el ${selectedDay.day}/${selectedDay.month}',
-                style: const TextStyle(fontWeight: FontWeight.bold),
+              title: Center(
+                child: Text(
+                  'Nuevo Servicio el ${selectedDay.day}/${selectedDay.month}',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: isMobile ? 20 : 24,
+                  ),
+                ),
               ),
               content: SingleChildScrollView(
                 child: ListBody(
                   children: <Widget>[
+                    SizedBox(height: 5),
                     DropdownButtonFormField<String>(
                       decoration: const InputDecoration(
                         labelText: 'Nombre del Servicio',

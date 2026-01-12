@@ -129,7 +129,7 @@ class _AttendanceState extends State<Attendance> {
                       : _buildWebControls(memberProvider),
                 ),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 10),
                 // --- LISTA DE MIEMBROS ---
                 Expanded(child: _buildMemberList(members)),
               ],
@@ -144,29 +144,19 @@ class _AttendanceState extends State<Attendance> {
 
   Widget _buildMobileControls(memberProvider) {
     return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 25.0),
-              child: SearchTextField(
-                onChanged: (query) => memberProvider.search(query),
-              ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 5.0),
+          child: Container(
+            width: MediaQuery.of(context).size.width * 0.95,
+            child: SearchTextField(
+              onChanged: (query) => memberProvider.search(query),
             ),
-            DateWidget(
-              selectedDate: _selectedDate,
-              onDateSelected: _onDateSelected,
-            ),
-            const SizedBox(width: 20),
-            Button(
-              text: 'Guardar',
-              onPressed: _saveAttendance,
-              size: const Size(160, 45),
-            ),
-          ],
+          ),
         ),
-        const SizedBox(height: 20),
+
+        SizedBox(height: 20),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
@@ -182,6 +172,22 @@ class _AttendanceState extends State<Attendance> {
             ),
           ],
         ),
+        const SizedBox(height: 20),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            DateWidget(
+              selectedDate: _selectedDate,
+              onDateSelected: _onDateSelected,
+            ),
+            const SizedBox(width: 20),
+            Button(
+              text: 'Guardar',
+              onPressed: _saveAttendance,
+              size: const Size(160, 45),
+            ),
+          ],
+        ),
       ],
     );
   }
@@ -194,7 +200,7 @@ class _AttendanceState extends State<Attendance> {
       alignment: WrapAlignment.center,
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 25.0),
+          padding: const EdgeInsets.symmetric(horizontal: 5.0),
           child: SearchTextField(
             onChanged: (query) => memberProvider.search(query),
           ),

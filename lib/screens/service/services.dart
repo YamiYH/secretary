@@ -92,42 +92,60 @@ class _ServicesState extends State<Services> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    isMobile ? 'Servicios' : 'Próximos Servicios',
-                    style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
+              isMobile
+                  ? Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Próximos Servicios',
+                          style: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        SizedBox(height: 20),
+                        isMobile ? _buildMobileLayout() : _buildWebLayout(),
+                      ],
+                    )
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Próximos Servicios',
+                          style: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        Row(
+                          children: [
+                            Button(
+                              size: Size(220, 45),
+                              text: 'Gestionar Servicios',
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  createFadeRoute(
+                                    const ManageServiceTypesScreen(),
+                                  ),
+                                );
+                              },
+                            ),
+                            const SizedBox(width: 16),
+                            AddButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  createFadeRoute(CreateService()),
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
-                  ),
-                  Row(
-                    children: [
-                      Button(
-                        size: Size(220, 45),
-                        text: 'Gestionar Servicios',
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            createFadeRoute(const ManageServiceTypesScreen()),
-                          );
-                        },
-                      ),
-                      const SizedBox(width: 16),
-                      AddButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            createFadeRoute(CreateService()),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                ],
-              ),
               const SizedBox(height: 16),
               // Lista de servicios
               ListView.separated(
@@ -248,6 +266,55 @@ class _ServicesState extends State<Services> {
               ),
             ],
           ),
+        ),
+      ],
+    );
+  }
+
+  Column _buildMobileLayout() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Button(
+          size: Size(MediaQuery.of(context).size.width * 0.9, 50),
+          text: 'Gestionar Servicios',
+          onPressed: () {
+            Navigator.push(
+              context,
+              createFadeRoute(const ManageServiceTypesScreen()),
+            );
+          },
+        ),
+        const SizedBox(height: 15),
+        AddButton(
+          size: Size(MediaQuery.of(context).size.width * 0.9, 50),
+          onPressed: () {
+            Navigator.push(context, createFadeRoute(CreateService()));
+          },
+        ),
+      ],
+    );
+  }
+
+  Row _buildWebLayout() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Button(
+          size: Size(220, 45),
+          text: 'Gestionar Servicios',
+          onPressed: () {
+            Navigator.push(
+              context,
+              createFadeRoute(const ManageServiceTypesScreen()),
+            );
+          },
+        ),
+        const SizedBox(width: 16),
+        AddButton(
+          onPressed: () {
+            Navigator.push(context, createFadeRoute(CreateService()));
+          },
         ),
       ],
     );

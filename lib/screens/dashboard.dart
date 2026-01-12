@@ -17,12 +17,15 @@ class MetricCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    bool isMobile = MediaQuery.of(context).size.width < 700;
     return Card(
       elevation: 5,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
       color: cardColor,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(60, 50, 60, 30),
+        padding: isMobile
+            ? EdgeInsets.fromLTRB(40, 25, 40, 10)
+            : EdgeInsets.fromLTRB(60, 50, 60, 30),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -34,8 +37,8 @@ class MetricCard extends StatelessWidget {
                 SizedBox(width: 10),
                 Text(
                   title,
-                  style: const TextStyle(
-                    fontSize: 24,
+                  style: TextStyle(
+                    fontSize: isMobile ? 20 : 24,
                     fontWeight: FontWeight.w600,
                     color: secondaryColor,
                   ),

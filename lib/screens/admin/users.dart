@@ -83,7 +83,7 @@ class Users extends StatelessWidget {
                           color: Colors.red,
                         ), // Ícono de eliminar
                         onPressed: () {
-                          showDeleteConfirmation(context, user);
+                          _showDelete(context, user);
                         },
                       ),
                     ],
@@ -97,10 +97,10 @@ class Users extends StatelessWidget {
     );
   }
 
-  void showDeleteConfirmation(BuildContext context, User user) {
-    showDeleteConfirmationDialog(
+  Future<void> _showDelete(BuildContext context, User user) {
+    return showDeleteConfirmationDialog(
       context: context,
-      itemName: '${user.name} ${user.lastName}',
+      itemName: user.name,
       onConfirm: () {
         final userProvider = Provider.of<UserProvider>(context, listen: false);
         final logProvider = Provider.of<LogProvider>(context, listen: false);
@@ -177,7 +177,7 @@ class Users extends StatelessWidget {
                                     color: Colors.red,
                                   ),
                                   onPressed: () {
-                                    showDeleteConfirmation(context, user);
+                                    _showDelete(context, user);
                                   },
                                 ),
                               ],

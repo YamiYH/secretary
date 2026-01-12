@@ -70,6 +70,7 @@ class _EditServiceState extends State<EditService> {
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
+      //barrierColor: Colors.blue.shade200,
       context: context,
       initialDate: _selectedDate,
       firstDate: DateTime(2020),
@@ -90,9 +91,9 @@ class _EditServiceState extends State<EditService> {
     }
   }
 
-  // --- MÉTODO BUILD RESTAURADO Y CORREGIDO ---
   @override
   Widget build(BuildContext context) {
+    bool isMobile = MediaQuery.of(context).size.width < 700;
     final serviceTypeProvider = Provider.of<ServiceTypeProvider>(
       context,
       listen: false,
@@ -114,6 +115,7 @@ class _EditServiceState extends State<EditService> {
     return Scaffold(
       appBar: CustomAppBar(title: 'Editar Servicio'),
       body: Center(
+        heightFactor: isMobile ? 1 : 1,
         child: Container(
           padding: const EdgeInsets.all(24.0),
           constraints: const BoxConstraints(maxWidth: 600),
@@ -147,7 +149,7 @@ class _EditServiceState extends State<EditService> {
                       const SizedBox(width: 16),
                       Expanded(
                         child: Text(
-                          'Fecha: $formattedDate',
+                          isMobile ? '$formattedDate' : 'Fecha: $formattedDate',
                           style: const TextStyle(fontSize: 16),
                         ),
                       ),

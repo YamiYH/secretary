@@ -7,6 +7,7 @@ import '../../models/log_model.dart';
 import '../../models/network_model.dart';
 import '../../providers/log_provider.dart';
 import '../../providers/network_provider.dart';
+import '../../widgets/custom_text_form_field.dart';
 
 class CreateNetwork extends StatefulWidget {
   final NetworkModel? networkToEdit;
@@ -97,10 +98,10 @@ class _CreateNetworkState extends State<CreateNetwork> {
         title: _isEditing ? 'Editar Red' : 'Crear Nueva Red',
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(isMobile ? 50 : 70),
+        padding: EdgeInsets.all(isMobile ? 30 : 70),
         child: Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(
+            constraints: BoxConstraints(
               maxWidth: 700,
             ), // Limita el ancho en pantallas grandes
             child: Form(
@@ -118,27 +119,23 @@ class _CreateNetworkState extends State<CreateNetwork> {
                     ),
                   ),
                   const SizedBox(height: 40),
-                  TextFormField(
+                  CustomTextFormField(
+                    labelText: 'Nombre de la Red',
                     controller: _nameController,
-                    decoration: InputDecoration(
-                      labelText: 'Nombre de la Red',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 15),
-                  TextFormField(
-                    controller: _ageRangeController,
-                    decoration: InputDecoration(
-                      labelText: 'Rango de edades',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                    ),
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
-                        return 'Por favor, ingrese un rango de edades. Ej: De 10 a 20 años';
+                        return 'Por favor, ingrese un nombre.';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 15),
+                  CustomTextFormField(
+                    labelText: 'Rango de edades',
+                    controller: _ageRangeController,
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Ingrese un rango de edades. Ej: De 10 a 20 años';
                       }
                       return null;
                     },

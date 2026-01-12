@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../colors.dart';
 import '../models/attendance_record_model.dart';
 import '../models/member_model.dart';
 import '../providers/attendance_provider.dart';
@@ -24,7 +25,7 @@ class _ReportsState extends State<Reports> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 2, vsync: this);
   }
 
   @override
@@ -68,7 +69,7 @@ class _ReportsState extends State<Reports> with TickerProviderStateMixin {
           ),
 
           controller: _tabController,
-          tabs: const [
+          tabs: [
             Tab(text: 'Asistencia'),
             Tab(text: 'Miembros'),
           ],
@@ -88,50 +89,16 @@ class _ReportsState extends State<Reports> with TickerProviderStateMixin {
                   allRecords: allRecordsOriginal,
                   allMembers: allMembers,
                 ),
-                // Placeholder para las otras pestañas
                 // Pestaña 2
                 MembershipAnalyticsTab(
                   allMembers: allMembers,
                   allRecords: allRecordsOriginal,
                 ),
-                // Pestaña 3
-                const Center(child: Text('Participación en Eventos')),
               ],
             ),
           ),
         ],
       ),
-      bottomNavigationBar: isMobile
-          ? BottomNavigationBar(
-              // ... (código de BottomNavigationBar que ya tienes)
-              items: const [
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.dashboard),
-                  label: 'Dashboard',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.people_alt_outlined),
-                  label: 'Miembros',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.calendar_month_outlined),
-                  label: 'Servicios',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.how_to_reg_outlined),
-                  label: 'Asistencia',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.location_on_outlined),
-                  label: 'Visitas',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.description_outlined),
-                  label: 'Reportes',
-                ),
-              ],
-            )
-          : null,
     );
   }
 }
@@ -164,7 +131,7 @@ class _ReportContentState extends State<ReportContent> {
   }
 
   // Muestra un menú para seleccionar un grupo
-  void _showGroupFilter(BuildContext context) {
+  void _showGroupFilter(BuildContext context, bool isMobile) {
     // Obtenemos la lista única de grupos de los miembros
     final Set<String> groups = widget.allMembers.map((m) => m.group).toSet();
     final List<String> groupList = groups.toList()..sort();
@@ -173,8 +140,12 @@ class _ReportContentState extends State<ReportContent> {
       context: context,
       builder: (BuildContext context) {
         return SimpleDialog(
-          title: const Text('Seleccionar Grupo'),
+          title: const Text(
+            'Seleccionar Grupo',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
           children: [
+            SizedBox(height: 10),
             // Opción para quitar el filtro
             SimpleDialogOption(
               onPressed: () {
@@ -183,7 +154,7 @@ class _ReportContentState extends State<ReportContent> {
                 });
                 Navigator.pop(context);
               },
-              child: const Text('Todos los Grupos'),
+              child: Text('Todos los Grupos', style: TextStyle(fontSize: 18)),
             ),
             // Opciones para cada grupo
             ...groupList.map(
@@ -194,7 +165,7 @@ class _ReportContentState extends State<ReportContent> {
                   });
                   Navigator.pop(context);
                 },
-                child: Text(group),
+                child: Text(group, style: TextStyle(fontSize: 18)),
               ),
             ),
           ],
@@ -204,7 +175,7 @@ class _ReportContentState extends State<ReportContent> {
   }
 
   // Muestra el selector de rango de fechas
-  Future<void> _showDateRangeFilter(BuildContext context) async {
+  Future<void> _showDateRangeFilter(BuildContext context, bool isMobile) async {
     final now = DateTime.now();
     final initialRange =
         _selectedDateRange ??
@@ -225,6 +196,7 @@ class _ReportContentState extends State<ReportContent> {
 
   @override
   Widget build(BuildContext context) {
+    bool isMobile = MediaQuery.of(context).size.width < 700;
     List<AttendanceRecord> filteredRecords = List.from(widget.allRecords);
 
     // 1. Filtrar por Rango de Fechas
@@ -310,9 +282,10 @@ class _ReportContentState extends State<ReportContent> {
     }
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(32.0),
+      padding: EdgeInsets.all(32.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
           // Título de la sección
           const Text(
@@ -355,15 +328,17 @@ class _ReportContentState extends State<ReportContent> {
           const SizedBox(height: 24),
           if (spots.isEmpty)
             Container(
-              height: 200,
-              child: const Center(
+              color: Colors.white,
+              height: 150,
+              child: Center(
                 child: Text(
                   'No hay suficientes datos para mostrar una tendencia.',
+                  textAlign: TextAlign.center,
                 ),
               ),
             )
           else
-            buildAspectRatioLines(spots, filteredRecords),
+            buildAspectRatioLines(spots, filteredRecords, isMobile),
 
           const SizedBox(height: 32),
           // Sección de Asistencia por Grupo
@@ -378,58 +353,94 @@ class _ReportContentState extends State<ReportContent> {
               const Text('No hay datos de asistencia por grupo.')
             else
               ...attendanceByGroup.entries.map((entry) {
-                return _buildGroupBar(entry.key, entry.value, grandTotal);
+                return _buildGroupBar(entry.key, entry.value, totalAttendance);
               }).toList(),
             const SizedBox(height: 32),
           ],
-          Row(
-            children: [
-              Row(
-                children: [
-                  _buildFilterButton(
-                    _selectedDateRange == null
-                        ? 'Rango de Fecha'
-                        : '${DateFormat('d/M/y', 'es_ES').format(_selectedDateRange!.start)} - ${DateFormat('d/M/y', 'es_ES').format(_selectedDateRange!.end)}',
-                    () => _showDateRangeFilter(context),
-                  ),
-                  if (_selectedDateRange != null)
-                    Padding(
-                      padding: const EdgeInsets.only(left: 8.0),
-                      child: InkWell(
-                        onTap: () {
-                          // Al tocarlo, limpia el estado y reconstruye la UI
-                          setState(() {
-                            _selectedDateRange = null;
-                          });
-                        },
-                        borderRadius: BorderRadius.circular(20),
-                        child: const Icon(
-                          Icons.clear,
-                          color: Colors.red,
-                          size: 20,
+          isMobile
+              ? Column(
+                  //mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        SizedBox(
+                          width: MediaQuery.of(context).size.width * 0.8,
+                          child: _buildRowWithIcon(context, isMobile),
                         ),
-                      ),
+                      ],
                     ),
-                ],
-              ),
-              const SizedBox(width: 16),
-              _buildFilterButton(
-                _selectedGroup ?? 'Grupo',
-                () => _showGroupFilter(context),
-              ),
-            ],
-          ),
+                    const SizedBox(height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        SizedBox(
+                          width: MediaQuery.of(context).size.width * 0.35,
+                          child: _buildFilterButton(
+                            _selectedGroup ?? 'Grupo',
+                            () => _showGroupFilter(context, isMobile),
+                            isMobile,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                )
+              : Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _buildRowWithIcon(context, isMobile),
+                    const SizedBox(width: 12),
+                    _buildFilterButton(
+                      _selectedGroup ?? 'Grupo',
+                      () => _showGroupFilter(context, isMobile),
+                      isMobile,
+                    ),
+                  ],
+                ),
         ],
       ),
+    );
+  }
+
+  Row _buildRowWithIcon(BuildContext context, bool isMobile) {
+    return Row(
+      children: [
+        _buildFilterButton(
+          _selectedDateRange == null
+              ? 'Rango de Fecha'
+              : '${DateFormat('d/M/y', 'es_ES').format(_selectedDateRange!.start)} - ${DateFormat('d/M/y', 'es_ES').format(_selectedDateRange!.end)}',
+          () => _showDateRangeFilter(context, isMobile),
+          isMobile,
+        ),
+        if (_selectedDateRange != null)
+          Padding(
+            padding: const EdgeInsets.only(left: 8.0),
+            child: InkWell(
+              onTap: () {
+                // Al tocarlo, limpia el estado y reconstruye la UI
+                setState(() {
+                  _selectedDateRange = null;
+                });
+              },
+              borderRadius: BorderRadius.circular(20),
+              child: const Icon(Icons.clear, color: Colors.red, size: 20),
+            ),
+          ),
+      ],
     );
   }
 
   AspectRatio buildAspectRatioLines(
     List<FlSpot> spots,
     List<AttendanceRecord> records,
+    isMobile,
   ) {
     return AspectRatio(
-      aspectRatio: 5.0, // Proporción del gráfico (ancho vs alto)
+      aspectRatio: isMobile
+          ? 2.0
+          : 5.0, // Proporción del gráfico (ancho vs alto)
       child: LineChart(
         LineChartData(
           // --- ESTILOS Y CONFIGURACIÓN DEL GRÁFICO ---
@@ -486,27 +497,6 @@ class _ReportContentState extends State<ReportContent> {
     );
   }
 
-  // --- MÉTODOS AUXILIARES ---
-  Map<String, int> _calculateAttendanceByGroup() {
-    final Map<String, int> attendanceByGroup = {};
-    final memberGroupMap = {
-      for (var member in widget.allMembers) member.id: member.group,
-    };
-    for (var record in widget.allRecords) {
-      for (var memberId in record.presentMemberIds) {
-        final group = memberGroupMap[memberId];
-        if (group != null) {
-          attendanceByGroup.update(
-            group,
-            (value) => value + 1,
-            ifAbsent: () => 1,
-          );
-        }
-      }
-    }
-    return attendanceByGroup;
-  }
-
   Widget _buildGroupBar(String title, int attendance, int total) {
     // Evitamos división por cero si el total es 0
     final double percentage = (total > 0) ? attendance / total : 0.0;
@@ -543,12 +533,12 @@ class _ReportContentState extends State<ReportContent> {
     );
   }
 
-  Widget _buildFilterButton(String text, VoidCallback onPressed) {
+  Widget _buildFilterButton(String text, VoidCallback onPressed, isMobile) {
     return InkWell(
       onTap: onPressed,
-      borderRadius: BorderRadius.circular(24),
+      borderRadius: BorderRadius.circular(20),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(24),
@@ -558,7 +548,7 @@ class _ReportContentState extends State<ReportContent> {
           children: [
             Text(text),
             const SizedBox(width: 8),
-            const Icon(Icons.keyboard_arrow_down, size: 18),
+            const Icon(Icons.keyboard_arrow_down, size: 16),
           ],
         ),
       ),
@@ -578,8 +568,7 @@ class MembershipAnalyticsTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // --- LÓGICA DE CÁLCULO PARA LA MEMBRESÍA ---
-
+    bool isMobile = MediaQuery.of(context).size.width < 700;
     // 1. Calcular Miembros Activos vs. Inactivos
     final thirtyDaysAgo = DateTime.now().subtract(const Duration(days: 30));
     // Creamos un conjunto con los IDs de todos los que han asistido en los últimos 30 días.
@@ -614,14 +603,18 @@ class MembershipAnalyticsTab extends StatelessWidget {
       growthSpots.add(FlSpot(i.toDouble(), (i + 1).toDouble()));
     }
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24.0),
+      padding: EdgeInsets.all(24.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           // --- SECCIÓN DE ACTIVIDAD DE MIEMBROS ---
-          const Text(
+          Text(
             'Actividad de la Membresía',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              fontSize: isMobile ? 22 : 24,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const Text(
             'Últimos 30 días',
@@ -630,12 +623,15 @@ class MembershipAnalyticsTab extends StatelessWidget {
           const SizedBox(height: 24),
           _buildActivityChart(context, activeMembers, inactiveMembers),
 
-          const SizedBox(height: 48),
+          const SizedBox(height: 40),
 
           // --- SECCIÓN DE CRECIMIENTO HISTÓRICO ---
-          const Text(
+          Text(
             'Crecimiento de la Membresía',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              fontSize: isMobile ? 22 : 24,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 24),
           if (growthSpots.length < 2)
@@ -651,7 +647,7 @@ class MembershipAnalyticsTab extends StatelessWidget {
                 _buildGrowthChartData(growthSpots, sortedMembers),
               ),
             ),
-          const SizedBox(height: 48),
+          const SizedBox(height: 40),
 
           // --- SECCIÓN DE DISTRIBUCIÓN POR GRUPO ---
           const Text(
@@ -676,9 +672,10 @@ class MembershipAnalyticsTab extends StatelessWidget {
     return SizedBox(
       height: 200,
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Expanded(
-            flex: 2,
+            //flex: 2,
             child: PieChart(
               PieChartData(
                 sectionsSpace: 4,
@@ -710,13 +707,14 @@ class MembershipAnalyticsTab extends StatelessWidget {
               ),
             ),
           ),
+          SizedBox(width: 20),
           Expanded(
-            flex: 3,
+            //flex: 2,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildLegend(color: Colors.green, text: 'Activos ($active)'),
+                _buildLegend(color: accentColor, text: 'Activos ($active)'),
                 const SizedBox(height: 8),
                 _buildLegend(
                   color: Colors.orange,
@@ -760,7 +758,7 @@ class MembershipAnalyticsTab extends StatelessWidget {
           LinearProgressIndicator(
             value: count / total,
             minHeight: 12,
-            backgroundColor: Colors.grey[300],
+            backgroundColor: primaryColor1,
             color: primaryColor1,
           ),
         ],
@@ -825,9 +823,3 @@ class MembershipAnalyticsTab extends StatelessWidget {
     );
   }
 }
-
-// Asegúrate de que los colores y otros widgets están definidos en sus archivos correspondientes
-const primaryColor1 = Colors.blue;
-const secondaryColor = Colors.grey;
-const accentColor = Colors.green;
-const backgroundColor = Color(0xFFF3F5F9);

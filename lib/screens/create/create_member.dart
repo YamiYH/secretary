@@ -133,22 +133,24 @@ class _CreateMemberState extends State<CreateMember> {
       appBar: CustomAppBar(title: 'Crear miembro'),
       body: LayoutBuilder(
         builder: (context, constraints) {
-          return isMobile ? _buildMobileLayout() : _buildWebLayout();
+          return isMobile
+              ? _buildMobileLayout(isMobile)
+              : _buildWebLayout(isMobile);
         },
       ),
     );
   }
 
   // --- Layout para móvil ---
-  Widget _buildMobileLayout() {
+  Widget _buildMobileLayout(isMobile) {
     return SingleChildScrollView(
       child: Padding(
-        padding: const EdgeInsets.all(30.0),
+        padding: const EdgeInsets.all(20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const SizedBox(height: 24.0),
-            _buildFormFields(context), // Pasamos el context
+            _buildFormFields(context, isMobile), // Pasamos el context
           ],
         ),
       ),
@@ -156,26 +158,28 @@ class _CreateMemberState extends State<CreateMember> {
   }
 
   // --- Layout para web ---
-  Widget _buildWebLayout() {
+  Widget _buildWebLayout(isMobile) {
     return SingleChildScrollView(
       child: Center(
         child: Container(
           width: 600,
-          padding: const EdgeInsets.all(50.0),
-          child: _buildFormFields(context),
+          padding: EdgeInsets.all(50.0),
+          child: _buildFormFields(context, isMobile),
         ),
       ),
     );
   }
 
-  Widget _buildFormFields(BuildContext context) {
+  Widget _buildFormFields(BuildContext context, isMobile) {
     return Form(
       key: _formKey,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          Center(child: Image.asset('assets/02.png', height: 120)),
-          const SizedBox(height: 30.0),
+          Center(
+            child: Image.asset('assets/02.png', height: isMobile ? 100 : 120),
+          ),
+          SizedBox(height: isMobile ? 20 : 30.0),
           CustomTextFormField(
             labelText: 'Nombre',
             validator: (value) {

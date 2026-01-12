@@ -8,50 +8,10 @@ import '../../models/log_model.dart';
 import '../../providers/log_provider.dart';
 import '../../providers/network_provider.dart';
 import '../../routes/page_route_builder.dart';
+import '../../widgets/showDeleteConfirmationDialog.dart';
 
 class NetworkManage extends StatelessWidget {
   const NetworkManage({Key? key}) : super(key: key);
-
-  // Función para el diálogo de confirmación de borrado
-  void _showDeleteConfirmationDialog(
-    BuildContext context,
-    NetworkModel network,
-  ) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Confirmar Eliminación'),
-        content: Text(
-          '¿Estás seguro de que deseas eliminar la red "${network.name}"?',
-        ),
-        actions: [
-          TextButton(
-            child: const Text('Cancelar'),
-            onPressed: () => Navigator.of(ctx).pop(),
-          ),
-          TextButton(
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Eliminar'),
-            onPressed: () {
-              Provider.of<LogProvider>(context, listen: false).addLog(
-                userName: 'Usuario Actual', // Temporalmente hardcodeado
-                action: LogAction.delete,
-                entity:
-                    LogEntity.network, // Especifica que la entidad es un Rol
-                details: 'Se eliminó la red: "${network.name}"',
-              );
-
-              Provider.of<NetworkProvider>(
-                context,
-                listen: false,
-              ).deleteNetwork(network.id);
-              Navigator.of(ctx).pop();
-            },
-          ),
-        ],
-      ),
-    );
-  }
 
   TextStyle _headerStyle() {
     return TextStyle(fontWeight: FontWeight.bold, fontSize: 18);
@@ -114,7 +74,7 @@ class NetworkManage extends StatelessWidget {
                     color: Colors.red,
                   ), // Ícono de eliminar
                   onPressed: () {
-                    _showDeleteConfirmationDialog(context, network);
+                    _showDelete(context, network);
                   },
                 ),
               ],
@@ -176,7 +136,7 @@ class NetworkManage extends StatelessWidget {
                                 color: Colors.red,
                               ),
                               onPressed: () {
-                                _showDeleteConfirmationDialog(context, network);
+                                _showDelete(context, network);
                               },
                             ),
                           ],
@@ -190,6 +150,27 @@ class NetworkManage extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  void _showDelete(BuildContext context, NetworkModel network) {
+    showDeleteConfirmationDialog(
+      context: context,
+      itemName: network.name,
+      onConfirm: () {
+        Provider.of<LogProvider>(context, listen: false).addLog(
+          userName: 'Usuario Actual', // Temporalmente hardcodeado
+          action: LogAction.delete,
+          entity: LogEntity.network, // Especifica que la entidad es un Rol
+          details: 'Se eliminó la red: "${network.name}"',
+        );
+
+        Provider.of<NetworkProvider>(
+          context,
+          listen: false,
+        ).deleteNetwork(network.id);
+        Navigator.of(context).pop();
+      },
     );
   }
 }

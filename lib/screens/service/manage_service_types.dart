@@ -13,18 +13,22 @@ class ManageServiceTypesScreen extends StatelessWidget {
   const ManageServiceTypesScreen({super.key});
 
   void _showAddDialog(BuildContext context) {
+    bool isMobile = MediaQuery.of(context).size.width < 700;
     final controller = TextEditingController();
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Nuevo Nombre de Servicio'),
+        title: Text(
+          'Nuevo Nombre de Servicio',
+          style: TextStyle(fontSize: isMobile ? 20 : 24),
+        ),
         content: CustomTextFormField(
           controller: controller,
           labelText: 'Nombre (ej. "Servicio de Damas")',
         ),
         actions: [
           TextButton(
-            child: const Text('Cancelar'),
+            child: const Text('Cancelar', style: TextStyle(color: Colors.grey)),
             onPressed: () => Navigator.of(ctx).pop(),
           ),
           SmallButton(
@@ -46,22 +50,33 @@ class ManageServiceTypesScreen extends StatelessWidget {
 
   void _showEditDialog(BuildContext context, ServiceType typeToEdit) {
     final controller = TextEditingController(text: typeToEdit.name);
+    bool isMobile = MediaQuery.of(context).size.width < 700;
 
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Editar Nombre de Servicio'),
-        content: CustomTextFormField(
-          controller: controller,
-          labelText: 'Nombre',
+        title: Text(
+          'Editar Nombre de Servicio',
+          style: TextStyle(
+            fontSize: isMobile ? 18 : 24,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(height: 5),
+            CustomTextFormField(controller: controller, labelText: 'Nombre'),
+          ],
         ),
         actions: [
           TextButton(
-            child: const Text('Cancelar'),
+            child: const Text('Cancelar', style: TextStyle(color: Colors.grey)),
             onPressed: () => Navigator.of(ctx).pop(),
           ),
           SmallButton(
             text: 'Actualizar',
+            size: Size(120, 40),
             onPressed: () {
               if (controller.text.isNotEmpty) {
                 Provider.of<ServiceTypeProvider>(
@@ -79,12 +94,17 @@ class ManageServiceTypesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    bool isMobile = MediaQuery.of(context).size.width < 700;
     final provider = context.watch<ServiceTypeProvider>();
     final types = provider.serviceTypes;
 
     return Scaffold(
       backgroundColor: backgroundColor,
-      appBar: CustomAppBar(title: 'Gestionar Nombres de Servicios'),
+      appBar: CustomAppBar(
+        title: isMobile
+            ? 'Nombres de Servicios'
+            : 'Gestionar Nombres de Servicios',
+      ),
 
       // --- ESTRUCTURA DEL BODY SIMPLIFICADA Y CORREGIDA ---
       body: Center(

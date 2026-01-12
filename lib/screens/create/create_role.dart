@@ -86,14 +86,16 @@ class _CreateRoleState extends State<CreateRole> {
 
   @override
   Widget build(BuildContext context) {
+    bool isMobile = MediaQuery.of(context).size.width < 700;
     return Scaffold(
       appBar: CustomAppBar(title: _isEditing ? 'Editar Rol' : 'Crear Rol'),
       body: SingleChildScrollView(
+        padding: EdgeInsets.all(isMobile ? 30 : 70),
         child: Center(
           child: Container(
-            width: 600,
-            padding: const EdgeInsets.all(50.0),
-            constraints: const BoxConstraints(maxWidth: 600),
+            //width: isMobile ? MediaQuery.of(context).size.width * 0.8 : 600,
+            //padding: const EdgeInsets.all(50.0),
+            constraints: const BoxConstraints(maxWidth: 700),
             child: Form(
               key: _formKey,
               child: Column(
@@ -116,7 +118,7 @@ class _CreateRoleState extends State<CreateRole> {
                   CustomTextFormField(
                     controller: _descriptionController,
                     labelText: 'Descripción',
-                    maxLines: 3,
+                    //maxLines: 3,
                     validator: (value) => (value == null || value.isEmpty)
                         ? 'La descripción es obligatoria'
                         : null,

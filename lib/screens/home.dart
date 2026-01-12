@@ -1,3 +1,4 @@
+import 'package:app/colors.dart';
 import 'package:app/routes/page_route_builder.dart';
 import 'package:app/screens/login.dart';
 import 'package:flutter/material.dart';
@@ -64,11 +65,17 @@ class _HomeState extends State<Home> {
               SizedBox(height: isMobile ? 120 : 40),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: isMobile ? Colors.blueAccent : Colors.white,
+                  fixedSize: Size(isMobile ? 200 : 200, isMobile ? 60 : 45),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(
+                      10,
+                    ), // Usa el radio de borde personalizado
+                  ),
+                  backgroundColor: isMobile ? primaryColor : Colors.white,
                   elevation: isMobile ? 5 : 20,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 30,
-                    vertical: 20,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isMobile ? 10 : 30,
+                    vertical: isMobile ? 10 : 20,
                   ),
                   textStyle: TextStyle(
                     fontSize: 20,
@@ -82,7 +89,7 @@ class _HomeState extends State<Home> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      'Iniciar Sesión',
+                      'Iniciar sesión',
                       style: TextStyle(
                         color: isMobile ? Colors.white : Colors.black,
                       ),

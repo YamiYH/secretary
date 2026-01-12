@@ -95,38 +95,63 @@ class _CreateMinistryState extends State<CreateMinistry> {
       appBar: CustomAppBar(
         title: _isEditing ? 'Editar Ministerio' : 'Crear Ministerio',
       ),
-      body: Center(
-        child: Container(
-          width: MediaQuery.of(context).size.width * 0.5,
-          constraints: const BoxConstraints(maxWidth: 600),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                CustomTextFormField(
-                  controller: _nameController,
-                  labelText: 'Nombre del Ministerio',
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Por favor, ingrese un nombre.';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 20),
-                CustomTextFormField(
-                  controller: _detailsController,
-                  labelText: 'Detalles (opcional)',
-                  maxLines: 3, // Permite más espacio para detalles
-                ),
-                const SizedBox(height: 30),
-                Button(
-                  onPressed: _submitForm,
-                  // Texto del botón dinámico
-                  text: _isEditing ? 'Actualizar' : 'Guardar',
-                ),
-              ],
+      body: SingleChildScrollView(
+        padding: EdgeInsets.all(isMobile ? 30 : 70),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: 700),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+
+                children: [
+                  Center(
+                    child: const Text(
+                      'Detalles del Ministerio',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 40),
+                  CustomTextFormField(
+                    controller: _nameController,
+                    labelText: 'Nombre del Ministerio',
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Por favor, ingrese un nombre.';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  CustomTextFormField(
+                    controller: _detailsController,
+                    labelText: 'Descripción',
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Ingrese descripción del ministerio';
+                      }
+                      return null;
+                    },
+                    //maxLines: 3,
+                  ),
+                  const SizedBox(height: 30),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Button(
+                        size: Size(130, 45),
+                        onPressed: _submitForm,
+                        // Texto del botón dinámico
+                        text: _isEditing ? 'Actualizar' : 'Guardar',
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),

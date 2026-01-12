@@ -32,49 +32,14 @@ class Ministries extends StatelessWidget {
       body: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (!isMobile) const SizedBox(child: Menu()),
+          if (!isMobile) Menu(),
           Expanded(
             child: Padding(
               padding: const EdgeInsets.all(32.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Ministerios',
-                        style: TextStyle(
-                          fontSize: isMobile ? 24 : 28,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-
-                      Row(
-                        children: [
-                          Button(
-                            text: 'Gestionar ministerios',
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                createFadeRoute(MinistryManage()),
-                              );
-                            },
-                            size: Size(230, 45),
-                          ),
-                          const SizedBox(width: 15),
-                          AddButton(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                createFadeRoute(CreateMinistry()),
-                              );
-                            },
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                  _buildHeader(context, isMobile),
                   const SizedBox(height: 24),
                   Expanded(
                     child: GridView.builder(
@@ -189,5 +154,55 @@ class Ministries extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Widget _buildHeader(BuildContext context, bool isMobile) {
+    final headerItems = _buildHeaderItems(context, isMobile);
+
+    // Si es móvil, los ponemos en una Columna.
+    if (isMobile) {
+      return Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: headerItems,
+      );
+    }
+
+    // Si es web/escritorio, los ponemos en una Fila.
+    return Row(children: headerItems);
+  }
+
+  List<Widget> _buildHeaderItems(BuildContext context, bool isMobile) {
+    return [
+      Text(
+        'Ministerios',
+        style: TextStyle(
+          fontSize: isMobile ? 24 : 28,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      isMobile ? const SizedBox(height: 16) : const Spacer(),
+      Button(
+        text: 'Gestionar ministerios',
+        onPressed: () {
+          Navigator.push(context, createFadeRoute(MinistryManage()));
+        },
+        size: Size(
+          isMobile ? MediaQuery.of(context).size.width * 0.9 : 230,
+          isMobile ? 50 : 45,
+        ),
+      ),
+
+      isMobile ? const SizedBox(height: 10) : const SizedBox(width: 15),
+      AddButton(
+        onPressed: () {
+          Navigator.push(context, createFadeRoute(CreateMinistry()));
+        },
+        size: Size(
+          isMobile ? MediaQuery.of(context).size.width * 0.9 : 180,
+          isMobile ? 50 : 45,
+        ),
+      ),
+    ];
   }
 }

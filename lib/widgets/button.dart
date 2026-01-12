@@ -20,6 +20,7 @@ class Button extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 700;
     return SizedBox(
       // Si se proporciona un ancho, úsalo; de lo contrario, ocupa el ancho máximo.
       child: ElevatedButton(
@@ -41,7 +42,7 @@ class Button extends StatelessWidget {
         child: Text(
           text,
           style: TextStyle(
-            fontSize: 18,
+            fontSize: isMobile ? 16 : 18,
             fontWeight: FontWeight.bold,
             color: textColor ?? Colors.white,
           ),

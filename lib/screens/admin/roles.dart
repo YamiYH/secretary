@@ -8,47 +8,11 @@ import '../../providers/log_provider.dart';
 import '../../providers/role_provider.dart';
 import '../../routes/page_route_builder.dart';
 import '../../widgets/add_button.dart';
+import '../../widgets/showDeleteConfirmationDialog.dart';
 import '../create/create_role.dart';
 
 class Roles extends StatelessWidget {
   const Roles({Key? key}) : super(key: key);
-
-  // Función para el diálogo de confirmación de borrado
-  void _showDeleteConfirmationDialog(BuildContext context, Role role) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Confirmar Eliminación'),
-        content: Text(
-          '¿Estás seguro de que deseas eliminar el rol "${role.name}"?',
-        ),
-        actions: [
-          TextButton(
-            child: const Text('Cancelar'),
-            onPressed: () => Navigator.of(ctx).pop(),
-          ),
-          TextButton(
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Eliminar'),
-            onPressed: () {
-              Provider.of<LogProvider>(context, listen: false).addLog(
-                userName: 'Usuario Actual', // Temporalmente hardcodeado
-                action: LogAction.delete,
-                entity: LogEntity.role, // Especifica que la entidad es un Rol
-                details: 'Se eliminó el rol: "${role.name}"',
-              );
-
-              Provider.of<RoleProvider>(
-                context,
-                listen: false,
-              ).deleteRole(role.id);
-              Navigator.of(ctx).pop();
-            },
-          ),
-        ],
-      ),
-    );
-  }
 
   TextStyle _headerStyle() {
     return TextStyle(fontWeight: FontWeight.bold, fontSize: 18);
@@ -120,7 +84,7 @@ class Roles extends StatelessWidget {
                           color: Colors.red,
                         ), // Ícono de eliminar
                         onPressed: () {
-                          _showDeleteConfirmationDialog(context, role);
+                          _showDelete(context, role);
                         },
                       ),
                     ],
@@ -132,6 +96,23 @@ class Roles extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  Future<void> _showDelete(BuildContext context, Role role) {
+    return showDeleteConfirmationDialog(
+      context: context,
+      itemName: role.name,
+      onConfirm: () {
+        Provider.of<LogProvider>(context, listen: false).addLog(
+          userName: 'Usuario Actual', // Temporalmente hardcodeado
+          action: LogAction.delete,
+          entity: LogEntity.role, // Especifica que la entidad es un Rol
+          details: 'Se eliminó el rol: "${role.name}"',
+        );
+
+        Provider.of<RoleProvider>(context, listen: false).deleteRole(role.id);
+      },
     );
   }
 
@@ -189,7 +170,7 @@ class Roles extends StatelessWidget {
                                 color: Colors.red,
                               ),
                               onPressed: () {
-                                _showDeleteConfirmationDialog(context, role);
+                                _showDelete(context, role);
                               },
                             ),
                           ],

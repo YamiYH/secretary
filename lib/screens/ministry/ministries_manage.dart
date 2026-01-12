@@ -8,50 +8,10 @@ import '../../models/log_model.dart';
 import '../../models/ministry_model.dart';
 import '../../providers/log_provider.dart';
 import '../../routes/page_route_builder.dart';
+import '../../widgets/showDeleteConfirmationDialog.dart';
 
 class MinistryManage extends StatelessWidget {
   const MinistryManage({Key? key}) : super(key: key);
-
-  // Función para el diálogo de confirmación de borrado
-  void _showDeleteConfirmationDialog(
-    BuildContext context,
-    MinistryModel ministry,
-  ) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Confirmar Eliminación'),
-        content: Text(
-          '¿Estás seguro de que deseas eliminar el ministerio "${ministry.name}"?',
-        ),
-        actions: [
-          TextButton(
-            child: const Text('Cancelar'),
-            onPressed: () => Navigator.of(ctx).pop(),
-          ),
-          TextButton(
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Eliminar'),
-            onPressed: () {
-              Provider.of<LogProvider>(context, listen: false).addLog(
-                userName: 'Usuario Actual', // Temporalmente hardcodeado
-                action: LogAction.delete,
-                entity:
-                    LogEntity.ministry, // Especifica que la entidad es un Rol
-                details: 'Se eliminó el ministerio: "${ministry.name}"',
-              );
-
-              Provider.of<MinistryProvider>(
-                context,
-                listen: false,
-              ).deleteMinistry(ministry.id);
-              Navigator.of(ctx).pop();
-            },
-          ),
-        ],
-      ),
-    );
-  }
 
   TextStyle _headerStyle() {
     return TextStyle(fontWeight: FontWeight.bold, fontSize: 18);
@@ -113,7 +73,7 @@ class MinistryManage extends StatelessWidget {
                     color: Colors.red,
                   ), // Ícono de eliminar
                   onPressed: () {
-                    _showDeleteConfirmationDialog(context, ministry);
+                    _showDelete(context, ministry);
                   },
                 ),
               ],
@@ -121,6 +81,27 @@ class MinistryManage extends StatelessWidget {
             onTap: () {},
           ),
         );
+      },
+    );
+  }
+
+  Future<void> _showDelete(BuildContext context, MinistryModel ministry) {
+    return showDeleteConfirmationDialog(
+      context: context,
+      itemName: ministry.name,
+      onConfirm: () {
+        Provider.of<LogProvider>(context, listen: false).addLog(
+          userName: 'Usuario Actual', // Temporalmente hardcodeado
+          action: LogAction.delete,
+          entity: LogEntity.ministry, // Especifica que la entidad es un Rol
+          details: 'Se eliminó el ministerio: "${ministry.name}"',
+        );
+
+        Provider.of<MinistryProvider>(
+          context,
+          listen: false,
+        ).deleteMinistry(ministry.id);
+        Navigator.of(context).pop();
       },
     );
   }
@@ -173,10 +154,7 @@ class MinistryManage extends StatelessWidget {
                                 color: Colors.red,
                               ),
                               onPressed: () {
-                                _showDeleteConfirmationDialog(
-                                  context,
-                                  ministry,
-                                );
+                                _showDelete(context, ministry);
                               },
                             ),
                           ],

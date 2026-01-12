@@ -9,6 +9,7 @@ import '../../models/ministry_model.dart';
 import '../../providers/member_provider.dart'; // Necesitas un MemberProvider
 import '../../providers/ministry_provider.dart';
 import '../../widgets/custom_appbar.dart';
+import '../../widgets/showDeleteConfirmationDialog.dart';
 import '../../widgets/small_button.dart';
 
 class MinistryMembers extends StatelessWidget {
@@ -16,46 +17,23 @@ class MinistryMembers extends StatelessWidget {
 
   const MinistryMembers({Key? key, required this.ministry}) : super(key: key);
 
-  // Diálogo de confirmación para eliminar
-  void _showDeleteConfirmationDialog(BuildContext context, Member member) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Confirmar Eliminación'),
-        content: Text(
-          '¿Quitar a ${member.name} ${member.lastName} del ministerio "${ministry.name}"?',
-        ),
-        actions: [
-          TextButton(
-            child: const Text('Cancelar'),
-            onPressed: () => Navigator.of(ctx).pop(),
-          ),
-          TextButton(
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Quitar'),
-            onPressed: () {
-              // Llama al provider para quitar al miembro
-              Provider.of<MinistryProvider>(
-                context,
-                listen: false,
-              ).removeMemberFromMinistry(ministry.id, member.id);
-              Navigator.of(ctx).pop();
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
   // Diálogo para agregar miembro con Autocomplete
-  void _showAddMemberDialog(BuildContext context, List<Member> allMembers) {
+  void _showAddMemberDialog(
+    BuildContext context,
+    List<Member> allMembers,
+    isMobile,
+  ) {
     showDialog(
       context: context,
       builder: (ctx) {
         Member? selectedMember; // Para guardar el miembro seleccionado
 
         return AlertDialog(
-          title: Text('Agregar Miembro a "${ministry.name}"'),
+          title: Text(
+            textAlign: TextAlign.center,
+            'Agregar Miembro a "${ministry.name}"',
+            style: TextStyle(fontSize: isMobile ? 20 : 24),
+          ),
           content: Autocomplete<Member>(
             // Función que construye las opciones a mostrar
             optionsBuilder: (TextEditingValue textEditingValue) {
@@ -88,7 +66,10 @@ class MinistryMembers extends StatelessWidget {
           ),
           actions: [
             TextButton(
-              child: const Text('Cancelar'),
+              child: const Text(
+                'Cancelar',
+                style: TextStyle(color: Colors.grey),
+              ),
               onPressed: () => Navigator.of(ctx).pop(),
             ),
             SmallButton(
@@ -127,13 +108,15 @@ class MinistryMembers extends StatelessWidget {
 
     // Obtenemos todos los miembros para el Autocomplete
     final allMembers = memberProvider.members;
-
+    bool isMobile = MediaQuery.of(context).size.width < 700;
     return Scaffold(
       backgroundColor: backgroundColor,
-      appBar: CustomAppBar(title: 'Miembros de ${ministry.name}'),
+      appBar: CustomAppBar(
+        title: isMobile ? '${ministry.name}' : 'Miembros de ${ministry.name}',
+      ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: primaryColor,
-        onPressed: () => _showAddMemberDialog(context, allMembers),
+        onPressed: () => _showAddMemberDialog(context, allMembers, isMobile),
         child: const Icon(Icons.add, color: Colors.white),
       ),
       body: members.isEmpty
@@ -150,8 +133,18 @@ class MinistryMembers extends StatelessWidget {
                     subtitle: Text(member.phone), // O cualquier otro dato
                     trailing: IconButton(
                       icon: const Icon(Icons.delete, color: Colors.red),
-                      onPressed: () =>
-                          _showDeleteConfirmationDialog(context, member),
+                      onPressed: () => showDeleteConfirmationDialog(
+                        context: context,
+                        itemName: member.name,
+                        onConfirm: () {
+                          // Llama al provider para quitar al miembro
+                          Provider.of<MinistryProvider>(
+                            context,
+                            listen: false,
+                          ).removeMemberFromMinistry(ministry.id, member.id);
+                          Navigator.of(context).pop();
+                        },
+                      ),
                     ),
                   ),
                 );

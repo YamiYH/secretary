@@ -8,10 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../colors.dart';
-import '../../models/attendance_record_model.dart';
-import '../../models/member_model.dart';
 import '../../models/network_model.dart';
-import '../../providers/attendance_provider.dart';
 import '../../providers/member_provider.dart';
 import '../../providers/network_provider.dart';
 import '../../widgets/menu.dart';
@@ -27,18 +24,6 @@ class Networks extends StatelessWidget {
     final networkProvider = context.watch<NetworkProvider>();
     final List<NetworkModel> networks = networkProvider.networks;
     final memberProvider = context.watch<MemberProvider>();
-    final attendanceProvider = Provider.of<AttendanceProvider>(context);
-    final List<Member> allMembers = memberProvider.allMembers;
-    final List<AttendanceRecord> allRecords = attendanceProvider.records.values
-        .toList();
-
-    // --- CAMBIO 2: Generar la lista de grupos dinámicamente ---
-    // Usamos un Set para obtener los nombres de grupo únicos y luego lo convertimos a lista.
-    final List<String> groupNames = allMembers
-        .map((m) => m.group)
-        .toSet()
-        .toList();
-    groupNames.sort(); // Ordenamos alfabéticamente
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -54,47 +39,13 @@ class Networks extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // 3. El encabezado (título y botón)
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'Redes',
-                        style: TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Row(
-                        children: [
-                          Button(
-                            text: 'Gestionar redes',
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                createFadeRoute(NetworkManage()),
-                              );
-                            },
-                            size: Size(180, 45),
-                          ),
-                          const SizedBox(width: 15),
-                          AddButton(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                createFadeRoute(CreateNetwork()),
-                              );
-                            },
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                  _buildHeader(context, isMobile),
+
                   const SizedBox(height: 24),
-                  // 4. La grilla, que ocupa todo el espacio vertical restante
+
+                  // La grilla (sin cambios, ya estaba bien)
                   Expanded(
                     child: GridView.builder(
-                      // Quitamos shrinkWrap, ya no es necesario
                       gridDelegate:
                           const SliverGridDelegateWithMaxCrossAxisExtent(
                             maxCrossAxisExtent: 350.0,
@@ -104,21 +55,15 @@ class Networks extends StatelessWidget {
                           ),
                       itemCount: networks.length,
                       itemBuilder: (context, index) {
-                        // La lógica interna no cambia
                         final network = networks[index];
                         final membersInNetwork = memberProvider.members
-                            .where(
-                              (m) => m.group == network.name,
-                            ) // O m.networkId == network.id
+                            .where((m) => m.group == network.name)
                             .toList();
                         final memberCount = membersInNetwork.length;
-                        // Por ahora, la dejamos en 0.0 para simplificar.
-                        const double avgAttendance = 0.0;
 
                         return _buildGroupCard(
                           title: network.name,
                           memberCount: memberCount,
-                          avgAttendance: avgAttendance,
                           icon: Icons.group,
                           onTap: () {
                             Navigator.push(
@@ -142,11 +87,63 @@ class Networks extends StatelessWidget {
     );
   }
 
-  // Widget para las tarjetas de grupo
+  Widget _buildHeader(BuildContext context, bool isMobile) {
+    final headerItems = _buildHeaderItems(context, isMobile);
+
+    // Si es móvil, los ponemos en una Columna.
+    if (isMobile) {
+      return Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: headerItems,
+      );
+    }
+
+    // Si es web/escritorio, los ponemos en una Fila.
+    return Row(children: headerItems);
+  }
+
+  List<Widget> _buildHeaderItems(BuildContext context, bool isMobile) {
+    return [
+      Text(
+        'Redes',
+        style: TextStyle(
+          fontSize: isMobile ? 24 : 28,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+
+      isMobile ? const SizedBox(height: 16) : const Spacer(),
+
+      Button(
+        text: 'Gestionar redes',
+        onPressed: () {
+          Navigator.push(context, createFadeRoute(const NetworkManage()));
+        },
+        size: Size(
+          isMobile ? MediaQuery.of(context).size.width * 0.9 : 180,
+          isMobile ? 50 : 45,
+        ),
+      ),
+
+      // Si ES móvil, espacio vertical. Si NO, espacio horizontal.
+      isMobile ? const SizedBox(height: 10) : const SizedBox(width: 15),
+      AddButton(
+        size: Size(
+          isMobile ? MediaQuery.of(context).size.width * 0.9 : 180,
+          isMobile ? 50 : 45,
+        ),
+        onPressed: () {
+          Navigator.push(context, createFadeRoute(const CreateNetwork()));
+        },
+      ),
+    ];
+  }
+
+  // Widget para las tarjetas de grupo (simplificado y sin cambios de lógica)
   Widget _buildGroupCard({
     required String title,
     required int memberCount,
-    required double avgAttendance,
     required IconData icon,
     required VoidCallback onTap,
   }) {
@@ -177,12 +174,9 @@ class Networks extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 2),
-                    // Mostramos el número de miembros
-                    Flexible(
-                      child: Text(
-                        '$memberCount Miembros',
-                        style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-                      ),
+                    Text(
+                      '$memberCount Miembros',
+                      style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                     ),
                   ],
                 ),

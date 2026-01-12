@@ -43,23 +43,6 @@ class _DateWidgetState extends State<DateWidget> {
                 initialDate: DateTime.now(),
                 firstDate: DateTime.now().subtract(const Duration(days: 365)),
                 lastDate: DateTime.now(),
-                builder: (BuildContext context, Widget? child) {
-                  return Theme(
-                    data: ThemeData(
-                      primaryColor: Colors.green,
-                      colorScheme: ColorScheme.light(primary: Colors.blue),
-                      textTheme: TextTheme(
-                        headlineMedium: TextStyle(fontSize: 16),
-                        bodyLarge: TextStyle(fontSize: 14),
-                        bodyMedium: TextStyle(fontSize: 12),
-                      ),
-                      dialogTheme: DialogThemeData(
-                        backgroundColor: Colors.white,
-                      ),
-                    ),
-                    child: child!,
-                  );
-                },
               );
               if (pickedDate != null) {
                 widget.onDateSelected(pickedDate);
