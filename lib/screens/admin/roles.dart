@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../models/log_model.dart';
+import '../../models/permission_model.dart';
 import '../../models/role_model.dart';
 import '../../providers/log_provider.dart';
 import '../../providers/role_provider.dart';
@@ -63,7 +64,9 @@ class Roles extends StatelessWidget {
                 margin: const EdgeInsets.only(bottom: 16.0),
                 child: ListTile(
                   title: Text(role.name),
-                  subtitle: Text(role.description),
+                  subtitle: Text(
+                    '${role.permissions.length} permisos asignados',
+                  ),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -89,13 +92,47 @@ class Roles extends StatelessWidget {
                       ),
                     ],
                   ),
-                  onTap: () {},
+                  onTap: () {
+                    _showPermissionsDialog(context, role);
+                  },
                 ),
               );
             },
           ),
         ),
       ],
+    );
+  }
+
+  // --- NUEVO MÉTODO PARA MOSTRAR EL DIÁLOGO ---
+  void _showPermissionsDialog(BuildContext context, Role role) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Permisos de "${role.name}"'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: role.permissions.isEmpty
+                  ? [const Text('Este rol no tiene permisos asignados.')]
+                  : role.permissions.map((permission) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4.0),
+                        child: Text('• ${getPermissionName(permission)}'),
+                      );
+                    }).toList(),
+            ),
+          ),
+          actions: [
+            TextButton(
+              child: const Text('CERRAR'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -134,19 +171,38 @@ class Roles extends StatelessWidget {
           ),
           Center(
             child: Container(
-              width: MediaQuery.of(context).size.width * 0.7,
+              width: MediaQuery.of(context).size.width * 0.95,
               child: DataTable(
                 columnSpacing: MediaQuery.of(context).size.width * 0.15,
                 columns: [
                   DataColumn(label: Text('Rol', style: _headerStyle())),
                   DataColumn(label: Text('Descripción', style: _headerStyle())),
+                  DataColumn(label: Text('Permisos', style: _headerStyle())),
                   DataColumn(label: Text('Acciones', style: _headerStyle())),
                 ],
                 rows: roles.map((role) {
+                  final permissionsText = role.permissions.isEmpty
+                      ? 'Ninguno'
+                      : role.permissions
+                            .map((p) => getPermissionName(p))
+                            .join(', ');
                   return DataRow(
                     cells: [
                       DataCell(Text(role.name)),
                       DataCell(Text(role.description)),
+                      DataCell(
+                        Tooltip(
+                          // Tooltip para ver todos los permisos si el texto es muy largo
+                          message: permissionsText,
+                          child: SizedBox(
+                            width: MediaQuery.of(context).size.width * 0.2,
+                            child: Text(
+                              permissionsText,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ),
+                      ),
                       DataCell(
                         Row(
                           children: [

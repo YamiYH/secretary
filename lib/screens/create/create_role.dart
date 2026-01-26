@@ -3,12 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../models/log_model.dart';
+import '../../models/permission_model.dart';
 import '../../models/role_model.dart';
 import '../../providers/log_provider.dart';
 import '../../providers/role_provider.dart';
 import '../../widgets/button.dart';
 import '../../widgets/custom_appbar.dart';
 import '../../widgets/custom_text_form_field.dart';
+import '../../widgets/multi_select_dialog.dart';
 
 class CreateRole extends StatefulWidget {
   final Role? roleToEdit;
@@ -23,6 +25,7 @@ class _CreateRoleState extends State<CreateRole> {
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
 
+  Set<Permission> _selectedPermissions = {};
   bool get _isEditing => widget.roleToEdit != null;
 
   @override
@@ -31,6 +34,7 @@ class _CreateRoleState extends State<CreateRole> {
     if (_isEditing) {
       _nameController.text = widget.roleToEdit!.name;
       _descriptionController.text = widget.roleToEdit!.description;
+      _selectedPermissions = widget.roleToEdit!.permissions.toSet();
     }
   }
 
@@ -44,39 +48,33 @@ class _CreateRoleState extends State<CreateRole> {
   void _saveRole() {
     if (_formKey.currentState!.validate()) {
       final logProvider = Provider.of<LogProvider>(context, listen: false);
+      final roleProvider = Provider.of<RoleProvider>(context, listen: false);
+
+      final roleData = Role(
+        id: _isEditing
+            ? widget.roleToEdit!.id
+            : DateTime.now().millisecondsSinceEpoch.toString(),
+        name: _nameController.text,
+        description: _descriptionController.text,
+        permissions: _selectedPermissions
+            .toList(), // Convertimos el Set a una Lista
+      );
 
       if (_isEditing) {
-        final updatedRole = Role(
-          id: widget.roleToEdit!.id,
-          name: _nameController.text,
-          description: _descriptionController.text,
-        );
-        Provider.of<RoleProvider>(
-          context,
-          listen: false,
-        ).updateRole(updatedRole);
-
-        // --- AÑADIR LOG DE ACTUALIZACIÓN ---
+        roleProvider.updateRole(roleData);
         logProvider.addLog(
-          userName: 'Usuario Actual', // Temporalmente hardcodeado
+          userName: 'Admin',
           action: LogAction.update,
-          entity: LogEntity.role, // Especifica que la entidad es un Rol
-          details: 'Se actualizó el rol: "${updatedRole.name}"',
+          entity: LogEntity.role,
+          details: 'Se actualizó el rol: "${roleData.name}"',
         );
       } else {
-        final newRole = Role(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
-          name: _nameController.text,
-          description: _descriptionController.text,
-        );
-        Provider.of<RoleProvider>(context, listen: false).addRole(newRole);
-
-        // --- AÑADIR LOG DE CREACIÓN ---
+        roleProvider.addRole(roleData);
         logProvider.addLog(
-          userName: 'Usuario Actual', // Temporalmente hardcodeado
+          userName: 'Admin',
           action: LogAction.create,
-          entity: LogEntity.role, // Especifica que la entidad es un Rol
-          details: 'Se creó el rol: "${newRole.name}"',
+          entity: LogEntity.role,
+          details: 'Se creó el rol: "${roleData.name}"',
         );
       }
       if (!mounted) return;
@@ -124,6 +122,48 @@ class _CreateRoleState extends State<CreateRole> {
                         : null,
                   ),
                   const SizedBox(height: 24),
+                  InkWell(
+                    onTap: () async {
+                      // Muestra el diálogo y espera el resultado
+                      final Set<Permission>?
+                      result = await showDialog<Set<Permission>>(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return MultiSelectDialog<Permission>(
+                            title: 'Seleccionar Permisos',
+                            items: Permission
+                                .values, // La lista completa de permisos
+                            displayItem: (permission) => getPermissionName(
+                              permission,
+                            ), // Cómo mostrar cada permiso
+                            initialSelectedItems:
+                                _selectedPermissions, // Los que ya están seleccionados
+                          );
+                        },
+                      ); // Si el usuario presionó "ACEPTAR", actualizamos el estado
+                      if (result != null) {
+                        setState(() {
+                          _selectedPermissions = result;
+                        });
+                      }
+                    },
+                    child: InputDecorator(
+                      decoration: const InputDecoration(
+                        labelText: 'Permisos',
+                        border: OutlineInputBorder(),
+                      ),
+                      child: _selectedPermissions.isEmpty
+                          ? const Text('Ninguno seleccionado')
+                          : Text(
+                              // Muestra los nombres de los permisos seleccionados, separados por comas
+                              _selectedPermissions
+                                  .map((p) => getPermissionName(p))
+                                  .join(', '),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
                   Align(
                     alignment: Alignment.centerRight,
                     child: Button(

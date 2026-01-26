@@ -133,8 +133,8 @@ class Users extends StatelessWidget {
             ],
           ),
           Center(
-            child: Container(
-              width: MediaQuery.of(context).size.width * 0.95,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: 1000),
               child: DataTable(
                 columnSpacing: MediaQuery.of(context).size.width * 0.15,
                 columns: [

@@ -1,8 +1,8 @@
-import 'package:app/home/dashboard.dart';
 import 'package:app/routes/page_route_builder.dart';
 import 'package:flutter/material.dart';
 
-import '../widgets/button.dart';
+import '../../widgets/button.dart';
+import 'dashboard.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});

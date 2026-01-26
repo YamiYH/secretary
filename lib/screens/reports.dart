@@ -388,7 +388,7 @@ class _ReportContentState extends State<ReportContent> {
                   ],
                 )
               : Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     _buildRowWithIcon(context, isMobile),
                     const SizedBox(width: 12),
@@ -620,10 +620,15 @@ class MembershipAnalyticsTab extends StatelessWidget {
             'Últimos 30 días',
             style: TextStyle(fontSize: 16, color: Colors.grey),
           ),
-          const SizedBox(height: 24),
-          _buildActivityChart(context, activeMembers, inactiveMembers),
+          SizedBox(height: isMobile ? 24 : 16),
+          _buildActivityChart(
+            context,
+            activeMembers,
+            inactiveMembers,
+            isMobile,
+          ),
 
-          const SizedBox(height: 40),
+          const SizedBox(height: 30),
 
           // --- SECCIÓN DE CRECIMIENTO HISTÓRICO ---
           Text(
@@ -633,7 +638,7 @@ class MembershipAnalyticsTab extends StatelessWidget {
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
           if (growthSpots.length < 2)
             const Center(
               child: Text(
@@ -642,37 +647,29 @@ class MembershipAnalyticsTab extends StatelessWidget {
             )
           else
             AspectRatio(
-              aspectRatio: 2,
+              aspectRatio: isMobile ? 2 : 5,
               child: LineChart(
                 _buildGrowthChartData(growthSpots, sortedMembers),
               ),
             ),
-          const SizedBox(height: 40),
-
-          // --- SECCIÓN DE DISTRIBUCIÓN POR GRUPO ---
-          const Text(
-            'Distribución por Grupo',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 24),
-          ...membersByGroup.entries.map((entry) {
-            return _buildGroupDistributionBar(
-              title: entry.key,
-              count: entry.value,
-              total: allMembers.length,
-            );
-          }).toList(),
         ],
       ),
     );
   }
 
   // Widget para el gráfico de dona (Activos vs. Inactivos)
-  Widget _buildActivityChart(BuildContext context, int active, int inactive) {
+  Widget _buildActivityChart(
+    BuildContext context,
+    int active,
+    int inactive,
+    isMobile,
+  ) {
     return SizedBox(
       height: 200,
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: isMobile
+            ? MainAxisAlignment.center
+            : MainAxisAlignment.start,
         children: [
           Expanded(
             //flex: 2,
@@ -736,33 +733,6 @@ class MembershipAnalyticsTab extends StatelessWidget {
         const SizedBox(width: 8),
         Text(text, style: const TextStyle(fontSize: 16)),
       ],
-    );
-  }
-
-  // Widget para la barra de distribución de grupos
-  Widget _buildGroupDistributionBar({
-    required String title,
-    required int count,
-    required int total,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '$title ($count)',
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 4),
-          LinearProgressIndicator(
-            value: count / total,
-            minHeight: 12,
-            backgroundColor: primaryColor1,
-            color: primaryColor1,
-          ),
-        ],
-      ),
     );
   }
 

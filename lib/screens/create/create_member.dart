@@ -163,7 +163,7 @@ class _CreateMemberState extends State<CreateMember> {
       child: Center(
         child: Container(
           width: 600,
-          padding: EdgeInsets.all(50.0),
+          padding: EdgeInsets.all(30.0),
           child: _buildFormFields(context, isMobile),
         ),
       ),

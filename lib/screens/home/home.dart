@@ -1,7 +1,8 @@
 import 'package:app/colors.dart';
-import 'package:app/home/login.dart';
 import 'package:app/routes/page_route_builder.dart';
 import 'package:flutter/material.dart';
+
+import 'login.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -65,16 +66,16 @@ class _HomeState extends State<Home> {
               SizedBox(height: isMobile ? 120 : 40),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  fixedSize: Size(isMobile ? 200 : 200, isMobile ? 60 : 45),
+                  fixedSize: Size(isMobile ? 200 : 210, isMobile ? 60 : 50),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(
                       10,
                     ), // Usa el radio de borde personalizado
                   ),
                   backgroundColor: isMobile ? primaryColor : Colors.white,
-                  elevation: isMobile ? 5 : 20,
+                  elevation: 5,
                   padding: EdgeInsets.symmetric(
-                    horizontal: isMobile ? 10 : 30,
+                    horizontal: isMobile ? 10 : 20,
                     vertical: isMobile ? 10 : 20,
                   ),
                   textStyle: TextStyle(

@@ -6,6 +6,7 @@ import 'package:app/providers/log_provider.dart';
 import 'package:app/providers/member_provider.dart';
 import 'package:app/providers/ministry_provider.dart';
 import 'package:app/providers/network_provider.dart';
+import 'package:app/providers/pastor_provider.dart';
 import 'package:app/providers/role_provider.dart';
 import 'package:app/providers/service_provider.dart';
 import 'package:app/providers/service_type_provider.dart';
@@ -32,6 +33,7 @@ void main() {
         ChangeNotifierProvider(create: (context) => NetworkProvider()),
         ChangeNotifierProvider(create: (context) => MinistryProvider()),
         ChangeNotifierProvider(create: (context) => ServiceTypeProvider()),
+        ChangeNotifierProvider(create: (context) => PastorProvider()),
       ],
       child: const MyApp(),
     ),

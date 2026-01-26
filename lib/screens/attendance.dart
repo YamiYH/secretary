@@ -106,7 +106,7 @@ class _AttendanceState extends State<Attendance> {
 
   @override
   Widget build(BuildContext context) {
-    final isMobile = MediaQuery.of(context).size.width < 800;
+    final isMobile = MediaQuery.of(context).size.width < 700;
     // Obtenemos los miembros del MemberProvider
     final memberProvider = Provider.of<MemberProvider>(context);
     final List<Member> members = memberProvider.filteredMembers;

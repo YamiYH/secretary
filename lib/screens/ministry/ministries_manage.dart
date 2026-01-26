@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import '../../models/log_model.dart';
 import '../../models/ministry_model.dart';
 import '../../providers/log_provider.dart';
+import '../../providers/pastor_provider.dart';
 import '../../routes/page_route_builder.dart';
 import '../../widgets/showDeleteConfirmationDialog.dart';
 
@@ -21,6 +22,7 @@ class MinistryManage extends StatelessWidget {
   Widget build(BuildContext context) {
     final ministryProvider = context.watch<MinistryProvider>();
     final List<MinistryModel> ministries = ministryProvider.ministries;
+    final pastorProvider = context.watch<PastorProvider>();
 
     //bool isMobile = MediaQuery.of(context).size.width < 700;
     return Scaffold(
@@ -28,12 +30,11 @@ class MinistryManage extends StatelessWidget {
       appBar: CustomAppBar(title: 'Gestionar ministerios'),
       body: LayoutBuilder(
         builder: (context, constraints) {
-          // --- ADAPTADO: Pasar la lista de redes a los métodos de layout ---
           return ministries.isEmpty
               ? const Center(child: Text('No hay redes para mostrar.'))
-              : constraints.maxWidth < 600
-              ? _buildMobileLayout(context, ministries)
-              : _buildWebLayout(context, ministries);
+              : constraints.maxWidth < 700
+              ? _buildMobileLayout(context, ministries, pastorProvider)
+              : _buildWebLayout(context, ministries, pastorProvider);
         },
       ),
     );
@@ -42,6 +43,7 @@ class MinistryManage extends StatelessWidget {
   Widget _buildMobileLayout(
     BuildContext context,
     List<MinistryModel> ministries,
+    PastorProvider pastorProvider,
   ) {
     return ListView.builder(
       padding: const EdgeInsets.all(16.0),
@@ -52,7 +54,23 @@ class MinistryManage extends StatelessWidget {
           margin: const EdgeInsets.only(bottom: 16.0),
           child: ListTile(
             title: Text(ministry.name),
-            subtitle: Text(ministry.details),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  ministry.details,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                // 3. Mostramos los pastores asignados
+                Text(
+                  'Pastores: ${pastorProvider.getPastorNamesByIds(ministry.pastorIds)}',
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -101,14 +119,15 @@ class MinistryManage extends StatelessWidget {
           context,
           listen: false,
         ).deleteMinistry(ministry.id);
-        Navigator.of(context).pop();
+        //Navigator.of(context).pop();
       },
     );
   }
 
   Widget _buildWebLayout(
     BuildContext context,
-    List<MinistryModel> ministryModel,
+    List<MinistryModel> ministries,
+    PastorProvider pastorProvider,
   ) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20.0),
@@ -116,19 +135,32 @@ class MinistryManage extends StatelessWidget {
         children: [
           Center(
             child: Container(
-              width: MediaQuery.of(context).size.width * 0.7,
+              width: MediaQuery.of(context).size.width * 0.8,
               child: DataTable(
                 columnSpacing: MediaQuery.of(context).size.width * 0.15,
                 columns: [
                   DataColumn(label: Text('Ministerio', style: _headerStyle())),
                   DataColumn(label: Text('Detalles', style: _headerStyle())),
+                  DataColumn(label: Text('Pastores', style: _headerStyle())),
                   DataColumn(label: Text('Acciones', style: _headerStyle())),
                 ],
-                rows: ministryModel.map((ministry) {
+                rows: ministries.map((ministry) {
+                  final pastorNames = pastorProvider.getPastorNamesByIds(
+                    ministry.pastorIds,
+                  );
                   return DataRow(
                     cells: [
                       DataCell(Text(ministry.name)),
                       DataCell(Text(ministry.details)),
+                      DataCell(
+                        Tooltip(
+                          message: pastorNames,
+                          child: Text(
+                            pastorNames,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ),
                       DataCell(
                         Row(
                           children: [

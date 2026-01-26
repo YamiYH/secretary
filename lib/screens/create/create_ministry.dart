@@ -7,7 +7,9 @@ import '../../models/log_model.dart';
 import '../../models/ministry_model.dart';
 import '../../providers/log_provider.dart';
 import '../../providers/ministry_provider.dart';
+import '../../providers/pastor_provider.dart';
 import '../../widgets/custom_text_form_field.dart';
+import '../../widgets/multi_select_dialog.dart';
 
 class CreateMinistry extends StatefulWidget {
   final MinistryModel? ministryToEdit;
@@ -23,19 +25,23 @@ class _CreateMinistryState extends State<CreateMinistry> {
   late TextEditingController _nameController;
   late TextEditingController _detailsController;
 
-  // Propiedad para saber si estamos editando
+  Set<String> _selectedPastorIds = {};
   bool get _isEditing => widget.ministryToEdit != null;
 
   @override
   void initState() {
     super.initState();
-    // Inicializa los controladores con los datos existentes si estamos editando
     _nameController = TextEditingController(
       text: widget.ministryToEdit?.name ?? '',
     );
     _detailsController = TextEditingController(
       text: widget.ministryToEdit?.details ?? '',
     );
+
+    if (_isEditing) {
+      _selectedPastorIds = widget.ministryToEdit!.pastorIds.toSet();
+    }
+    ;
   }
 
   @override
@@ -60,10 +66,11 @@ class _CreateMinistryState extends State<CreateMinistry> {
           id: widget.ministryToEdit!.id,
           name: _nameController.text,
           details: _detailsController.text,
+          pastorIds: _selectedPastorIds.toList(),
         );
         ministryProvider.updateMinistry(updatedMinistry);
         logProvider.addLog(
-          userName: 'Usuario Actual',
+          userName: 'Admin',
           action: LogAction.update,
           entity: LogEntity.ministry,
           details: 'Se actualizó el ministerio: "${updatedMinistry.name}"',
@@ -74,10 +81,11 @@ class _CreateMinistryState extends State<CreateMinistry> {
           id: '', // El provider asignará un ID
           name: _nameController.text,
           details: _detailsController.text,
+          pastorIds: _selectedPastorIds.toList(),
         );
         ministryProvider.addMinistry(newMinistry);
         logProvider.addLog(
-          userName: 'Usuario Actual',
+          userName: 'Admin',
           action: LogAction.create,
           entity: LogEntity.ministry,
           details: 'Se creó el nuevo ministerio: "${newMinistry.name}"',
@@ -90,6 +98,7 @@ class _CreateMinistryState extends State<CreateMinistry> {
   @override
   Widget build(BuildContext context) {
     bool isMobile = MediaQuery.of(context).size.width < 700;
+    final pastorProvider = Provider.of<PastorProvider>(context, listen: false);
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: CustomAppBar(
@@ -138,6 +147,51 @@ class _CreateMinistryState extends State<CreateMinistry> {
                     },
                     //maxLines: 3,
                   ),
+                  const SizedBox(height: 24),
+                  InkWell(
+                    onTap: () async {
+                      final Set<String>? result = await showDialog<Set<String>>(
+                        context: context,
+                        builder: (ctx) => MultiSelectDialog<String>(
+                          title: 'Seleccionar Pastores',
+                          items: pastorProvider.pastors
+                              .map((p) => p.id)
+                              .toList(),
+                          initialSelectedItems: _selectedPastorIds,
+                          displayItem: (pastorId) =>
+                              pastorProvider.findById(pastorId).name,
+                        ),
+                      );
+                      if (result != null) {
+                        setState(() {
+                          _selectedPastorIds = result;
+                        });
+                      }
+                    },
+                    child: InputDecorator(
+                      decoration: const InputDecoration(
+                        labelText: 'Pastores a Cargo',
+                        border: OutlineInputBorder(),
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 16,
+                        ),
+                      ),
+                      child: _selectedPastorIds.isEmpty
+                          ? Text(
+                              'Ninguno seleccionado',
+                              style: TextStyle(color: Colors.grey.shade600),
+                            )
+                          : Text(
+                              pastorProvider.getPastorNamesByIds(
+                                _selectedPastorIds.toList(),
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                    ),
+                  ),
+
                   const SizedBox(height: 30),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,

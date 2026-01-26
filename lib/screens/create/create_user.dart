@@ -150,7 +150,7 @@ class _CreateUserState extends State<CreateUser> {
                           setState(() => _selectedRole = v ?? 'Miembro'),
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  //const SizedBox(height: 16),
                   SizedBox(
                     height: isMobile ? 55 : 65,
                     child: Autocomplete<Member>(
@@ -195,13 +195,20 @@ class _CreateUserState extends State<CreateUser> {
                     ),
                   ),
                   const SizedBox(height: 32),
-                  Button(
-                    size: Size(
-                      isMobile ? MediaQuery.of(context).size.width * 0.9 : 180,
-                      isMobile ? 50 : 45,
-                    ),
-                    text: _isEditing ? 'Guardar Cambios' : 'Crear Usuario',
-                    onPressed: _saveUser,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Button(
+                        size: Size(
+                          isMobile
+                              ? MediaQuery.of(context).size.width * 0.9
+                              : 170,
+                          isMobile ? 50 : 45,
+                        ),
+                        text: _isEditing ? 'Guardar Cambios' : 'Crear Usuario',
+                        onPressed: _saveUser,
+                      ),
+                    ],
                   ),
                 ],
               ),

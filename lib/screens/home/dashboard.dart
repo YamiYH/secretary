@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
-import '../colors.dart';
-import '../providers/member_provider.dart';
-import '../providers/service_provider.dart';
+import '../../colors.dart';
+import '../../providers/member_provider.dart';
+import '../../providers/service_provider.dart';
 
 // Widget para las tarjetas de métricas en la parte superior del dashboard
 class MetricCard extends StatelessWidget {

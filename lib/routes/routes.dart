@@ -1,4 +1,3 @@
-import 'package:app/home/dashboard.dart';
 import 'package:app/screens/admin/admin.dart';
 import 'package:app/screens/admin/profile.dart';
 import 'package:app/screens/attendance.dart';
@@ -12,10 +11,11 @@ import 'package:app/screens/reports.dart';
 import 'package:app/screens/service/services.dart';
 import 'package:flutter/material.dart';
 
-import '../home/home.dart';
-import '../home/login.dart';
 import '../screens/admin/users.dart';
 import '../screens/create/create_ministry.dart';
+import '../screens/home/dashboard.dart';
+import '../screens/home/home.dart';
+import '../screens/home/login.dart';
 import '../screens/network/networks.dart';
 
 class AppRoutes {

@@ -1,113 +1,95 @@
-import 'package:app/widgets/button.dart';
-import 'package:app/widgets/custom_appbar.dart';
+// lib/screens/create/create_network.dart
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../models/log_model.dart';
 import '../../models/network_model.dart';
-import '../../providers/log_provider.dart';
+import '../../models/pastor_model.dart';
 import '../../providers/network_provider.dart';
-import '../../widgets/custom_text_form_field.dart';
+import '../../providers/pastor_provider.dart'; // <-- Importa el PastorProvider
+import '../../widgets/button.dart';
+import '../../widgets/custom_appbar.dart';
+import '../../widgets/multi_select_dialog.dart';
 
 class CreateNetwork extends StatefulWidget {
   final NetworkModel? networkToEdit;
-
-  const CreateNetwork({super.key, this.networkToEdit});
+  const CreateNetwork({Key? key, this.networkToEdit}) : super(key: key);
 
   @override
-  State<CreateNetwork> createState() => _CreateNetworkState();
+  _CreateNetworkState createState() => _CreateNetworkState();
 }
 
 class _CreateNetworkState extends State<CreateNetwork> {
   final _formKey = GlobalKey<FormState>();
-  late TextEditingController _nameController;
-  late TextEditingController _ageRangeController;
+  final _nameController = TextEditingController();
+  final _ageRangeController = TextEditingController();
+
+  // El Set para los IDs seleccionados se mantiene igual
+  Set<String> _selectedPastorIds = {};
 
   bool get _isEditing => widget.networkToEdit != null;
 
   @override
   void initState() {
     super.initState();
-    // 4. Inicializa los controladores con los datos existentes si estamos editando
-    _nameController = TextEditingController(
-      text: widget.networkToEdit?.name ?? '',
-    );
-    _ageRangeController = TextEditingController(
-      text: widget.networkToEdit?.ageRange ?? '',
-    );
+    if (_isEditing) {
+      final network = widget.networkToEdit!;
+      _nameController.text = network.name;
+      _ageRangeController.text = network.ageRange;
+      _selectedPastorIds = network.pastorIds.toSet();
+    }
   }
 
+  // ... (dispose y _saveNetwork no necesitan cambios)
   @override
   void dispose() {
-    // Limpia los controladores al destruir el widget
     _nameController.dispose();
     _ageRangeController.dispose();
     super.dispose();
   }
 
-  // 5. Lógica para guardar/actualizar
-  void _submitForm() {
-    // Valida el formulario
-    if (_formKey.currentState!.validate()) {
-      final networkProvider = Provider.of<NetworkProvider>(
-        context,
-        listen: false,
+  void _saveNetwork() {
+    if (!_formKey.currentState!.validate()) return;
+    final networkProvider = Provider.of<NetworkProvider>(
+      context,
+      listen: false,
+    );
+    if (_isEditing) {
+      final updatedNetwork = widget.networkToEdit!.copyWith(
+        name: _nameController.text,
+        ageRange: _ageRangeController.text,
+        pastorIds: _selectedPastorIds.toList(),
       );
-      final logProvider = Provider.of<LogProvider>(context, listen: false);
-
-      if (_isEditing) {
-        // Lógica para ACTUALIZAR
-        final updatedNetwork = NetworkModel(
-          id: widget.networkToEdit!.id,
-          name: _nameController.text,
-          ageRange: _ageRangeController.text,
-        );
-        networkProvider.updateNetwork(updatedNetwork);
-        logProvider.addLog(
-          userName: 'Usuario Actual',
-          action: LogAction.update,
-          entity: LogEntity.network,
-          details: 'Se actualizó la red: "${updatedNetwork.name}"',
-        );
-      } else {
-        // Lógica para CREAR
-        final newNetwork = NetworkModel(
-          id: '', // El provider asignará un ID
-          name: _nameController.text,
-          ageRange: _ageRangeController.text,
-        );
-        networkProvider.addNetwork(newNetwork);
-        logProvider.addLog(
-          userName: 'Usuario Actual',
-          action: LogAction.create,
-          entity: LogEntity.network,
-          details: 'Se creó la nueva red: "${newNetwork.name}"',
-        );
-      }
-      // Regresa a la pantalla anterior
-      Navigator.of(context).pop();
+      networkProvider.updateNetwork(updatedNetwork);
+    } else {
+      final newNetwork = NetworkModel(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        name: _nameController.text,
+        ageRange: _ageRangeController.text,
+        pastorIds: _selectedPastorIds.toList(),
+      );
+      networkProvider.addNetwork(newNetwork);
     }
+    Navigator.of(context).pop();
   }
 
   @override
   Widget build(BuildContext context) {
+    // --- OBTENEMOS LOS PASTORES DEL PROVIDER ---
+    final pastorProvider = Provider.of<PastorProvider>(context, listen: false);
+    final List<PastorModel> availablePastors = pastorProvider.pastors;
     bool isMobile = MediaQuery.of(context).size.width < 700;
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: CustomAppBar(
-        title: _isEditing ? 'Editar Red' : 'Crear Nueva Red',
-      ),
+      appBar: CustomAppBar(title: _isEditing ? 'Editar Red' : 'Crear Red'),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(isMobile ? 30 : 70),
         child: Center(
           child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxWidth: 700,
-            ), // Limita el ancho en pantallas grandes
+            constraints: BoxConstraints(maxWidth: 700),
             child: Form(
               key: _formKey,
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Center(
                     child: const Text(
@@ -119,35 +101,76 @@ class _CreateNetworkState extends State<CreateNetwork> {
                     ),
                   ),
                   const SizedBox(height: 40),
-                  CustomTextFormField(
-                    labelText: 'Nombre de la Red',
+                  TextFormField(
                     controller: _nameController,
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'Por favor, ingrese un nombre.';
-                      }
-                      return null;
-                    },
+                    decoration: const InputDecoration(
+                      labelText: 'Nombre de la Red',
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (v) => (v == null || v.isEmpty)
+                        ? 'El nombre es obligatorio'
+                        : null,
                   ),
-                  const SizedBox(height: 15),
-                  CustomTextFormField(
-                    labelText: 'Rango de edades',
+                  const SizedBox(height: 16),
+                  TextFormField(
                     controller: _ageRangeController,
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'Ingrese un rango de edades. Ej: De 10 a 20 años';
-                      }
-                      return null;
-                    },
+                    decoration: const InputDecoration(
+                      labelText: 'Rango de Edades (ej. 18-25)',
+                      border: OutlineInputBorder(),
+                    ),
                   ),
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 24),
+                  InkWell(
+                    onTap: () async {
+                      final Set<String>? result = await showDialog<Set<String>>(
+                        context: context,
+                        builder: (ctx) => MultiSelectDialog<String>(
+                          title: 'Seleccionar Pastores',
+                          items: availablePastors.map((p) => p.id).toList(),
+                          initialSelectedItems: _selectedPastorIds,
+                          displayItem: (pastorId) =>
+                              pastorProvider.findById(pastorId).name,
+                        ),
+                      );
+
+                      if (result != null) {
+                        setState(() {
+                          _selectedPastorIds = result;
+                        });
+                      }
+                    },
+                    child: InputDecorator(
+                      decoration: const InputDecoration(
+                        labelText: 'Pastores Asignados',
+                        border: OutlineInputBorder(),
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 16,
+                        ),
+                      ),
+                      child: _selectedPastorIds.isEmpty
+                          ? Text(
+                              'Ninguno seleccionado',
+                              style: TextStyle(color: Colors.grey.shade600),
+                            )
+                          // Usamos el método helper del provider para mostrar los nombres
+                          : Text(
+                              pastorProvider.getPastorNamesByIds(
+                                _selectedPastorIds.toList(),
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       Button(
-                        size: Size(130, 45),
-                        text: _isEditing ? 'Actualizar' : 'Guardar',
-                        onPressed: _submitForm,
+                        size: Size(150, 45),
+                        text: _isEditing ? 'Guardar' : 'Crear Red',
+                        onPressed: _saveNetwork,
                       ),
                     ],
                   ),
