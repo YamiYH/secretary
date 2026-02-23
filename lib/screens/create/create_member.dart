@@ -8,7 +8,6 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
-import '../../models/log_model.dart';
 import '../../models/member_model.dart';
 import '../../providers/log_provider.dart';
 import '../../providers/member_provider.dart';
@@ -93,12 +92,6 @@ class _CreateMemberState extends State<CreateMember> {
           entryDate: DateTime.now(),
         );
         memberProvider.updateMember(updatedMember);
-        logProvider.addLog(
-          userName: 'Admin',
-          action: LogAction.update,
-          entity: LogEntity.user,
-          details: 'Se actualizó al miembro: $name $lastName',
-        );
       } else {
         final newMember = Member(
           id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -112,12 +105,6 @@ class _CreateMemberState extends State<CreateMember> {
           entryDate: DateTime.now(),
         );
         memberProvider.addMember(newMember);
-        logProvider.addLog(
-          userName: 'Admin',
-          action: LogAction.create,
-          entity: LogEntity.user,
-          details: 'Se creó al miembro: $name $lastName',
-        );
       }
 
       if (!mounted) return;

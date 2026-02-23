@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../colors.dart';
-import '../models/log_model.dart';
 import '../models/member_model.dart';
 import '../providers/log_provider.dart';
 import '../providers/member_provider.dart';
@@ -217,12 +216,6 @@ class Members extends StatelessWidget {
                             listen: false,
                           );
 
-                          logProvider.addLog(
-                            userName: 'Admin',
-                            action: LogAction.delete,
-                            entity: LogEntity.user,
-                            details: 'Se eliminó al miembro: "${member.name}"',
-                          );
                           memberProvider.deleteMember(member.id);
                         },
                       );

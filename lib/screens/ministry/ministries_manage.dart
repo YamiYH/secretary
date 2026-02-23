@@ -4,9 +4,7 @@ import 'package:app/widgets/custom_appbar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../models/log_model.dart';
 import '../../models/ministry_model.dart';
-import '../../providers/log_provider.dart';
 import '../../providers/pastor_provider.dart';
 import '../../routes/page_route_builder.dart';
 import '../../widgets/showDeleteConfirmationDialog.dart';
@@ -108,13 +106,6 @@ class MinistryManage extends StatelessWidget {
       context: context,
       itemName: ministry.name,
       onConfirm: () {
-        Provider.of<LogProvider>(context, listen: false).addLog(
-          userName: 'Usuario Actual', // Temporalmente hardcodeado
-          action: LogAction.delete,
-          entity: LogEntity.ministry, // Especifica que la entidad es un Rol
-          details: 'Se eliminó el ministerio: "${ministry.name}"',
-        );
-
         Provider.of<MinistryProvider>(
           context,
           listen: false,

@@ -1,6 +1,7 @@
 import 'package:app/screens/admin/admin.dart';
 import 'package:app/screens/admin/profile.dart';
 import 'package:app/screens/attendance.dart';
+import 'package:app/screens/auth/auth_wrapper.dart';
 import 'package:app/screens/create/create_member.dart';
 import 'package:app/screens/create/create_network.dart';
 import 'package:app/screens/create/create_service.dart';
@@ -36,6 +37,7 @@ class AppRoutes {
   static const String admin = 'admin';
   static const String users = 'users';
   static const String network_manage = 'network_manage';
+  static const String auth_wrapper = 'auth_wrapper';
 
   static Map<String, WidgetBuilder> getRoutes() {
     return <String, WidgetBuilder>{
@@ -56,6 +58,7 @@ class AppRoutes {
       admin: (context) => Admin(),
       users: (context) => Users(),
       network_manage: (context) => NetworkManage(),
+      auth_wrapper: (context) => AuthWrapper(),
     };
   }
 }

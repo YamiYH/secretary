@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 
 import '../colors.dart';
 import '../models/attendance_record_model.dart';
-import '../models/log_model.dart';
 import '../models/member_model.dart';
 import '../providers/attendance_provider.dart';
 import '../providers/log_provider.dart';
@@ -87,14 +86,6 @@ class _AttendanceState extends State<Attendance> {
     );
 
     attendanceProvider.saveRecord(newRecord);
-
-    logProvider.addLog(
-      userName: 'Admin',
-      action: LogAction.create, // O update si el registro ya existía
-      entity: LogEntity.report, // Podrías crear un LogEntity.attendance
-      details:
-          'Se guardó la asistencia para la fecha: $dateId. Asistentes: ${_presentMemberIds.length}, Visitas: $_guestCount.',
-    );
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(

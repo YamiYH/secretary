@@ -1,27 +1,42 @@
 // lib/models/log_model.dart
 
-// Un enum para definir los tipos de acciones posibles. Es más robusto que usar Strings.
-enum LogAction { create, update, delete }
-
-// Un enum para las entidades que pueden ser modificadas.
-enum LogEntity { user, role, service, report, network, ministry }
-
 class Log {
   final String id;
-  final DateTime timestamp;
-  final String userId;
-  final String userName;
-  final LogAction action;
-  final LogEntity entity;
+  final String username;
+  final String module;
+  final String action;
+  final String? type;
   final String details;
+  final DateTime timestamp;
 
   Log({
     required this.id,
     required this.timestamp,
-    required this.userId,
-    required this.userName,
-    required this.action,
-    required this.entity,
+    required this.username,
     required this.details,
+    required this.module,
+    required this.action,
+    this.type,
   });
+  factory Log.fromJson(Map<String, dynamic> json) {
+    return Log(
+      id: json['id'],
+      username: json['username'],
+      module: json['module'],
+      action: json['action'],
+      type: json['type'], // El campo 'type' puede o no venir
+      details: json['details'],
+      timestamp: DateTime.parse(json['timestamp']),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'username': username,
+      'module': module,
+      'action': action,
+      'type': type,
+      'details': details,
+    };
+  }
 }

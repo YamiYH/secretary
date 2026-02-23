@@ -101,9 +101,12 @@ class _PaginationState extends State<Pagination> {
       mainAxisSize: MainAxisSize.min,
       children: [
         IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.red[700]),
+          icon: Icon(Icons.arrow_back, color: Colors.blue[700]),
           onPressed: widget.currentPage > 0
-              ? () => widget.onPageChanged(widget.currentPage - 1)
+              ? () {
+                  print('--- PAGINATION WIDGET: Botón Atras presionado ---');
+                  widget.onPageChanged(widget.currentPage - 1);
+                }
               : null,
         ),
         Text(
@@ -111,14 +114,19 @@ class _PaginationState extends State<Pagination> {
           'Página ${widget.totalPages == 0 ? 0 : widget.currentPage + 1} de ${widget.totalPages}',
           style: TextStyle(
             fontSize: 16,
-            color: Colors.red[700],
+            //color: Colors.blue[700],
             fontWeight: FontWeight.bold,
           ),
         ),
         IconButton(
-          icon: Icon(Icons.arrow_forward, color: Colors.red[700]),
+          icon: Icon(Icons.arrow_forward, color: Colors.blue[700]),
           onPressed: widget.currentPage < widget.totalPages - 1
-              ? () => widget.onPageChanged(widget.currentPage + 1)
+              ? () {
+                  print(
+                    '--- PAGINATION WIDGET: Botón Siguiente presionado ---',
+                  );
+                  widget.onPageChanged(widget.currentPage + 1);
+                }
               : null,
         ),
       ],
@@ -188,7 +196,7 @@ class _PaginationState extends State<Pagination> {
         child: const Text('Ir'),
         style: ElevatedButton.styleFrom(
           foregroundColor: Colors.white,
-          backgroundColor: Colors.red[700],
+          backgroundColor: Colors.blue[900],
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
         ),
       ),

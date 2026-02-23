@@ -6,8 +6,6 @@ import 'package:app/widgets/custom_appbar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../models/log_model.dart';
-import '../../providers/log_provider.dart';
 import '../../providers/network_provider.dart';
 import '../../providers/pastor_provider.dart'; // <-- Importa el PastorProvider
 import '../../routes/page_route_builder.dart';
@@ -180,12 +178,6 @@ class NetworkManage extends StatelessWidget {
       context: context,
       itemName: network.name,
       onConfirm: () {
-        Provider.of<LogProvider>(context, listen: false).addLog(
-          userName: 'Admin',
-          action: LogAction.delete,
-          entity: LogEntity.network,
-          details: 'Se eliminó la red: "${network.name}"',
-        );
         Provider.of<NetworkProvider>(
           context,
           listen: false,

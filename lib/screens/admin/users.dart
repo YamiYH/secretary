@@ -4,16 +4,32 @@ import 'package:app/widgets/showDeleteConfirmationDialog.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../models/log_model.dart';
 import '../../models/user_model.dart';
-import '../../providers/log_provider.dart';
+import '../../providers/role_provider.dart';
 import '../../providers/user_provider.dart';
 import '../../routes/page_route_builder.dart';
 import '../../widgets/add_button.dart';
+import '../../widgets/button.dart';
 import '../create/create_user.dart';
 
-class Users extends StatelessWidget {
+class Users extends StatefulWidget {
   const Users({Key? key}) : super(key: key);
+
+  @override
+  State<Users> createState() => _UsersState();
+}
+
+class _UsersState extends State<Users> {
+  @override
+  void initState() {
+    super.initState();
+    // Usamos addPostFrameCallback para asegurar que el 'context' esté disponible.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Llamamos al provider para que inicie la carga de datos.
+      Provider.of<UserProvider>(context, listen: false).fetchUsers();
+      Provider.of<RoleProvider>(context, listen: false).fetchRoles();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,11 +40,40 @@ class Users extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: CustomAppBar(title: 'Usuarios'),
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          return constraints.maxWidth < 600
-              ? _buildMobileLayout(context, users)
-              : _buildWebLayout(context, users);
+      body: Consumer<UserProvider>(
+        builder: (context, userProvider, child) {
+          // --- Caso 1: Cargando ---
+          if (userProvider.isLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          // --- Caso 2: Error ---
+          if (userProvider.error != null) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Error: ${userProvider.error}',
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 45),
+                  Button(
+                    text: 'Reintentar',
+                    onPressed: () => userProvider.fetchUsers(),
+                    size: const Size(160, 45),
+                  ),
+                ],
+              ),
+            );
+          }
+          final users = userProvider.users;
+          return LayoutBuilder(
+            builder: (context, constraints) {
+              return constraints.maxWidth < 600
+                  ? _buildMobileLayout(context, users)
+                  : _buildWebLayout(context, users);
+            },
+          );
         },
       ),
     );
@@ -60,7 +105,7 @@ class Users extends StatelessWidget {
               return Card(
                 margin: EdgeInsets.only(bottom: 16.0),
                 child: ListTile(
-                  title: Text(user.userName),
+                  title: Text(user.username),
                   subtitle: Text('Rol: ${user.role}'),
 
                   trailing: Row(
@@ -83,7 +128,7 @@ class Users extends StatelessWidget {
                           color: Colors.red,
                         ), // Ícono de eliminar
                         onPressed: () {
-                          _showDelete(context, user);
+                          //_showDelete(context, user);
                         },
                       ),
                     ],
@@ -100,18 +145,11 @@ class Users extends StatelessWidget {
   Future<void> _showDelete(BuildContext context, User user) {
     return showDeleteConfirmationDialog(
       context: context,
-      itemName: user.userName,
+      itemName: user.username,
       onConfirm: () {
         final userProvider = Provider.of<UserProvider>(context, listen: false);
-        final logProvider = Provider.of<LogProvider>(context, listen: false);
 
-        logProvider.addLog(
-          userName: 'Admin',
-          action: LogAction.delete,
-          entity: LogEntity.user,
-          details: 'Se eliminó al usuario: ${user.userName}',
-        );
-        userProvider.deleteUser(user.id);
+        userProvider.deleteUser(user.username);
       },
     );
   }
@@ -148,7 +186,7 @@ class Users extends StatelessWidget {
                     .map(
                       (user) => DataRow(
                         cells: [
-                          DataCell(Text(user.userName)),
+                          DataCell(Text(user.username)),
                           DataCell(Text(user.role)),
                           DataCell(
                             Row(

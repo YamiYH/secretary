@@ -1,12 +1,8 @@
 // lib/screens/create/create_role.dart
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
-import '../../models/log_model.dart';
 import '../../models/permission_model.dart';
 import '../../models/role_model.dart';
-import '../../providers/log_provider.dart';
-import '../../providers/role_provider.dart';
 import '../../widgets/button.dart';
 import '../../widgets/custom_appbar.dart';
 import '../../widgets/custom_text_form_field.dart';
@@ -34,7 +30,7 @@ class _CreateRoleState extends State<CreateRole> {
     if (_isEditing) {
       _nameController.text = widget.roleToEdit!.name;
       _descriptionController.text = widget.roleToEdit!.description;
-      _selectedPermissions = widget.roleToEdit!.permissions.toSet();
+      //_selectedPermissions = widget.roleToEdit!.permissions.toSet();
     }
   }
 
@@ -45,42 +41,30 @@ class _CreateRoleState extends State<CreateRole> {
     super.dispose();
   }
 
-  void _saveRole() {
-    if (_formKey.currentState!.validate()) {
-      final logProvider = Provider.of<LogProvider>(context, listen: false);
-      final roleProvider = Provider.of<RoleProvider>(context, listen: false);
-
-      final roleData = Role(
-        id: _isEditing
-            ? widget.roleToEdit!.id
-            : DateTime.now().millisecondsSinceEpoch.toString(),
-        name: _nameController.text,
-        description: _descriptionController.text,
-        permissions: _selectedPermissions
-            .toList(), // Convertimos el Set a una Lista
-      );
-
-      if (_isEditing) {
-        roleProvider.updateRole(roleData);
-        logProvider.addLog(
-          userName: 'Admin',
-          action: LogAction.update,
-          entity: LogEntity.role,
-          details: 'Se actualizó el rol: "${roleData.name}"',
-        );
-      } else {
-        roleProvider.addRole(roleData);
-        logProvider.addLog(
-          userName: 'Admin',
-          action: LogAction.create,
-          entity: LogEntity.role,
-          details: 'Se creó el rol: "${roleData.name}"',
-        );
-      }
-      if (!mounted) return;
-      Navigator.of(context).pop();
-    }
-  }
+  // void _saveRole() {
+  //   if (_formKey.currentState!.validate()) {
+  //     final logProvider = Provider.of<LogProvider>(context, listen: false);
+  //     final roleProvider = Provider.of<RoleProvider>(context, listen: false);
+  //
+  //     final roleData = Role(
+  //       id: _isEditing
+  //           ? widget.roleToEdit!.id
+  //           : DateTime.now().millisecondsSinceEpoch.toString(),
+  //       name: _nameController.text,
+  //       description: _descriptionController.text,
+  //       permissions: _selectedPermissions
+  //           .toList(), // Convertimos el Set a una Lista
+  //     );
+  //
+  //     if (_isEditing) {
+  //       roleProvider.updateRole(roleData);
+  //     } else {
+  //       roleProvider.addRole(roleData);
+  //     }
+  //     if (!mounted) return;
+  //     Navigator.of(context).pop();
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -169,7 +153,7 @@ class _CreateRoleState extends State<CreateRole> {
                     child: Button(
                       size: const Size(150, 45),
                       text: 'Guardar',
-                      onPressed: _saveRole,
+                      onPressed: () {}, //_saveRole,
                     ),
                   ),
                 ],

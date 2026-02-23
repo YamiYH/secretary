@@ -1,8 +1,10 @@
 import 'package:app/routes/page_route_builder.dart';
+import 'package:app/screens/home/dashboard.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../../services/auth_service.dart';
 import '../../widgets/button.dart';
-import 'dashboard.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -12,42 +14,40 @@ class Login extends StatefulWidget {
 }
 
 class _LoginState extends State<Login> {
-  // Controladores para los campos de texto de email y contraseña.
-  // Son útiles para acceder al texto ingresado por el usuario y para limpiar los campos.
-  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-
-  // Clave global para el formulario, usada para validar los campos.
   final _formKey = GlobalKey<FormState>();
+  bool _isLoading = false;
 
   @override
   void dispose() {
-    // Es importante desechar los controladores cuando el widget se destruye
-    // para liberar recursos y evitar fugas de memoria.
-    _phoneController.dispose();
+    _usernameController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
-  // Función simulada para el proceso de inicio de sesión.
-  void _login() {
-    // Valida todos los campos del formulario.
-    if (_formKey.currentState!.validate()) {
-      // Si el formulario es válido, puedes acceder a los valores ingresados.
-      final String phone = _phoneController.text;
-      final String password = _passwordController.text;
+  Future<void> _handleLogin() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+    setState(() => _isLoading = true);
 
-      // Aquí iría tu lógica real de autenticación (ej. llamar a una API, Firebase, etc.).
-      // Por ahora, solo imprimimos los valores.
-      print('Email: $phone, Contraseña: $password');
+    final authService = Provider.of<AuthService>(context, listen: false);
 
-      // Puedes mostrar un mensaje de éxito o navegar a otra pantalla.
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Iniciando sesión con $phone...'),
-          backgroundColor: Colors.blueAccent,
-        ),
-      );
+    final error = await authService.signIn(
+      username: _usernameController.text,
+      password: _passwordController.text,
+    );
+
+    if (mounted) {
+      setState(() => _isLoading = false);
+      if (error != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(error), backgroundColor: Colors.redAccent),
+        );
+      } else {
+        Navigator.push(context, createFadeRoute(Dashboard()));
+      }
     }
   }
 
@@ -90,11 +90,11 @@ class _LoginState extends State<Login> {
                           child: Column(
                             children: [
                               TextFormField(
-                                controller: _phoneController,
-                                keyboardType: TextInputType.phone,
+                                controller: _usernameController,
+                                keyboardType: TextInputType.text,
                                 decoration: InputDecoration(
                                   prefixIcon: Icon(Icons.phone_android),
-                                  labelText: 'Teléfono',
+                                  labelText: 'Nombre de usuario',
                                   filled: true,
                                   fillColor: Colors.grey.shade100,
                                   border: OutlineInputBorder(
@@ -125,12 +125,9 @@ class _LoginState extends State<Login> {
 
                                 validator: (value) {
                                   if (value == null || value.isEmpty) {
-                                    return 'Por favor, ingresa tu número de teléfono';
+                                    return 'Por favor, ingresa tu nombre de usuario';
                                   }
-                                  // Validar que sean exactamente 8 dígitos numéricos
-                                  if (!RegExp(r'^[0-9]{8}$').hasMatch(value)) {
-                                    return 'Introduzca un teléfono válido';
-                                  }
+
                                   return null;
                                 },
                               ),
@@ -166,28 +163,20 @@ class _LoginState extends State<Login> {
                                   if (value == null || value.isEmpty) {
                                     return 'Por favor, ingresa tu contraseña';
                                   }
-                                  if (value.length < 6) {
-                                    return 'La contraseña debe tener al menos 6 caracteres';
+                                  if (value.length < 3) {
+                                    return 'La contraseña debe tener al menos 3 caracteres';
                                   }
                                   return null;
                                 },
                               ),
                               const SizedBox(height: 30),
-
-                              Button(
-                                text: 'Iniciar sesión',
-                                onPressed: () {
-                                  Navigator.pushAndRemoveUntil(
-                                    context,
-                                    createFadeRoute(
-                                      const Dashboard(),
-                                    ), // Tu ruta a la pantalla principal
-                                    (Route<dynamic> route) =>
-                                        false, // Esta condición elimina todas las rutas anteriores
-                                  );
-                                },
-                                size: Size(400, 45),
-                              ),
+                              _isLoading
+                                  ? const CircularProgressIndicator()
+                                  : Button(
+                                      text: 'Iniciar sesión',
+                                      onPressed: _handleLogin,
+                                      size: Size(400, 45),
+                                    ),
                               const SizedBox(height: 20),
 
                               TextButton(

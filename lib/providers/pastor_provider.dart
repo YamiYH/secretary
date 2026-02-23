@@ -1,31 +1,48 @@
 // lib/providers/pastor_provider.dart
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
 import '../models/pastor_model.dart';
+import '../services/api_client.dart';
 
 class PastorProvider with ChangeNotifier {
-  // Lista privada de pastores. En el futuro, esta lista se llenará
-  // con datos de tu backend/API.
-  final List<PastorModel> _pastors = [
-    const PastorModel(id: 'p1', name: 'Juan Pérez'),
-    const PastorModel(id: 'p2', name: 'Ana García'),
-    const PastorModel(id: 'p3', name: 'Carlos Rodríguez'),
-    const PastorModel(id: 'p4', name: 'Sofía Martínez'),
-    const PastorModel(id: 'p5', name: 'Laura Fernández'), // He añadido uno más
-  ];
+  final ApiClient _apiClient = ApiClient();
+  List<PastorModel> _pastors = [];
+  bool _isLoading = false;
 
-  // Getter público para acceder a la lista de pastores.
   List<PastorModel> get pastors => _pastors;
+  bool get isLoading => _isLoading;
 
-  // --- Métodos para gestionar los pastores (preparados para el futuro) ---
+  // --- NUEVO MÉTODO PARA CARGAR PASTORES DESDE LA API ---
+  Future<void> fetchPastors() async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      final response = await _apiClient.dio.get(
+        '/pastors',
+      ); // Llama a GET /api/v1/pastors
+
+      // El Swagger indica que la respuesta es una lista de objetos
+      final List<dynamic> pastorData = response.data;
+
+      // Convertimos los datos JSON en una lista de PastorModel
+      _pastors = pastorData.map((data) => PastorModel.fromJson(data)).toList();
+    } on DioException catch (e) {
+      // Aquí podrías manejar errores específicos de la API
+      print('Error al cargar pastores: $e');
+      _pastors = []; // En caso de error, dejamos la lista vacía
+    } finally {
+      _isLoading = false;
+      notifyListeners(); // Notifica a los widgets para que se redibujen
+    }
+  }
 
   // Obtener un pastor por su ID
   PastorModel findById(String id) {
     return _pastors.firstWhere(
       (pastor) => pastor.id == id,
-      orElse: () =>
-          const PastorModel(id: 'not_found', name: 'Pastor no encontrado'),
+      orElse: () => const PastorModel(id: 'not_found', name: 'No encontrado'),
     );
   }
 
@@ -36,9 +53,8 @@ class PastorProvider with ChangeNotifier {
   }
 
   // Futuro: Método para añadir un pastor
-  void addPastor(PastorModel pastor) {
-    _pastors.add(pastor);
-    notifyListeners(); // Notifica a los widgets que escuchan para que se redibujen
+  Future<void> addPastor(PastorModel pastor) async {
+    await fetchPastors();
   }
 
   // Futuro: Método para actualizar un pastor

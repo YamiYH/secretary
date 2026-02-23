@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../models/member_model.dart';
+import '../../models/role_model.dart';
 import '../../models/user_model.dart';
 import '../../providers/member_provider.dart';
+import '../../providers/role_provider.dart';
 import '../../providers/user_provider.dart';
 import '../../widgets/button.dart';
 import '../../widgets/custom_appbar.dart';
@@ -24,8 +26,10 @@ class _CreateUserState extends State<CreateUser> {
   late TextEditingController _userNameController;
   late TextEditingController _passwordController;
   late TextEditingController _memberAutocompleteController;
-  String _selectedRole = 'Miembro';
+
+  String? _selectedRoleId;
   String? _selectedMemberId;
+  bool _isSaving = false;
 
   bool get _isEditing => widget.userToEdit != null;
 
@@ -33,16 +37,25 @@ class _CreateUserState extends State<CreateUser> {
   void initState() {
     super.initState();
     _userNameController = TextEditingController(
-      text: widget.userToEdit?.userName ?? '',
+      text: widget.userToEdit?.username ?? '',
     );
     _passwordController = TextEditingController();
-    _selectedRole = widget.userToEdit?.role ?? 'Miembro';
     _memberAutocompleteController = TextEditingController();
     _selectedMemberId = widget.userToEdit?.memberId;
 
-    if (_isEditing && _selectedMemberId != null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) return;
+    // Usamos un Future para asegurar que el provider esté listo antes de inicializar
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeFields();
+    });
+  }
+
+  void _initializeFields() {
+    final roleProvider = Provider.of<RoleProvider>(context, listen: false);
+
+    // Si estamos editando, intentamos preseleccionar los campos
+    if (_isEditing) {
+      // Preselección de miembro
+      if (_selectedMemberId != null) {
         final memberProvider = Provider.of<MemberProvider>(
           context,
           listen: false,
@@ -55,7 +68,22 @@ class _CreateUserState extends State<CreateUser> {
         } catch (e) {
           _selectedMemberId = null;
         }
-      });
+      }
+
+      // Preselección de rol
+      if (roleProvider.roles.isNotEmpty) {
+        try {
+          final role = roleProvider.roles.firstWhere(
+            (r) => r.displayName == widget.userToEdit!.role,
+          );
+          // Usamos setState para que la UI se actualice con el valor preseleccionado
+          setState(() {
+            _selectedRoleId = role.id;
+          });
+        } catch (e) {
+          print('Error al preseleccionar rol: ${e.toString()}');
+        }
+      }
     }
   }
 
@@ -67,38 +95,66 @@ class _CreateUserState extends State<CreateUser> {
     super.dispose();
   }
 
-  void _saveUser() {
+  Future<void> _saveUser() async {
     if (!_formKey.currentState!.validate()) return;
+    if (_selectedRoleId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Por favor, selecciona un rol.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // --- LÍNEA DE DEPURACIÓN ---
+    // Esto nos dirá exactamente qué ID estamos enviando.
+    print('--- GUARDANDO USUARIO ---');
+    print('Username: ${_userNameController.text.trim()}');
+    print('Rol ID Seleccionado: $_selectedRoleId');
+    print('-------------------------');
+
+    setState(() => _isSaving = true);
+
     final userProvider = Provider.of<UserProvider>(context, listen: false);
+    bool success = false;
 
     if (_isEditing) {
-      final updatedUser = widget.userToEdit!.copyWith(
-        userName: _userNameController.text.trim(),
-        role: _selectedRole,
+      success = await userProvider.updateUser(
+        username: widget.userToEdit!.username,
         password: _passwordController.text.isNotEmpty
             ? _passwordController.text
-            : widget.userToEdit!.password,
+            : null,
+        roleIds: [_selectedRoleId!],
         memberId: _selectedMemberId,
       );
-      userProvider.updateUser(updatedUser);
     } else {
-      final newUser = User(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        userName: _userNameController.text.trim(),
+      success = await userProvider.addUser(
+        username: _userNameController.text.trim(),
         password: _passwordController.text,
-        role: _selectedRole,
+        roleIds: [_selectedRoleId!],
         memberId: _selectedMemberId,
       );
-      userProvider.addUser(newUser);
     }
-    Navigator.of(context).pop();
+
+    setState(() => _isSaving = false);
+
+    if (success && mounted) {
+      await Provider.of<UserProvider>(context, listen: false).fetchUsers();
+      Navigator.of(context).pop();
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(userProvider.error ?? 'Ocurrió un error desconocido.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     bool isMobile = MediaQuery.of(context).size.width < 700;
-    final memberProvider = Provider.of<MemberProvider>(context, listen: false);
-    final List<Member> allMembers = memberProvider.allMembers;
 
     return Scaffold(
       appBar: CustomAppBar(
@@ -114,11 +170,16 @@ class _CreateUserState extends State<CreateUser> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Icon(Icons.account_circle, size: 120, color: Colors.grey),
+                  const Icon(
+                    Icons.account_circle,
+                    size: 120,
+                    color: Colors.grey,
+                  ),
                   const SizedBox(height: 10),
                   CustomTextFormField(
                     controller: _userNameController,
                     labelText: 'Nombre de usuario',
+                    readOnly: _isEditing,
                     validator: (v) => (v == null || v.trim().isEmpty)
                         ? 'El nombre de usuario no puede estar vacío.'
                         : null,
@@ -126,90 +187,127 @@ class _CreateUserState extends State<CreateUser> {
                   const SizedBox(height: 16),
                   CustomTextFormField(
                     controller: _passwordController,
-                    labelText: 'Contraseña',
+                    labelText: _isEditing
+                        ? 'Nueva Contraseña (Opcional)'
+                        : 'Contraseña',
                     obscureText: true,
                     validator: (v) => (!_isEditing && (v == null || v.isEmpty))
                         ? 'La contraseña no puede estar vacía.'
                         : null,
                   ),
                   const SizedBox(height: 16),
-                  SizedBox(
-                    height: isMobile ? 55 : 65,
-                    child: DropdownButtonFormField<String>(
-                      value: _selectedRole,
-                      decoration: const InputDecoration(
-                        labelText: 'Rol',
-                        border: OutlineInputBorder(),
-                      ),
-                      items: ['Administrador', 'Miembro', 'Invitado']
-                          .map(
-                            (r) => DropdownMenuItem(value: r, child: Text(r)),
-                          )
-                          .toList(),
-                      onChanged: (v) =>
-                          setState(() => _selectedRole = v ?? 'Miembro'),
-                    ),
-                  ),
-                  //const SizedBox(height: 16),
-                  SizedBox(
-                    height: isMobile ? 55 : 65,
-                    child: Autocomplete<Member>(
-                      displayStringForOption: (Member option) => option.name,
-                      optionsBuilder: (TextEditingValue textEditingValue) {
-                        if (textEditingValue.text == '') {
-                          return const Iterable<Member>.empty();
-                        }
-                        return allMembers.where(
-                          (m) => m.name.toLowerCase().contains(
-                            textEditingValue.text.toLowerCase(),
+
+                  // --- WIDGET DE ROL CON CONSUMER PARA MÁXIMA ROBUSTEZ ---
+                  Consumer<RoleProvider>(
+                    builder: (context, roleProvider, child) {
+                      if (roleProvider.isLoading ||
+                          (roleProvider.roles.isEmpty &&
+                              roleProvider.error == null)) {
+                        return const Center(
+                          child: Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: CircularProgressIndicator(),
                           ),
                         );
-                      },
-                      onSelected: (Member selection) =>
-                          setState(() => _selectedMemberId = selection.id),
-                      fieldViewBuilder:
-                          (
-                            context,
-                            fieldController,
-                            fieldFocusNode,
-                            onFieldSubmitted,
-                          ) {
-                            _memberAutocompleteController = fieldController;
-                            return TextFormField(
-                              controller: fieldController,
-                              focusNode: fieldFocusNode,
-                              decoration: InputDecoration(
-                                labelText: 'Asociar a Miembro (Opcional)',
-                                border: const OutlineInputBorder(),
-                                suffixIcon: IconButton(
-                                  icon: const Icon(Icons.clear),
-                                  onPressed: () {
-                                    fieldController.clear();
-                                    setState(() => _selectedMemberId = null);
-                                    fieldFocusNode.unfocus();
-                                  },
-                                ),
-                              ),
-                            );
-                          },
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Button(
-                        size: Size(
-                          isMobile
-                              ? MediaQuery.of(context).size.width * 0.9
-                              : 170,
-                          isMobile ? 50 : 45,
+                      }
+                      if (roleProvider.error != null) {
+                        return Text(
+                          'Error al cargar roles: ${roleProvider.error}',
+                        );
+                      }
+
+                      return DropdownButtonFormField<String>(
+                        value: _selectedRoleId,
+                        hint: const Text('Selecciona un rol'),
+                        decoration: const InputDecoration(
+                          labelText: 'Rol',
+                          border: OutlineInputBorder(),
                         ),
-                        text: _isEditing ? 'Guardar Cambios' : 'Crear Usuario',
-                        onPressed: _saveUser,
-                      ),
-                    ],
+                        items: roleProvider.roles.map((Role role) {
+                          return DropdownMenuItem<String>(
+                            value: role.id,
+                            child: Text(role.displayName),
+                          );
+                        }).toList(),
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            _selectedRoleId = newValue;
+                          });
+                        },
+                        validator: (value) =>
+                            value == null ? 'Debes seleccionar un rol' : null,
+                      );
+                    },
                   ),
+
+                  const SizedBox(height: 16),
+
+                  // --- AUTOCOMPLETE DE MIEMBRO (CÓDIGO COMPLETO) ---
+                  Consumer<MemberProvider>(
+                    builder: (context, memberProvider, child) {
+                      return Autocomplete<Member>(
+                        displayStringForOption: (Member option) => option.name,
+                        initialValue: TextEditingValue(
+                          text: _memberAutocompleteController.text,
+                        ),
+                        optionsBuilder: (TextEditingValue textEditingValue) {
+                          if (textEditingValue.text == '')
+                            return const Iterable<Member>.empty();
+                          return memberProvider.allMembers.where(
+                            (m) => m.name.toLowerCase().contains(
+                              textEditingValue.text.toLowerCase(),
+                            ),
+                          );
+                        },
+                        onSelected: (Member selection) =>
+                            setState(() => _selectedMemberId = selection.id),
+                        fieldViewBuilder:
+                            (
+                              context,
+                              fieldController,
+                              fieldFocusNode,
+                              onFieldSubmitted,
+                            ) {
+                              return TextFormField(
+                                controller: fieldController,
+                                focusNode: fieldFocusNode,
+                                decoration: InputDecoration(
+                                  labelText: 'Asociar a Miembro (Opcional)',
+                                  border: const OutlineInputBorder(),
+                                  suffixIcon: IconButton(
+                                    icon: const Icon(Icons.clear),
+                                    onPressed: () {
+                                      fieldController.clear();
+                                      setState(() => _selectedMemberId = null);
+                                      fieldFocusNode.unfocus();
+                                    },
+                                  ),
+                                ),
+                              );
+                            },
+                      );
+                    },
+                  ),
+
+                  const SizedBox(height: 32),
+                  if (_isSaving)
+                    const Center(child: CircularProgressIndicator())
+                  else
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Button(
+                          size: Size(
+                            isMobile
+                                ? MediaQuery.of(context).size.width * 0.9
+                                : 170,
+                            isMobile ? 50 : 45,
+                          ),
+                          text: _isEditing ? 'Guardar' : 'Crear Usuario',
+                          onPressed: _saveUser,
+                        ),
+                      ],
+                    ),
                 ],
               ),
             ),

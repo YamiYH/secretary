@@ -3,7 +3,6 @@ import 'package:app/widgets/custom_appbar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../models/log_model.dart';
 import '../../models/ministry_model.dart';
 import '../../providers/log_provider.dart';
 import '../../providers/ministry_provider.dart';
@@ -69,12 +68,6 @@ class _CreateMinistryState extends State<CreateMinistry> {
           pastorIds: _selectedPastorIds.toList(),
         );
         ministryProvider.updateMinistry(updatedMinistry);
-        logProvider.addLog(
-          userName: 'Admin',
-          action: LogAction.update,
-          entity: LogEntity.ministry,
-          details: 'Se actualizó el ministerio: "${updatedMinistry.name}"',
-        );
       } else {
         // Lógica para CREAR
         final newMinistry = MinistryModel(
@@ -84,12 +77,6 @@ class _CreateMinistryState extends State<CreateMinistry> {
           pastorIds: _selectedPastorIds.toList(),
         );
         ministryProvider.addMinistry(newMinistry);
-        logProvider.addLog(
-          userName: 'Admin',
-          action: LogAction.create,
-          entity: LogEntity.ministry,
-          details: 'Se creó el nuevo ministerio: "${newMinistry.name}"',
-        );
       }
       Navigator.of(context).pop();
     }

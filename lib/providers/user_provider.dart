@@ -1,50 +1,123 @@
 // lib/providers/user_provider.dart
+
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
 import '../models/user_model.dart';
+import '../services/api_client.dart';
 
 class UserProvider with ChangeNotifier {
-  // Lista privada de usuarios (nuestra "base de datos" en memoria)
-  final List<User> _users = [
-    // Datos de ejemplo para empezar
-    User(
-      id: '1',
-      userName: 'olivia',
-      password: 'hashed_password_1',
-      role: 'Administrador',
-    ),
-    User(
-      id: '2',
-      userName: 'ethan',
-      password: 'hashed_password_2',
-      role: 'Miembro',
-    ),
-  ];
+  final ApiClient _apiClient = ApiClient();
+  List<User> _users = [];
+  bool _isLoading = false;
+  String? _error;
 
-  // Getter público para que los widgets puedan leer la lista de usuarios
   List<User> get users => _users;
+  bool get isLoading => _isLoading;
+  String? get error => _error;
 
-  // Método para añadir un nuevo usuario
-  void addUser(User user) {
-    _users.add(user);
-    // ¡Esto es clave! Notifica a todos los widgets que están "escuchando"
-    // que los datos han cambiado y que necesitan redibujarse.
+  Future<void> fetchUsers() async {
+    if (_isLoading) return;
+
+    _isLoading = true;
+    _error = null;
     notifyListeners();
+
+    try {
+      final response = await _apiClient.dio.get('/users');
+      final List<dynamic> userData = response.data['content'];
+      _users = userData.map((data) => User.fromJson(data)).toList();
+    } on DioException catch (e) {
+      _error = 'Error al cargar usuarios: ${e.message}';
+      print(_error);
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
-  // (Opcional) Métodos para eliminar o actualizar usuarios
-  void deleteUser(String id) {
-    _users.removeWhere((user) => user.id == id);
-    notifyListeners();
+  Future<bool> addUser({
+    required String username,
+    required String password,
+    required List<String> roleIds,
+    String? memberId,
+  }) async {
+    //_isLoading = true;
+    //notifyListeners();
+    _error = null;
+    try {
+      await _apiClient.dio.post(
+        '/users',
+        data: {
+          'username': username,
+          'password': password,
+          'role': roleIds,
+          'memberId': memberId,
+        },
+      );
+
+      return true;
+    } on DioException catch (e) {
+      _error =
+          'Error al crear usuario: ${e.response?.data['message'] ?? e.message}';
+      print(_error);
+      //_isLoading = false;
+      //notifyListeners();
+      return false;
+    }
   }
 
-  void updateUser(User updatedUser) {
-    // Busca el índice del usuario que tiene el mismo ID
-    final userIndex = _users.indexWhere((user) => user.id == updatedUser.id);
-    if (userIndex >= 0) {
-      // Si lo encuentra, lo reemplaza en esa posición
-      _users[userIndex] = updatedUser;
-      notifyListeners(); // Notifica a los widgets para que se redibujen
+  // --- MÉTODO updateUser (VERSIÓN CORRECTA Y ASÍNCRONA) ---
+  Future<bool> updateUser({
+    required String username,
+    String? password,
+    required List<String> roleIds,
+    String? memberId,
+  }) async {
+    _error = null;
+    //_isLoading = true;
+    //notifyListeners();
+    try {
+      await _apiClient.dio.put(
+        '/users',
+        data: {
+          'username': username,
+          'password': password,
+          'role': roleIds,
+          'memberId': memberId,
+        },
+      );
+
+      return true;
+    } on DioException catch (e) {
+      _error =
+          'Error al actualizar usuario: ${e.response?.data['message'] ?? e.message}';
+      print(_error);
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> deleteUser(String username) async {
+    _error = null;
+    // No necesitamos un `isLoading` aquí, la UI lo manejará de forma local.
+
+    try {
+      // Hacemos la petición DELETE al endpoint específico del usuario.
+      await _apiClient.dio.delete('/users/$username');
+
+      // Si la petición es exitosa (no lanza excepción), eliminamos el usuario
+      // de nuestra lista local para que la UI se actualice instantáneamente.
+      _users.removeWhere((user) => user.username == username);
+      notifyListeners(); // Notificamos a la UI para que se redibuje sin el usuario.
+      return true;
+    } on DioException catch (e) {
+      _error =
+          'Error al eliminar usuario: ${e.response?.data['message'] ?? e.message}';
+      print(_error);
+      notifyListeners(); // Notificamos por si queremos mostrar el error en algún sitio.
+      return false;
     }
   }
 }

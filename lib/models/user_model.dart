@@ -1,16 +1,16 @@
 // lib/models/user_model.dart
 class User {
-  final String id; // Útil para identificar unívocamente a cada usuario
-  final String userName;
-  final String password;
+  final String username;
+  final String? password;
   final String role;
+  final bool enabled;
   final String? memberId;
 
   User({
-    required this.id,
-    required this.userName,
-    required this.password,
+    required this.username,
+    this.password,
     required this.role,
+    required this.enabled,
     this.memberId,
   });
 
@@ -20,41 +20,54 @@ class User {
     String? userName,
     String? password,
     String? role,
+    bool? enabled,
     String? memberId,
   }) {
     return User(
-      id: id ?? this.id,
-      userName: userName ?? this.userName,
-      password: password ?? this.password,
+      username: userName ?? this.username,
       role: role ?? this.role,
+      enabled: enabled ?? this.enabled,
       memberId: memberId ?? this.memberId,
     );
   }
 
   factory User.fromJson(Map<String, dynamic> json) {
+    String roleName = 'Sin rol';
+
+    final rolesList = json['roles'] as List<dynamic>?;
+
+    // 2. Si la lista no es nula y no está vacía, tomamos el nombre del primer rol.
+    if (rolesList != null && rolesList.isNotEmpty) {
+      final firstRole = rolesList.first as Map<String, dynamic>;
+      // Limpiamos el prefijo "ROLE_" para que sea más legible.
+      roleName = (firstRole['name'] as String? ?? 'Sin rol')
+          .toUpperCase()
+          .replaceAll('ROLE_', '');
+    }
+    // 3. Extraemos el ID del miembro si el objeto 'member' no es nulo.
+    final memberData = json['member'] as Map<String, dynamic>?;
+    final memberId = memberData != null ? memberData['id'] as String? : null;
+
     return User(
-      // Proporciona un valor por defecto si el ID es nulo
-      id: json['id'] as String? ?? '',
-
-      // Proporciona un valor por defecto si userName es nulo
-      userName: json['userName'] as String? ?? 'Usuario sin nombre',
-
-      password: json['password'] as String? ?? '',
-
-      // Proporciona un valor por defecto si el rol es nulo
-      role: json['role'] as String? ?? 'Miembro',
-      memberId: json['memberId'] as String?,
+      username: json['username'] ?? 'N/A',
+      role: roleName,
+      enabled: json['enabled'] ?? false,
+      memberId: memberId,
     );
   }
-
-  // También es buena idea reforzar el método toJson si lo tienes
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'userName': userName,
-      'password': password,
-      'role': role,
+  Map<String, dynamic> toJson({String? password, List<String>? roleIds}) {
+    final map = <String, dynamic>{
+      'username': username,
+      // El backend probablemente espera una lista de IDs de roles.
+      'roleIds': roleIds,
       'memberId': memberId,
+      'enabled': enabled,
     };
+
+    // Añade la contraseña solo si se proporciona.
+    if (password != null && password.isNotEmpty) {
+      map['password'] = password;
+    }
+    return map;
   }
 }
