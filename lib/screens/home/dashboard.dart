@@ -129,16 +129,6 @@ class _DashboardState extends State<Dashboard> {
 
     // --- LÓGICA PARA LAS MÉTRICAS DE MIEMBROS ---
     final totalMembers = memberProvider.members.length;
-    // Lógica de ejemplo para "nuevos" y "activos". Puedes hacerla más compleja después.
-    final newMembers = memberProvider.members
-        .where(
-          (m) => m.entryDate.isAfter(
-            DateTime.now().subtract(const Duration(days: 30)),
-          ),
-        )
-        .length;
-    final activeMembers =
-        totalMembers; // Por ahora, asumimos que todos están activos.
 
     // Filtramos los servicios para obtener solo los futuros y los ordenamos.
     final upcomingServices = serviceProvider.services
@@ -148,8 +138,7 @@ class _DashboardState extends State<Dashboard> {
         )
         .toList();
     upcomingServices.sort((a, b) => a.date.compareTo(b.date));
-    // Tomamos solo los primeros 2 para mostrar en el dashboard.
-    //final nextTwoServices = upcomingServices.take(2).toList();
+
     final now = DateTime.now();
     // 2. Calculamos el inicio de la semana (Lunes).
     //    now.weekday devuelve 1 para Lunes, 2 para Martes, ..., 7 para Domingo.
@@ -205,15 +194,15 @@ class _DashboardState extends State<Dashboard> {
                       value: totalMembers.toString(),
                     ),
 
-                    MetricCard(
-                      title: 'Miembros nuevos',
-                      value: newMembers.toString(),
-                    ),
-
-                    MetricCard(
-                      title: 'Miembros activos',
-                      value: activeMembers.toString(),
-                    ),
+                    // MetricCard(
+                    //   title: 'Miembros nuevos',
+                    //   value: newMembers.toString(),
+                    // ),
+                    //
+                    // MetricCard(
+                    //   title: 'Miembros activos',
+                    //   value: activeMembers.toString(),
+                    // ),
                   ],
                 ),
 

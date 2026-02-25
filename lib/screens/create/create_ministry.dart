@@ -170,11 +170,12 @@ class _CreateMinistryState extends State<CreateMinistry> {
                               style: TextStyle(color: Colors.grey.shade600),
                             )
                           : Text(
-                              pastorProvider.getPastorNamesByIds(
-                                _selectedPastorIds.toList(),
-                              ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
+                              '',
+                              // pastorProvider.getPastorNamesByIds(
+                              //   _selectedPastorIds.toList(),
+                              // ),
+                              // maxLines: 2,
+                              // overflow: TextOverflow.ellipsis,
                             ),
                     ),
                   ),

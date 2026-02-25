@@ -45,6 +45,7 @@ class _CreateUserState extends State<CreateUser> {
 
     // Usamos un Future para asegurar que el provider esté listo antes de inicializar
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<MemberProvider>(context, listen: false).fetchMembers();
       _initializeFields();
     });
   }
@@ -245,32 +246,53 @@ class _CreateUserState extends State<CreateUser> {
                   // --- AUTOCOMPLETE DE MIEMBRO (CÓDIGO COMPLETO) ---
                   Consumer<MemberProvider>(
                     builder: (context, memberProvider, child) {
+                      if (memberProvider.isLoading) {
+                        return const LinearProgressIndicator();
+                      }
                       return Autocomplete<Member>(
-                        displayStringForOption: (Member option) => option.name,
-                        initialValue: TextEditingValue(
-                          text: _memberAutocompleteController.text,
-                        ),
+                        displayStringForOption: (Member option) =>
+                            '${option.name} ${option.lastName}',
                         optionsBuilder: (TextEditingValue textEditingValue) {
-                          if (textEditingValue.text == '')
+                          if (textEditingValue.text.isEmpty) {
                             return const Iterable<Member>.empty();
-                          return memberProvider.allMembers.where(
-                            (m) => m.name.toLowerCase().contains(
+                          }
+                          return memberProvider.members.where((Member m) {
+                            final fullName = '${m.name} ${m.lastName}'
+                                .toLowerCase();
+                            return fullName.contains(
                               textEditingValue.text.toLowerCase(),
-                            ),
-                          );
+                            );
+                          });
                         },
-                        onSelected: (Member selection) =>
-                            setState(() => _selectedMemberId = selection.id),
+                        onSelected: (Member selection) => setState(() {
+                          {
+                            _selectedMemberId = selection.id;
+                            _memberAutocompleteController.text =
+                                '${selection.name} ${selection.lastName}';
+                          }
+                        }),
                         fieldViewBuilder:
                             (
                               context,
                               fieldController,
-                              fieldFocusNode,
+                              focusNode,
                               onFieldSubmitted,
                             ) {
+                              if (_isEditing &&
+                                  _selectedMemberId != null &&
+                                  fieldController.text.isEmpty) {
+                                try {
+                                  final m = memberProvider.members.firstWhere(
+                                    (element) =>
+                                        element.id == _selectedMemberId,
+                                  );
+                                  fieldController.text =
+                                      '${m.name} ${m.lastName}';
+                                } catch (_) {}
+                              }
                               return TextFormField(
                                 controller: fieldController,
-                                focusNode: fieldFocusNode,
+                                focusNode: focusNode,
                                 decoration: InputDecoration(
                                   labelText: 'Asociar a Miembro (Opcional)',
                                   border: const OutlineInputBorder(),
@@ -279,7 +301,7 @@ class _CreateUserState extends State<CreateUser> {
                                     onPressed: () {
                                       fieldController.clear();
                                       setState(() => _selectedMemberId = null);
-                                      fieldFocusNode.unfocus();
+                                      focusNode.unfocus();
                                     },
                                   ),
                                 ),

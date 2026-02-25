@@ -6,10 +6,10 @@ class Member {
   final String lastName;
   final String phone;
   final String address;
-  final DateTime birthDate;
-  final String group;
-  final DateTime registrationDate;
-  final DateTime entryDate;
+  final DateTime birthdate;
+  final bool enabled;
+  final String? networkId;
+  final String? networkName;
 
   Member({
     required this.id,
@@ -17,9 +17,31 @@ class Member {
     required this.lastName,
     required this.phone,
     required this.address,
-    required this.birthDate,
-    required this.group,
-    required this.registrationDate,
-    required this.entryDate,
+    required this.birthdate,
+    required this.enabled,
+    this.networkId,
+    this.networkName,
   });
+
+  // Getter para nombre completo
+  String get fullName =>
+      '$name ?? '
+              '} $lastName'
+          .replaceAll('  ', ' ');
+
+  factory Member.fromJson(Map<String, dynamic> json) {
+    return Member(
+      id: json['id'] ?? '',
+      name: json['name'] ?? '',
+      lastName: json['lastName'] ?? '',
+      phone: json['phone'] ?? '',
+      address: json['address'] ?? '',
+      birthdate: json['birthdate'] != null
+          ? DateTime.parse(json['birthdate'])
+          : DateTime.now(),
+      enabled: json['enabled'] ?? true,
+      networkId: json['networkId'],
+      networkName: json['networkName'],
+    );
+  }
 }

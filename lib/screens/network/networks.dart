@@ -57,7 +57,7 @@ class Networks extends StatelessWidget {
                       itemBuilder: (context, index) {
                         final network = networks[index];
                         final membersInNetwork = memberProvider.members
-                            .where((m) => m.group == network.name)
+                            .where((m) => m.networkName == network.name)
                             .toList();
                         final memberCount = membersInNetwork.length;
 

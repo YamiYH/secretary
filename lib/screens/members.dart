@@ -8,20 +8,61 @@ import 'package:provider/provider.dart';
 
 import '../colors.dart';
 import '../models/member_model.dart';
-import '../providers/log_provider.dart';
 import '../providers/member_provider.dart';
 import '../widgets/menu.dart';
 import '../widgets/search_text_field.dart';
 
-class Members extends StatelessWidget {
+class Members extends StatefulWidget {
   const Members({super.key});
+
+  @override
+  State<Members> createState() => _MembersState();
+}
+
+class _MembersState extends State<Members> {
+  @override
+  void initState() {
+    super.initState();
+    // Cargamos los miembros al entrar
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<MemberProvider>(context, listen: false).fetchMembers();
+    });
+  }
+  // lib/screens/admin/members.dart
+
+  // 1. Función que ejecuta la eliminación real
+  void _handleDelete(BuildContext context, Member member) async {
+    final memberProvider = Provider.of<MemberProvider>(context, listen: false);
+
+    final success = await memberProvider.deleteMember(member.id);
+
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            success
+                ? 'Miembro "${member.name} ${member.lastName}" eliminado.'
+                : 'Error al eliminar el miembro',
+          ),
+          backgroundColor: success ? Colors.green : Colors.red,
+        ),
+      );
+    }
+  }
+
+  // 2. Función que abre tu diálogo de confirmación
+  void _showDelete(BuildContext context, Member member) {
+    showDeleteConfirmationDialog(
+      context: context,
+      itemName: '${member.name} ${member.lastName}',
+      onConfirm: () => _handleDelete(context, member),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final isMobile = MediaQuery.of(context).size.width < 700;
 
-    // 1. Obtener la instancia del provider.
-    //    Usamos 'watch' (el método por defecto) para que la UI se reconstruya cuando cambien los datos.
     final memberProvider = Provider.of<MemberProvider>(context);
     final List<Member> filteredMembers = memberProvider.filteredMembers;
 
@@ -83,10 +124,8 @@ class Members extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Expanded(
-          // 2. El SearchTextField ahora llama al método del provider
           child: SearchTextField(
             onChanged: (query) {
-              // Llama al método 'search' del provider en lugar de a un listener local.
               provider.search(query);
             },
             controller: null,
@@ -106,12 +145,10 @@ class Members extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        // 2. El SearchTextField ahora llama al método del provider
         Container(
           width: MediaQuery.of(context).size.width * 0.9,
           child: SearchTextField(
             onChanged: (query) {
-              // Llama al método 'search' del provider en lugar de a un listener local.
               provider.search(query);
             },
             controller: null,
@@ -180,9 +217,9 @@ class Members extends StatelessWidget {
                   color: Colors.black87,
                 ),
               ),
-              // 3. Muestra los grupos de forma más elegante
+
               subtitle: Text(
-                member.group,
+                member.phone,
                 style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                 overflow: TextOverflow.ellipsis,
               ),
@@ -203,22 +240,7 @@ class Members extends StatelessWidget {
                   IconButton(
                     icon: Icon(Icons.delete, color: Colors.red[600]),
                     onPressed: () {
-                      showDeleteConfirmationDialog(
-                        context: context,
-                        itemName: member.name,
-                        onConfirm: () {
-                          final memberProvider = Provider.of<MemberProvider>(
-                            context,
-                            listen: false,
-                          );
-                          final logProvider = Provider.of<LogProvider>(
-                            context,
-                            listen: false,
-                          );
-
-                          memberProvider.deleteMember(member.id);
-                        },
-                      );
+                      _showDelete(context, member);
                     },
                   ),
                 ],

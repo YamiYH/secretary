@@ -46,12 +46,6 @@ class PastorProvider with ChangeNotifier {
     );
   }
 
-  // Obtener una lista de nombres de pastores a partir de una lista de IDs
-  String getPastorNamesByIds(List<String> ids) {
-    if (ids.isEmpty) return 'Ninguno';
-    return ids.map((id) => findById(id).name).join(', ');
-  }
-
   // Futuro: Método para añadir un pastor
   Future<void> addPastor(PastorModel pastor) async {
     await fetchPastors();

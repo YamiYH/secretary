@@ -21,10 +21,7 @@ class NetworkManage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final networkProvider = Provider.of<NetworkProvider>(context);
-    final pastorProvider = Provider.of<PastorProvider>(
-      context,
-      listen: false,
-    ); // <-- Obtén el PastorProvider
+    final pastorProvider = Provider.of<PastorProvider>(context, listen: false);
     final List<NetworkModel> networks = networkProvider.networks;
 
     return Scaffold(
@@ -70,18 +67,13 @@ class NetworkManage extends StatelessWidget {
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  network.ageRange.isNotEmpty
-                      ? 'Edades: ${network.ageRange}'
-                      : 'Sin rango de edad',
-                ),
+                Text(network.mission ?? 'Sin misión definida'),
                 const SizedBox(height: 4),
-                // Usa el método del provider para obtener los nombres
                 Text(
-                  'Pastores: ${pastorProvider.getPastorNamesByIds(network.pastorIds)}',
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+                  'Líderes: ${network.leaders.isEmpty ? "Sin asignar" : network.leaders.join(", ")}',
+                  style: const TextStyle(fontSize: 13),
                 ),
+                Text('${network.membersCount} miembros'),
               ],
             ),
             trailing: Row(
@@ -118,23 +110,27 @@ class NetworkManage extends StatelessWidget {
           columnSpacing: 130.0,
           columns: [
             DataColumn(label: Text('Red', style: _headerStyle())),
-            DataColumn(label: Text('Rango de edades', style: _headerStyle())),
-            DataColumn(label: Text('Pastores', style: _headerStyle())),
+            DataColumn(label: Text('Misión', style: _headerStyle())),
+            DataColumn(label: Text('Líderes', style: _headerStyle())),
+            DataColumn(label: Text('Miembros', style: _headerStyle())),
             DataColumn(label: Text('Acciones', style: _headerStyle())),
           ],
           rows: networks.map((network) {
             // Usa el método del provider para obtener los nombres
-            final pastorNames = pastorProvider.getPastorNamesByIds(
-              network.pastorIds,
-            );
+            final pastorNames = network.leaders;
+
+            final String leaderNames = network.leaders.isEmpty
+                ? 'Sin asignar'
+                : network.leaders.join(", ");
+
             return DataRow(
               cells: [
                 DataCell(Text(network.name)),
-                DataCell(Text(network.ageRange)),
+                DataCell(Text(network.mission ?? 'Sin misión')),
                 DataCell(
                   Tooltip(
-                    message: pastorNames,
-                    child: Text(pastorNames, overflow: TextOverflow.ellipsis),
+                    message: leaderNames,
+                    child: Text(leaderNames, overflow: TextOverflow.ellipsis),
                   ),
                 ),
                 DataCell(

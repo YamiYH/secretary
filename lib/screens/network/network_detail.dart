@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../../colors.dart';
@@ -20,7 +19,7 @@ class NetworkDetail extends StatelessWidget {
 
     // 2. Filtrar la lista para obtener solo los miembros de este grupo
     final List<Member> membersInGroup = memberProvider.allMembers
-        .where((member) => member.group == network.name)
+        .where((member) => member.networkName == network.name)
         .toList();
 
     // Opcional: Ordenar la lista de miembros alfabéticamente
@@ -122,9 +121,6 @@ class NetworkDetail extends StatelessWidget {
             title: Text(
               '${member.name} ${member.lastName}',
               style: const TextStyle(fontWeight: FontWeight.w600),
-            ),
-            subtitle: Text(
-              'Se unió: ${DateFormat('dd MMM yyyy', 'es_ES').format(member.registrationDate)}',
             ),
             trailing: const Icon(
               Icons.arrow_forward_ios,

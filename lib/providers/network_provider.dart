@@ -1,44 +1,47 @@
+// lib/providers/network_provider.dart
 import 'package:flutter/material.dart';
 
 import '../models/network_model.dart';
+import '../services/api_client.dart';
 
 class NetworkProvider with ChangeNotifier {
-  // Lista de ejemplo. En el futuro, esto vendrá de una base de datos.
-  final List<NetworkModel> _networks = [
-    NetworkModel(id: 'n1', name: 'Jóvenes', ageRange: '15 a 35 años'),
-    NetworkModel(id: 'n2', name: 'Mujeres', ageRange: ''),
-    NetworkModel(id: 'n3', name: 'Hombres', ageRange: ''),
-    NetworkModel(id: 'n4', name: 'Niños', ageRange: ''),
-    NetworkModel(id: 'n5', name: 'Juveniles', ageRange: ''),
-    NetworkModel(id: 'n6', name: '3ra Edad', ageRange: ''),
-  ];
+  final ApiClient _apiClient = ApiClient();
+  List<NetworkModel> _networks = [];
+  bool _isLoading = false;
 
-  List<NetworkModel> get networks => List.unmodifiable(_networks);
+  List<NetworkModel> get networks => _networks;
+  bool get isLoading => _isLoading;
 
-  //List<NetworkModel> get networks => [..._networks];
-
-  void addNetwork(NetworkModel network) {
-    final newNetwork = NetworkModel(
-      id: DateTime.now().toString(), // ID único simple
-      name: network.name,
-      ageRange: network.ageRange,
-    );
-    _networks.add(newNetwork);
-    notifyListeners(); // Notifica a los widgets que escuchan para que se redibujen
-  }
-
-  void updateNetwork(NetworkModel updatedNetwork) {
-    final networkIndex = _networks.indexWhere(
-      (net) => net.id == updatedNetwork.id,
-    );
-    if (networkIndex >= 0) {
-      _networks[networkIndex] = updatedNetwork;
+  Future<void> fetchNetworks() async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      final response = await _apiClient.dio.get('/networks');
+      final List<dynamic> data = response.data['content'] ?? response.data;
+      _networks = data.map((n) => NetworkModel.fromJson(n)).toList();
+    } catch (e) {
+      print("Error cargando redes: $e");
+    } finally {
+      _isLoading = false;
       notifyListeners();
     }
   }
 
-  void deleteNetwork(String networkId) {
-    _networks.removeWhere((net) => net.id == networkId);
+  Future<void> addNetwork(NetworkModel network) async {
+    // Aquí irá la lógica del POST a la API
+    notifyListeners();
+  }
+
+  // Método para actualizar (falta en tu provider)
+  Future<void> updateNetwork(NetworkModel network) async {
+    // Aquí irá la lógica del PUT a la API
+    notifyListeners();
+  }
+
+  // Método para eliminar (falta en tu provider)
+  Future<void> deleteNetwork(String id) async {
+    // Aquí irá la lógica del DELETE a la API
+    _networks.removeWhere((n) => n.id == id);
     notifyListeners();
   }
 }

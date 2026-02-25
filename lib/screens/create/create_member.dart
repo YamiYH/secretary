@@ -9,8 +9,8 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../models/member_model.dart';
-import '../../providers/log_provider.dart';
 import '../../providers/member_provider.dart';
+import '../../providers/network_provider.dart';
 
 class CreateMember extends StatefulWidget {
   final Member? memberToEdit;
@@ -22,29 +22,37 @@ class CreateMember extends StatefulWidget {
 
 class _CreateMemberState extends State<CreateMember> {
   final _formKey = GlobalKey<FormState>();
+  bool _isSaving = false;
 
   final _nameController = TextEditingController();
   final _lastNameController = TextEditingController();
   final _phoneController = TextEditingController();
   final _addressController = TextEditingController();
   DateTime? _selectedBirthDate;
+  String? _selectedNetworkId;
 
-  String? _selectedGroup;
+  String? _selectedNetwork;
 
   bool get _isEditing => widget.memberToEdit != null;
 
   @override
   void initState() {
     super.initState();
-    if (_isEditing) {
-      final member = widget.memberToEdit!;
 
-      _nameController.text = member.name;
-      _lastNameController.text = member.lastName;
-      _phoneController.text = member.phone;
-      _addressController.text = member.address;
-      _selectedGroup = member.group;
-      _selectedBirthDate = member.birthDate;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<NetworkProvider>(context, listen: false).fetchNetworks();
+    });
+
+    if (_isEditing) {
+      final m = widget.memberToEdit!;
+
+      _nameController.text = m.name;
+      _lastNameController.text = m.lastName;
+      _phoneController.text = m.phone;
+      _addressController.text = m.address;
+      _selectedNetwork = m.networkName;
+      _selectedBirthDate = m.birthdate;
+      _selectedNetworkId = widget.memberToEdit!.networkId;
     }
   }
 
@@ -57,58 +65,68 @@ class _CreateMemberState extends State<CreateMember> {
     super.dispose();
   }
 
-  void _saveMember() {
+  Future<void> _saveMember() async {
+    if (!_formKey.currentState!.validate()) return;
+
     if (_selectedBirthDate == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Por favor, selecciona una fecha de nacimiento.'),
+          content: Text('Por favor, selecciona la fecha de nacimiento'),
         ),
       );
       return;
     }
 
-    if (_formKey.currentState!.validate()) {
-      final memberProvider = Provider.of<MemberProvider>(
-        context,
-        listen: false,
+    setState(() => _isSaving = true);
+    final memberProvider = Provider.of<MemberProvider>(context, listen: false);
+
+    bool success = false;
+
+    if (_isEditing) {
+      success = await memberProvider.updateMember(
+        id: widget.memberToEdit!.id,
+        name: _nameController.text.trim(),
+        lastName: _lastNameController.text.trim(),
+        address: _addressController.text.trim(),
+        phone: _phoneController.text.trim(),
+        birthdate: _selectedBirthDate!,
+        enabled: widget.memberToEdit!.enabled,
+        networkId: _selectedNetworkId!,
       );
-      final logProvider = Provider.of<LogProvider>(context, listen: false);
+    } else {
+      success = await memberProvider.addMember(
+        name: _nameController.text.trim(),
+        lastName: _lastNameController.text.trim(),
+        address: _addressController.text.trim(),
+        phone: _phoneController.text.trim(),
+        birthdate: _selectedBirthDate!,
+        networkId: _selectedNetworkId!,
+      );
+    }
 
-      final String name = _nameController.text.trim();
-      final String lastName = _lastNameController.text.trim();
-      //final String logDisplayName = '$name $lastName'.trim();
-      final String group = _selectedGroup!;
-
-      if (_isEditing) {
-        final updatedMember = Member(
-          id: widget.memberToEdit!.id,
-          name: name,
-          lastName: lastName,
-          phone: _phoneController.text,
-          address: _addressController.text,
-          birthDate: _selectedBirthDate!,
-          group: group,
-          registrationDate: widget.memberToEdit!.registrationDate,
-          entryDate: DateTime.now(),
+    if (mounted) {
+      setState(() => _isSaving = false);
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              _isEditing
+                  ? 'Miembro actualizado con éxito'
+                  : 'Miembro creado con éxito',
+            ),
+            backgroundColor: Colors.green,
+          ),
         );
-        memberProvider.updateMember(updatedMember);
+        await memberProvider.fetchMembers(); // Refrescar la lista
+        Navigator.pop(context);
       } else {
-        final newMember = Member(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
-          name: name,
-          lastName: lastName,
-          phone: _phoneController.text,
-          address: _addressController.text,
-          birthDate: _selectedBirthDate!,
-          group: group,
-          registrationDate: DateTime.now(),
-          entryDate: DateTime.now(),
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Error al guardar los datos. Revisa la consola.'),
+            backgroundColor: Colors.red,
+          ),
         );
-        memberProvider.addMember(newMember);
       }
-
-      if (!mounted) return;
-      Navigator.of(context).pop();
     }
   }
 
@@ -128,7 +146,6 @@ class _CreateMemberState extends State<CreateMember> {
     );
   }
 
-  // --- Layout para móvil ---
   Widget _buildMobileLayout(isMobile) {
     return SingleChildScrollView(
       child: Padding(
@@ -137,14 +154,13 @@ class _CreateMemberState extends State<CreateMember> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const SizedBox(height: 24.0),
-            _buildFormFields(context, isMobile), // Pasamos el context
+            _buildFormFields(context, isMobile),
           ],
         ),
       ),
     );
   }
 
-  // --- Layout para web ---
   Widget _buildWebLayout(isMobile) {
     return SingleChildScrollView(
       child: Center(
@@ -253,29 +269,19 @@ class _CreateMemberState extends State<CreateMember> {
   }
 
   Widget DropDownNetwork() {
-    return DropdownButtonFormField<String>(
-      value: _selectedGroup,
-      decoration: InputDecoration(
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(5.0)),
-        filled: true,
-        fillColor: Colors.white,
-      ),
-      hint: const Text('Seleccionar red'),
-      items: const [
-        DropdownMenuItem(value: 'Niños', child: Text('Niños')),
-        DropdownMenuItem(value: 'Juveniles', child: Text('Juveniles')),
-        DropdownMenuItem(value: 'Jóvenes', child: Text('Jóvenes')),
-        DropdownMenuItem(value: 'Mujeres', child: Text('Mujeres')),
-        DropdownMenuItem(value: 'Hombres', child: Text('Hombres')),
-        DropdownMenuItem(value: '3ra Edad', child: Text('3ra Edad')),
-      ],
-      onChanged: (value) {
-        setState(() {
-          _selectedGroup = value;
-        });
+    return Consumer<NetworkProvider>(
+      builder: (context, netProvider, child) {
+        return DropdownButtonFormField<String>(
+          value: _selectedNetworkId,
+          hint: const Text('Seleccionar red'),
+          items: netProvider.networks.map((net) {
+            return DropdownMenuItem(value: net.id, child: Text(net.name));
+          }).toList(),
+          onChanged: (value) => setState(() => _selectedNetworkId = value),
+          validator: (value) =>
+              value == null ? 'Debe seleccionar una red' : null,
+        );
       },
-      // --- CAMBIO: Hacemos que el campo sea obligatorio ---
-      validator: (value) => value == null ? 'Debe seleccionar un grupo' : null,
     );
   }
 }

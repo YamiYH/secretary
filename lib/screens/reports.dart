@@ -133,8 +133,10 @@ class _ReportContentState extends State<ReportContent> {
   // Muestra un menú para seleccionar un grupo
   void _showGroupFilter(BuildContext context, bool isMobile) {
     // Obtenemos la lista única de grupos de los miembros
-    final Set<String> groups = widget.allMembers.map((m) => m.group).toSet();
-    final List<String> groupList = groups.toList()..sort();
+    final Set<String?> networkName = widget.allMembers
+        .map((m) => m.networkName)
+        .toSet();
+    final List<String?> groupList = networkName.toList()..sort();
 
     showDialog(
       context: context,
@@ -165,7 +167,10 @@ class _ReportContentState extends State<ReportContent> {
                   });
                   Navigator.pop(context);
                 },
-                child: Text(group, style: TextStyle(fontSize: 18)),
+                child: Text(
+                  networkName as String,
+                  style: TextStyle(fontSize: 18),
+                ),
               ),
             ),
           ],
@@ -226,7 +231,7 @@ class _ReportContentState extends State<ReportContent> {
     Set<String> membersInGroup = {};
     if (_selectedGroup != null) {
       membersInGroup = widget.allMembers
-          .where((member) => member.group == _selectedGroup)
+          .where((member) => member.networkName == _selectedGroup)
           .map((member) => member.id)
           .toSet();
     }
@@ -264,7 +269,7 @@ class _ReportContentState extends State<ReportContent> {
     final Map<String, int> attendanceByGroup = {};
     // Creamos un mapa de ID de miembro a su grupo para una búsqueda rápida
     final memberGroupMap = {
-      for (var member in widget.allMembers) member.id: member.group,
+      for (var member in widget.allMembers) member.id: member.networkName,
     };
 
     for (var record in widget.allRecords) {
@@ -587,7 +592,7 @@ class MembershipAnalyticsTab extends StatelessWidget {
     final Map<String, int> membersByGroup = {};
     for (var member in allMembers) {
       membersByGroup.update(
-        member.group,
+        member.networkName ?? 'Sin Grupo',
         (value) => value + 1,
         ifAbsent: () => 1,
       );
@@ -595,13 +600,13 @@ class MembershipAnalyticsTab extends StatelessWidget {
 
     // 3. Calcular Crecimiento de la Membresía (para el gráfico de líneas)
     // Ordenamos los miembros por su fecha de registro
-    final sortedMembers = List<Member>.from(allMembers)
-      ..sort((a, b) => a.registrationDate.compareTo(b.registrationDate));
-    final List<FlSpot> growthSpots = [];
-    for (int i = 0; i < sortedMembers.length; i++) {
-      // El eje X es el índice (tiempo) y el eje Y es el número total de miembros hasta ese punto.
-      growthSpots.add(FlSpot(i.toDouble(), (i + 1).toDouble()));
-    }
+    // final sortedMembers = List<Member>.from(allMembers)
+    //   ..sort((a, b) => a.registrationDate.compareTo(b.registrationDate));
+    // final List<FlSpot> growthSpots = [];
+    // for (int i = 0; i < sortedMembers.length; i++) {
+    //   // El eje X es el índice (tiempo) y el eje Y es el número total de miembros hasta ese punto.
+    //   growthSpots.add(FlSpot(i.toDouble(), (i + 1).toDouble()));
+    // }
     return SingleChildScrollView(
       padding: EdgeInsets.all(24.0),
       child: Column(
@@ -639,19 +644,19 @@ class MembershipAnalyticsTab extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          if (growthSpots.length < 2)
-            const Center(
-              child: Text(
-                'No hay suficientes datos para mostrar el crecimiento.',
-              ),
-            )
-          else
-            AspectRatio(
-              aspectRatio: isMobile ? 2 : 5,
-              child: LineChart(
-                _buildGrowthChartData(growthSpots, sortedMembers),
-              ),
-            ),
+          // if (growthSpots.length < 2)
+          //   const Center(
+          //     child: Text(
+          //       'No hay suficientes datos para mostrar el crecimiento.',
+          //     ),
+          //   )
+          // else
+          //   AspectRatio(
+          //     aspectRatio: isMobile ? 2 : 5,
+          //     child: LineChart(
+          //       _buildGrowthChartData(growthSpots, sortedMembers),
+          //     ),
+          // ),
         ],
       ),
     );
@@ -737,59 +742,60 @@ class MembershipAnalyticsTab extends StatelessWidget {
   }
 
   // Configuración para el gráfico de crecimiento
-  LineChartData _buildGrowthChartData(
-    List<FlSpot> spots,
-    List<Member> sortedMembers,
-  ) {
-    return LineChartData(
-      gridData: FlGridData(show: false),
-      titlesData: FlTitlesData(
-        leftTitles: AxisTitles(
-          sideTitles: SideTitles(showTitles: true, reservedSize: 40),
-        ),
-        rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-        topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-        bottomTitles: AxisTitles(
-          sideTitles: SideTitles(
-            showTitles: true,
-            reservedSize: 30,
-            interval: 1,
-            getTitlesWidget: (value, meta) {
-              final int index = value.toInt();
-              if (index == 0 || index == spots.length - 1) {
-                final member = sortedMembers[index];
-                return Padding(
-                  padding: const EdgeInsets.only(top: 8.0),
-                  child: Text(
-                    DateFormat(
-                      'MMM yyyy',
-                      'es_ES',
-                    ).format(member.registrationDate),
-                  ),
-                );
-              }
-              return const Text('');
-            },
-          ),
-        ),
-      ),
-      borderData: FlBorderData(
-        show: true,
-        border: Border.all(color: Colors.grey[300]!),
-      ),
-      lineBarsData: [
-        LineChartBarData(
-          spots: spots,
-          isCurved: true,
-          color: accentColor,
-          barWidth: 4,
-          dotData: FlDotData(show: false),
-          belowBarData: BarAreaData(
-            show: true,
-            color: accentColor.withOpacity(0.2),
-          ),
-        ),
-      ],
-    );
-  }
+  // LineChartData _buildGrowthChartData(
+  //   List<FlSpot> spots,
+  //   List<Member> sortedMembers,
+  // ) {
+  // return LineChartData(
+  //   gridData: FlGridData(show: false),
+  //   titlesData: FlTitlesData(
+  //     leftTitles: AxisTitles(
+  //       sideTitles: SideTitles(showTitles: true, reservedSize: 40),
+  //     ),
+  //     rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+  //     topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+  //     bottomTitles: AxisTitles(
+  //       sideTitles: SideTitles(
+  //         showTitles: true,
+  //         reservedSize: 30,
+  //         interval: 1,
+  //         getTitlesWidget: (value, meta) {
+  //           final int index = value.toInt();
+  //           if (index == 0 || index == spots.length - 1) {
+  //             final member = sortedMembers[index];
+  //             return Padding(
+  //               padding: const EdgeInsets.only(top: 8.0),
+  //               child: Text(
+  //                 DateFormat(
+  //                   'MMM yyyy',
+  //                   'es_ES',
+  //                 ).format(member.registrationDate),
+  //               ),
+  //             );
+  //           }
+  //           return const Text('');
+  //         },
+  //       ),
+  //     ),
+  //   ),
+  //   borderData: FlBorderData(
+  //     show: true,
+  //     border: Border.all(color: Colors.grey[300]!),
+  //   ),
+  //   lineBarsData: [
+  //     LineChartBarData(
+  //       spots: spots,
+  //       isCurved: true,
+  //       color: accentColor,
+  //       barWidth: 4,
+  //       dotData: FlDotData(show: false),
+  //       belowBarData: BarAreaData(
+  //         show: true,
+  //         color: accentColor.withOpacity(0.2),
+  //       ),
+  //     ),
+  //   ],
+  // );
 }
+
+//}

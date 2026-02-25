@@ -62,11 +62,11 @@ class MinistryManage extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 // 3. Mostramos los pastores asignados
-                Text(
-                  'Pastores: ${pastorProvider.getPastorNamesByIds(ministry.pastorIds)}',
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
+                // Text(
+                //   'Pastores: ${pastorProvider.getPastorNamesByIds(ministry.pastorIds)}',
+                //   maxLines: 2,
+                //   overflow: TextOverflow.ellipsis,
+                // ),
               ],
             ),
             trailing: Row(
@@ -124,71 +124,71 @@ class MinistryManage extends StatelessWidget {
       padding: const EdgeInsets.all(20.0),
       child: Column(
         children: [
-          Center(
-            child: Container(
-              width: MediaQuery.of(context).size.width * 0.8,
-              child: DataTable(
-                columnSpacing: MediaQuery.of(context).size.width * 0.15,
-                columns: [
-                  DataColumn(label: Text('Ministerio', style: _headerStyle())),
-                  DataColumn(label: Text('Detalles', style: _headerStyle())),
-                  DataColumn(label: Text('Pastores', style: _headerStyle())),
-                  DataColumn(label: Text('Acciones', style: _headerStyle())),
-                ],
-                rows: ministries.map((ministry) {
-                  final pastorNames = pastorProvider.getPastorNamesByIds(
-                    ministry.pastorIds,
-                  );
-                  return DataRow(
-                    cells: [
-                      DataCell(Text(ministry.name)),
-                      DataCell(Text(ministry.details)),
-                      DataCell(
-                        Tooltip(
-                          message: pastorNames,
-                          child: Text(
-                            pastorNames,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ),
-                      DataCell(
-                        Row(
-                          children: [
-                            IconButton(
-                              icon: const Icon(
-                                Icons.edit,
-                                size: 20,
-                                color: Colors.blue,
-                              ),
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  createFadeRoute(
-                                    CreateMinistry(ministryToEdit: ministry),
-                                  ),
-                                );
-                              },
-                            ),
-                            IconButton(
-                              icon: const Icon(
-                                Icons.delete,
-                                size: 20,
-                                color: Colors.red,
-                              ),
-                              onPressed: () {
-                                _showDelete(context, ministry);
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  );
-                }).toList(),
-              ),
-            ),
-          ),
+          // Center(
+          //   child: Container(
+          //     width: MediaQuery.of(context).size.width * 0.8,
+          //     child: DataTable(
+          //       columnSpacing: MediaQuery.of(context).size.width * 0.15,
+          //       columns: [
+          //         DataColumn(label: Text('Ministerio', style: _headerStyle())),
+          //         DataColumn(label: Text('Detalles', style: _headerStyle())),
+          //         DataColumn(label: Text('Pastores', style: _headerStyle())),
+          //         DataColumn(label: Text('Acciones', style: _headerStyle())),
+          //       ],
+          //       rows: ministries.map((ministry) {
+          //         final pastorNames = pastorProvider.getPastorNamesByIds(
+          //           ministry.pastorIds,
+          //         );
+          //         return DataRow(
+          //           cells: [
+          //             DataCell(Text(ministry.name)),
+          //             DataCell(Text(ministry.details)),
+          //             DataCell(
+          //               Tooltip(
+          //                 message: pastorNames,
+          //                 child: Text(
+          //                   pastorNames,
+          //                   overflow: TextOverflow.ellipsis,
+          //                 ),
+          //               ),
+          //             ),
+          //             DataCell(
+          //               Row(
+          //                 children: [
+          //                   IconButton(
+          //                     icon: const Icon(
+          //                       Icons.edit,
+          //                       size: 20,
+          //                       color: Colors.blue,
+          //                     ),
+          //                     onPressed: () {
+          //                       Navigator.push(
+          //                         context,
+          //                         createFadeRoute(
+          //                           CreateMinistry(ministryToEdit: ministry),
+          //                         ),
+          //                       );
+          //                     },
+          //                   ),
+          //                   IconButton(
+          //                     icon: const Icon(
+          //                       Icons.delete,
+          //                       size: 20,
+          //                       color: Colors.red,
+          //                     ),
+          //                     onPressed: () {
+          //                       _showDelete(context, ministry);
+          //                     },
+          //                   ),
+          //                 ],
+          //               ),
+          //             ),
+          //           ],
+          //         );
+          //       }).toList(),
+          //     ),
+          //   ),
+          // ),
         ],
       ),
     );

@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../models/member_model.dart';
 import '../../models/network_model.dart';
 import '../../models/pastor_model.dart';
 import '../../providers/network_provider.dart';
@@ -21,11 +22,12 @@ class CreateNetwork extends StatefulWidget {
 
 class _CreateNetworkState extends State<CreateNetwork> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
-  final _ageRangeController = TextEditingController();
+  Set<String> _selectedLeader = '' as Set<String>;
 
-  // El Set para los IDs seleccionados se mantiene igual
-  Set<String> _selectedPastorIds = {};
+  final _nameController = TextEditingController();
+  final _missionController = TextEditingController();
+
+  List<Member> _leaders = [];
 
   bool get _isEditing => widget.networkToEdit != null;
 
@@ -35,8 +37,8 @@ class _CreateNetworkState extends State<CreateNetwork> {
     if (_isEditing) {
       final network = widget.networkToEdit!;
       _nameController.text = network.name;
-      _ageRangeController.text = network.ageRange;
-      _selectedPastorIds = network.pastorIds.toSet();
+      _missionController.text = network.mission ?? '';
+      _leaders = List.from(network.leaders);
     }
   }
 
@@ -44,7 +46,7 @@ class _CreateNetworkState extends State<CreateNetwork> {
   @override
   void dispose() {
     _nameController.dispose();
-    _ageRangeController.dispose();
+    _missionController.dispose();
     super.dispose();
   }
 
@@ -57,16 +59,17 @@ class _CreateNetworkState extends State<CreateNetwork> {
     if (_isEditing) {
       final updatedNetwork = widget.networkToEdit!.copyWith(
         name: _nameController.text,
-        ageRange: _ageRangeController.text,
-        pastorIds: _selectedPastorIds.toList(),
+        mission: _missionController.text.trim(),
+        leaders: _leaders,
       );
       networkProvider.updateNetwork(updatedNetwork);
     } else {
       final newNetwork = NetworkModel(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        name: _nameController.text,
-        ageRange: _ageRangeController.text,
-        pastorIds: _selectedPastorIds.toList(),
+        id: '',
+        name: _nameController.text.trim(),
+        mission: _missionController.text.trim(),
+        membersCount: 0,
+        leaders: [],
       );
       networkProvider.addNetwork(newNetwork);
     }
@@ -75,7 +78,6 @@ class _CreateNetworkState extends State<CreateNetwork> {
 
   @override
   Widget build(BuildContext context) {
-    // --- OBTENEMOS LOS PASTORES DEL PROVIDER ---
     final pastorProvider = Provider.of<PastorProvider>(context, listen: false);
     final List<PastorModel> availablePastors = pastorProvider.pastors;
     bool isMobile = MediaQuery.of(context).size.width < 700;
@@ -100,6 +102,16 @@ class _CreateNetworkState extends State<CreateNetwork> {
                       ),
                     ),
                   ),
+                  const SizedBox(height: 20),
+                  TextFormField(
+                    controller: _missionController,
+                    maxLines: 3,
+                    decoration: const InputDecoration(
+                      labelText: 'Misión / Descripción',
+                      border: OutlineInputBorder(),
+                      alignLabelWithHint: true,
+                    ),
+                  ),
                   const SizedBox(height: 40),
                   TextFormField(
                     controller: _nameController,
@@ -112,22 +124,14 @@ class _CreateNetworkState extends State<CreateNetwork> {
                         : null,
                   ),
                   const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _ageRangeController,
-                    decoration: const InputDecoration(
-                      labelText: 'Rango de Edades (ej. 18-25)',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
                   InkWell(
                     onTap: () async {
                       final Set<String>? result = await showDialog<Set<String>>(
                         context: context,
                         builder: (ctx) => MultiSelectDialog<String>(
-                          title: 'Seleccionar Pastores',
+                          title: 'Seleccionar líderes',
                           items: availablePastors.map((p) => p.id).toList(),
-                          initialSelectedItems: _selectedPastorIds,
+                          initialSelectedItems: _selectedLeader,
                           displayItem: (pastorId) =>
                               pastorProvider.findById(pastorId).name,
                         ),
@@ -135,7 +139,7 @@ class _CreateNetworkState extends State<CreateNetwork> {
 
                       if (result != null) {
                         setState(() {
-                          _selectedPastorIds = result;
+                          _selectedLeader = result;
                         });
                       }
                     },
@@ -148,18 +152,19 @@ class _CreateNetworkState extends State<CreateNetwork> {
                           vertical: 16,
                         ),
                       ),
-                      child: _selectedPastorIds.isEmpty
+                      child: _selectedLeader.isEmpty
                           ? Text(
                               'Ninguno seleccionado',
                               style: TextStyle(color: Colors.grey.shade600),
                             )
                           // Usamos el método helper del provider para mostrar los nombres
                           : Text(
-                              pastorProvider.getPastorNamesByIds(
-                                _selectedPastorIds.toList(),
-                              ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
+                              '',
+                              // pastorProvider.getPastorNamesByIds(
+                              //   _selectedLeader.toList(),
+                              // ),
+                              // maxLines: 2,
+                              // overflow: TextOverflow.ellipsis,
                             ),
                     ),
                   ),

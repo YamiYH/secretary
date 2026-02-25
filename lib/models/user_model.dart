@@ -1,10 +1,13 @@
 // lib/models/user_model.dart
+import 'member_model.dart';
+
 class User {
   final String username;
   final String? password;
   final String role;
   final bool enabled;
   final String? memberId;
+  final Member? member;
 
   User({
     required this.username,
@@ -12,6 +15,7 @@ class User {
     required this.role,
     required this.enabled,
     this.memberId,
+    this.member,
   });
 
   //    Esta es la forma correcta de "actualizar" un objeto inmutable.
@@ -47,12 +51,14 @@ class User {
     // 3. Extraemos el ID del miembro si el objeto 'member' no es nulo.
     final memberData = json['member'] as Map<String, dynamic>?;
     final memberId = memberData != null ? memberData['id'] as String? : null;
+    final member = memberData != null ? Member.fromJson(memberData) : null;
 
     return User(
       username: json['username'] ?? 'N/A',
       role: roleName,
       enabled: json['enabled'] ?? false,
       memberId: memberId,
+      member: member,
     );
   }
   Map<String, dynamic> toJson({String? password, List<String>? roleIds}) {

@@ -1,179 +1,158 @@
 // lib/providers/member_provider.dart
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
 import '../models/member_model.dart';
+import '../services/api_client.dart';
 
 class MemberProvider with ChangeNotifier {
-  // --- ESTADO INTERNO DEL PROVIDER ---
+  final ApiClient _apiClient = ApiClient();
 
-  // 1. La lista maestra de todos los miembros (nuestra "base de datos" en memoria)
-  final List<Member> _members = [
-    Member(
-      id: 'm1',
-      name: 'Ethan',
-      lastName: 'Carter',
-      phone: '111-222-333',
-      address: 'Calle Falsa 123',
-      birthDate: DateTime(2023, 1, 15),
-      group: 'Jóvenes',
-      registrationDate: DateTime(2023, 1, 15),
-      entryDate: DateTime.now(),
-    ),
-    Member(
-      id: 'm2',
-      name: 'Olivia',
-      lastName: 'Bennett',
-      phone: '111-222-333',
-      address: 'Calle Falsa 123',
-      birthDate: DateTime(2023, 1, 15),
-      group: 'Mujeres',
-      registrationDate: DateTime(2023, 1, 15),
-      entryDate: DateTime.now(),
-    ),
-    Member(
-      id: 'm3',
-      name: 'Noah',
-      lastName: 'Thompson',
-      phone: '111-222-333',
-      address: 'Calle Falsa 123',
-      birthDate: DateTime(2023, 1, 15),
-      group: 'Hombres',
-      registrationDate: DateTime(2023, 1, 15),
-      entryDate: DateTime.now(),
-    ),
-    Member(
-      id: 'm4',
-      name: 'Sophia',
-      lastName: 'Ramirez',
-      phone: '111-222-333',
-      address: 'Calle Falsa 123',
-      birthDate: DateTime(2023, 1, 15),
-      group: 'Jóvenes',
-      registrationDate: DateTime(2023, 1, 15),
-      entryDate: DateTime.now(),
-    ),
-    Member(
-      id: 'm5',
-      name: 'Liam',
-      lastName: ' Walker',
-      phone: '111-222-333',
-      address: 'Calle Falsa 123',
-      birthDate: DateTime(2023, 1, 15),
-      group: 'Hombres',
-      registrationDate: DateTime(2023, 1, 15),
-      entryDate: DateTime.now(),
-    ),
-    Member(
-      id: 'm6',
-      name: 'Ava Rodriguez',
-      lastName: 'Walker',
-      phone: '111-222-333',
-      address: 'Calle Falsa 123',
-      birthDate: DateTime(2023, 1, 15),
-      group: 'Jóvenes',
-      registrationDate: DateTime(2023, 1, 15),
-      entryDate: DateTime.now(),
-    ),
-    Member(
-      id: 'm7',
-      name: 'Jackson',
-      lastName: 'Davis',
-      phone: '111-222-333',
-      address: 'Calle Falsa 123',
-      birthDate: DateTime(2023, 1, 15),
-      group: 'Hombres',
-      registrationDate: DateTime(2023, 1, 15),
-      entryDate: DateTime.now(),
-    ),
-    Member(
-      id: 'm8',
-      name: 'Isabella',
-      lastName: 'Lewis',
-      phone: '111-222-333',
-      address: 'Calle Falsa 123',
-      birthDate: DateTime(2023, 1, 15),
-      group: '3ra Edad',
-      registrationDate: DateTime(2023, 1, 15),
-      entryDate: DateTime.now(),
-    ),
-    Member(
-      id: 'm9',
-      name: 'Carlos',
-      lastName: 'Garcia',
-      phone: '111-222-333',
-      address: 'Calle Falsa 123',
-      birthDate: DateTime(2023, 1, 15),
-      group: 'Jóvenes',
-      registrationDate: DateTime(2023, 1, 15),
-      entryDate: DateTime.now(),
-    ),
-    Member(
-      id: 'm10',
-      name: 'Maria',
-      lastName: 'Fernandez',
-      phone: '111-222-333',
-      address: 'Calle Falsa 123',
-      birthDate: DateTime(2023, 1, 15),
-      group: '3ra Edad',
-      registrationDate: DateTime(2023, 1, 15),
-      entryDate: DateTime.now(),
-    ),
-  ];
+  List<Member> _members = [];
+  bool _isLoading = false;
+  String? _error;
+  String _searchQuery = '';
 
-  // Getter para todos los miembros (ya deberías tenerlo)
-  List<Member> get members => List.unmodifiable(_members);
+  // Getters
+  List<Member> get members => _members;
+  bool get isLoading => _isLoading;
+  String? get error => _error;
 
   List<Member> getMembersByIds(List<String> ids) {
     return _members.where((member) => ids.contains(member.id)).toList();
   }
 
-  // 2. El término de búsqueda actual
-  String _searchQuery = '';
-
   List<Member> get allMembers => _members;
 
   List<Member> get filteredMembers {
-    if (_searchQuery.isEmpty) {
-      return _members; // Si no hay búsqueda, devuelve todos.
-    } else {
-      // Si hay búsqueda, filtra la lista maestra.
-      return _members.where((member) {
-        final query = _searchQuery.toLowerCase();
-        final fullName = '${member.name} ${member.lastName}'.toLowerCase();
-        final nameMatches = fullName.contains(query);
-        final groupMatches = member.group.toLowerCase().contains(query);
-        return nameMatches || groupMatches;
-      }).toList();
-    }
+    if (_searchQuery.isEmpty) return _members;
+    return _members.where((member) {
+      final query = _searchQuery.toLowerCase();
+      return member.fullName.toLowerCase().contains(query) ||
+          (member.networkName?.toLowerCase().contains(query) ?? false);
+    }).toList();
   }
 
-  // --- ACCIONES (Métodos para modificar el estado) ---
-
-  // Acción para actualizar el término de búsqueda.
-  void search(String query) {
-    _searchQuery = query;
-    // Notifica a todos los widgets que escuchan para que se reconstruyan con la nueva lista filtrada.
+  Future<void> fetchMembers() async {
+    _isLoading = true;
+    _error = null;
     notifyListeners();
-  }
 
-  // Aquí irán las futuras funciones CRUD
-  void addMember(Member member) {
-    _members.add(member);
-    notifyListeners();
-  }
+    try {
+      final response = await _apiClient.dio.get('/members');
 
-  void updateMember(Member updatedMember) {
-    final index = _members.indexWhere(
-      (member) => member.id == updatedMember.id,
-    );
-    if (index != -1) {
-      _members[index] = updatedMember;
+      final List<dynamic> data = response.data['content'] ?? response.data;
+      _members = data.map((m) => Member.fromJson(m)).toList();
+    } on DioException catch (e) {
+      _error = 'Error al cargar miembros: ${e.message}';
+    } finally {
+      _isLoading = false;
       notifyListeners();
     }
   }
 
-  void deleteMember(String id) {
-    _members.removeWhere((member) => member.id == id);
+  void search(String query) {
+    _searchQuery = query;
     notifyListeners();
+  }
+
+  // En lib/providers/member_provider.dart
+
+  Future<bool> addMember({
+    required String name,
+    String? secondName,
+    required String lastName,
+    required String address,
+    required String phone,
+    required DateTime birthdate,
+    required String networkId,
+  }) async {
+    try {
+      final data = {
+        "name": name,
+        "secondName": secondName,
+        "lastName": lastName,
+        "address": address,
+        "phone": phone,
+        "birthdate": birthdate.toIso8601String().split(
+          'T',
+        )[0], // Formato yyyy-MM-dd
+        "enabled": true,
+        "networkId": networkId,
+      };
+
+      await _apiClient.dio.post('/members', data: data);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<bool> updateMember({
+    required String id,
+    required String name,
+    required String lastName,
+    required String address,
+    required String phone,
+    required DateTime birthdate,
+    required bool enabled,
+    required String networkId,
+  }) async {
+    try {
+      final data = {
+        "id": id,
+        "name": name,
+        "lastName": lastName,
+        "address": address,
+        "phone": phone,
+        "birthdate": birthdate.toIso8601String().split(
+          'T',
+        )[0], // Formato yyyy-MM-dd
+        "enabled": enabled,
+        "networkId": networkId,
+      };
+
+      await _apiClient.dio.put('/members', data: data);
+
+      return true;
+    } on DioException catch (e) {
+      return false;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  // lib/providers/member_provider.dart
+
+  Future<bool> deleteMember(String id) async {
+    try {
+      print('DEBUG: Enviando DELETE a /members/$id');
+
+      final response = await _apiClient.dio.delete('/members/$id');
+
+      if (response.statusCode == 200 || response.statusCode == 204) {
+        // Eliminamos el miembro de la lista local para que la UI se actualice de inmediato
+        _members.removeWhere((m) => m.id == id);
+        notifyListeners();
+        return true;
+      }
+      return false;
+    } on DioException catch (e) {
+      print("Error al eliminar miembro: ${e.response?.data ?? e.message}");
+      return false;
+    } catch (e) {
+      print("Error inesperado: $e");
+      return false;
+    }
+  }
+
+  // lib/providers/member_provider.dart
+  Member? findById(String? id) {
+    if (id == null) return null;
+    try {
+      return _members.firstWhere((m) => m.id == id);
+    } catch (_) {
+      return null;
+    }
   }
 }

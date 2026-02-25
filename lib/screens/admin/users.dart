@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../models/user_model.dart';
+import '../../providers/member_provider.dart';
 import '../../providers/role_provider.dart';
 import '../../providers/user_provider.dart';
 import '../../routes/page_route_builder.dart';
@@ -23,11 +24,11 @@ class _UsersState extends State<Users> {
   @override
   void initState() {
     super.initState();
-    // Usamos addPostFrameCallback para asegurar que el 'context' esté disponible.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // Llamamos al provider para que inicie la carga de datos.
       Provider.of<UserProvider>(context, listen: false).fetchUsers();
       Provider.of<RoleProvider>(context, listen: false).fetchRoles();
+      Provider.of<MemberProvider>(context, listen: false).fetchMembers();
     });
   }
 
@@ -35,6 +36,7 @@ class _UsersState extends State<Users> {
   Widget build(BuildContext context) {
     //bool isMobile = MediaQuery.of(context).size.width < 700;
     final userProvider = Provider.of<UserProvider>(context);
+    final memberProvider = Provider.of<MemberProvider>(context);
     final List<User> users = userProvider.users;
 
     return Scaffold(
@@ -70,7 +72,7 @@ class _UsersState extends State<Users> {
           return LayoutBuilder(
             builder: (context, constraints) {
               return constraints.maxWidth < 600
-                  ? _buildMobileLayout(context, users)
+                  ? _buildMobileLayout(context, users, memberProvider)
                   : _buildWebLayout(context, users);
             },
           );
@@ -79,7 +81,11 @@ class _UsersState extends State<Users> {
     );
   }
 
-  Widget _buildMobileLayout(BuildContext context, List<User> users) {
+  Widget _buildMobileLayout(
+    BuildContext context,
+    List<User> users,
+    memberProvider,
+  ) {
     return Column(
       children: [
         SizedBox(height: 10),
@@ -102,11 +108,31 @@ class _UsersState extends State<Users> {
             itemCount: users.length,
             itemBuilder: (context, index) {
               final user = users[index];
+              final associatedMember = memberProvider.findById(user.memberId);
+              final String memberName = associatedMember != null
+                  ? '${associatedMember.name} ${associatedMember.lastName}'
+                  : 'Sin miembro asociado';
+
               return Card(
                 margin: EdgeInsets.only(bottom: 16.0),
                 child: ListTile(
                   title: Text(user.username),
-                  subtitle: Text('Rol: ${user.role}'),
+                  subtitle: Column(
+                    children: [
+                      Text('Rol: ${user.role}'),
+                      Text(
+                        'Persona: $memberName',
+                        style: TextStyle(
+                          color: associatedMember != null
+                              ? Colors.blueGrey
+                              : Colors.grey,
+                          fontWeight: associatedMember != null
+                              ? FontWeight.bold
+                              : FontWeight.normal,
+                        ),
+                      ),
+                    ],
+                  ),
 
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -128,7 +154,7 @@ class _UsersState extends State<Users> {
                           color: Colors.red,
                         ), // Ícono de eliminar
                         onPressed: () {
-                          //_showDelete(context, user);
+                          _showDelete(context, user);
                         },
                       ),
                     ],
@@ -172,14 +198,17 @@ class _UsersState extends State<Users> {
           ),
           Center(
             child: ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: 1000),
+              constraints: BoxConstraints(maxWidth: 1500),
               child: DataTable(
-                columnSpacing: MediaQuery.of(context).size.width * 0.15,
+                columnSpacing: MediaQuery.of(context).size.width * 0.2,
                 columns: [
                   DataColumn(
                     label: Text('Nombre de usuario', style: _headerStyle()),
                   ),
                   DataColumn(label: Text('Rol', style: _headerStyle())),
+                  DataColumn(
+                    label: Text('Miembro asociado', style: _headerStyle()),
+                  ),
                   DataColumn(label: Text('Acciones', style: _headerStyle())),
                 ],
                 rows: users
@@ -188,6 +217,13 @@ class _UsersState extends State<Users> {
                         cells: [
                           DataCell(Text(user.username)),
                           DataCell(Text(user.role)),
+                          DataCell(
+                            Text(
+                              user.member != null
+                                  ? '${user.member!.name} ${user.member!.lastName}'
+                                  : 'Sin miembro asociado',
+                            ),
+                          ),
                           DataCell(
                             Row(
                               children: [
