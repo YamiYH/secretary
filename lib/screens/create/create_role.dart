@@ -1,8 +1,10 @@
 // lib/screens/create/create_role.dart
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../../models/permission_model.dart';
 import '../../models/role_model.dart';
+import '../../providers/role_provider.dart';
 import '../../widgets/button.dart';
 import '../../widgets/custom_appbar.dart';
 import '../../widgets/custom_text_form_field.dart';
@@ -23,6 +25,7 @@ class _CreateRoleState extends State<CreateRole> {
 
   Set<Permission> _selectedPermissions = {};
   bool get _isEditing => widget.roleToEdit != null;
+  bool _isSaving = false;
 
   @override
   void initState() {
@@ -30,7 +33,15 @@ class _CreateRoleState extends State<CreateRole> {
     if (_isEditing) {
       _nameController.text = widget.roleToEdit!.name;
       _descriptionController.text = widget.roleToEdit!.description;
-      //_selectedPermissions = widget.roleToEdit!.permissions.toSet();
+
+      // --- NUEVO: Convertir List<String> del backend a Set<Permission> de Flutter ---
+      _selectedPermissions = widget.roleToEdit!.permissions.map((pString) {
+        return Permission.values.firstWhere(
+          (e) => e.name == pString,
+          orElse: () =>
+              Permission.MEMBRESIA, // Valor por defecto si no coincide
+        );
+      }).toSet();
     }
   }
 
@@ -41,30 +52,81 @@ class _CreateRoleState extends State<CreateRole> {
     super.dispose();
   }
 
-  // void _saveRole() {
-  //   if (_formKey.currentState!.validate()) {
-  //     final logProvider = Provider.of<LogProvider>(context, listen: false);
-  //     final roleProvider = Provider.of<RoleProvider>(context, listen: false);
-  //
-  //     final roleData = Role(
-  //       id: _isEditing
-  //           ? widget.roleToEdit!.id
-  //           : DateTime.now().millisecondsSinceEpoch.toString(),
-  //       name: _nameController.text,
-  //       description: _descriptionController.text,
-  //       permissions: _selectedPermissions
-  //           .toList(), // Convertimos el Set a una Lista
-  //     );
-  //
-  //     if (_isEditing) {
-  //       roleProvider.updateRole(roleData);
-  //     } else {
-  //       roleProvider.addRole(roleData);
-  //     }
-  //     if (!mounted) return;
-  //     Navigator.of(context).pop();
-  //   }
-  // }
+  Future<void> _saveRole() async {
+    print('--- BOTÓN GUARDAR PRESIONADO ---'); // 1. Ver si el botón responde
+
+    // Validamos el formulario
+    if (_formKey.currentState == null) {
+      print('ERROR: _formKey.currentState es nulo');
+      return;
+    }
+
+    if (!_formKey.currentState!.validate()) {
+      print('FORMULARIO NO VÁLIDO: Revisa los campos rojos');
+      return;
+    }
+
+    print('FORMULARIO VÁLIDO: Iniciando proceso de guardado...');
+
+    setState(() => _isSaving = true);
+
+    try {
+      final roleProvider = Provider.of<RoleProvider>(context, listen: false);
+      final permissionsAsString = _selectedPermissions
+          .map((p) => p.name)
+          .toList();
+
+      print('MODO EDICIÓN: $_isEditing');
+      print('PERMISOS A ENVIAR: $permissionsAsString');
+
+      bool success = false;
+      if (_isEditing) {
+        print('LLAMANDO A: updateRole con ID: ${widget.roleToEdit!.id}');
+        success = await roleProvider.updateRole(
+          id: widget.roleToEdit!.id,
+          name: _nameController.text,
+          description: _descriptionController.text,
+          permissions: permissionsAsString,
+          enabled: widget.roleToEdit!.enabled,
+        );
+      } else {
+        print('LLAMANDO A: addRole');
+        success = await roleProvider.addRole(
+          name: _nameController.text,
+          description: _descriptionController.text,
+          permissions: permissionsAsString,
+        );
+      }
+
+      print('RESULTADO DE LA OPERACIÓN: $success');
+
+      if (success && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Operación exitosa'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        await roleProvider.fetchRoles();
+        Navigator.of(context).pop();
+      } else if (!success && mounted) {
+        print('ERROR CAPTURADO EN PROVIDER: ${roleProvider.error}');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              roleProvider.error ?? 'Error desconocido en el servidor',
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e, stacktrace) {
+      print('EXCEPCIÓN CRÍTICA: $e');
+      print('STACKTRACE: $stacktrace');
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -150,11 +212,13 @@ class _CreateRoleState extends State<CreateRole> {
                   const SizedBox(height: 32),
                   Align(
                     alignment: Alignment.centerRight,
-                    child: Button(
-                      size: const Size(150, 45),
-                      text: 'Guardar',
-                      onPressed: () {}, //_saveRole,
-                    ),
+                    child: _isSaving
+                        ? const CircularProgressIndicator()
+                        : Button(
+                            size: const Size(150, 45),
+                            text: 'Guardar',
+                            onPressed: _saveRole,
+                          ),
                   ),
                 ],
               ),

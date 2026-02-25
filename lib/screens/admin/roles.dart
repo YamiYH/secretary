@@ -170,14 +170,30 @@ class _RolesState extends State<Roles> {
     );
   }
 
+  void _handleDelete(BuildContext context, Role role) async {
+    final roleProvider = Provider.of<RoleProvider>(context, listen: false);
+
+    final success = await roleProvider.deleteRole(role.id);
+
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            success
+                ? 'Rol "${role.displayName}" eliminado correctamente.'
+                : roleProvider.error ?? 'Error al eliminar el rol',
+          ),
+          backgroundColor: success ? Colors.green : Colors.red,
+        ),
+      );
+    }
+  }
+
   Future<void> _showDelete(BuildContext context, Role role) {
     return showDeleteConfirmationDialog(
       context: context,
-      itemName: role.name,
-      onConfirm: () {
-        // La lógica de borrado se implementará después.
-        Navigator.of(context).pop();
-      },
+      itemName: role.displayName,
+      onConfirm: () => _handleDelete(context, role),
     );
   }
 
