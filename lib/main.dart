@@ -13,7 +13,7 @@ import 'package:app/providers/service_type_provider.dart';
 // 1. Importa el nuevo UserProvider que creamos
 import 'package:app/providers/user_provider.dart';
 import 'package:app/screens/home/dashboard.dart';
-import 'package:app/screens/home/login.dart';
+import 'package:app/screens/home/home.dart';
 import 'package:app/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -64,7 +64,7 @@ class MyApp extends StatelessWidget {
                 return const Dashboard(); // O tu pantalla Home
               }
               // Si no, ve al Login
-              return const Login();
+              return const Home();
             },
           );
         },

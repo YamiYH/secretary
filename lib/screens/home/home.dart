@@ -49,7 +49,7 @@ class _HomeState extends State<Home> {
                       ],
                     )
                   : Text(
-                      'Bienvenido a la Secretaría de Viento Recio',
+                      'Bienvenido al Ministerio Viento Recio',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: Colors.white,
